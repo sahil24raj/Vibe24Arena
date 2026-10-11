@@ -40,66 +40,6 @@ export const MultiplayerTicTacToe: React.FC<MultiplayerTicTacToeProps> = ({
   const winningLine = gameState?.winningLine || [];
   const isHost = room.hostId === currentUserId;
 
-  // Bot Turn Automation in Multiplayer Room
-  React.useEffect(() => {
-    if (!isHost || room.status !== 'PLAYING') return;
-
-    const currentTurnPlayer = room.players.find((p) => p.id === room.currentTurnPlayerId);
-    if (!currentTurnPlayer?.isBot) return;
-
-    const timer = setTimeout(async () => {
-      const emptyIndices: number[] = [];
-      board.forEach((val, idx) => {
-        if (val === null) emptyIndices.push(idx);
-      });
-
-      if (emptyIndices.length === 0) return;
-
-      const botSymbol = gameState?.symbolMap?.[currentTurnPlayer.id] || 'O';
-      const humanSymbol = botSymbol === 'X' ? 'O' : 'X';
-
-      // Check winning move
-      let chosenMove: number | null = null;
-      const WIN_COMBOS = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8],
-        [0, 3, 6], [1, 4, 7], [2, 5, 8],
-        [0, 4, 8], [2, 4, 6]
-      ];
-
-      for (const idx of emptyIndices) {
-        const testBoard = [...board];
-        testBoard[idx] = botSymbol;
-        if (WIN_COMBOS.some(([a, b, c]) => testBoard[a] === botSymbol && testBoard[b] === botSymbol && testBoard[c] === botSymbol)) {
-          chosenMove = idx;
-          break;
-        }
-      }
-
-      // Check block move
-      if (chosenMove === null && currentTurnPlayer.botDifficulty !== 'easy') {
-        for (const idx of emptyIndices) {
-          const testBoard = [...board];
-          testBoard[idx] = humanSymbol;
-          if (WIN_COMBOS.some(([a, b, c]) => testBoard[a] === humanSymbol && testBoard[b] === humanSymbol && testBoard[c] === humanSymbol)) {
-            chosenMove = idx;
-            break;
-          }
-        }
-      }
-
-      if (chosenMove === null) {
-        if (board[4] === null && currentTurnPlayer.botDifficulty === 'hard') {
-          chosenMove = 4;
-        } else {
-          chosenMove = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
-        }
-      }
-
-      await submitAction('PLACE_SYMBOL', { index: chosenMove });
-    }, 1200);
-
-    return () => clearTimeout(timer);
-  }, [room.currentTurnPlayerId, isHost, room.status, board, gameState, submitAction]);
 
   return (
     <div className={`w-full ${isFullscreen ? 'max-w-2xl' : 'max-w-xl'} mx-auto space-y-6 transition-all`}>

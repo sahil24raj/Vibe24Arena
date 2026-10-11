@@ -1,5 +1,7 @@
 'use client';
 
+import { authenticatedFetch } from '@/lib/apiClient';
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useAppStore } from '@/store/useAppStore';
@@ -126,7 +128,7 @@ export function EscapeDoorGame() {
       setIsProcessing(true);
 
       try {
-        const res = await fetch('/api/games/escape-door/round', {
+        const res = await authenticatedFetch('/api/games/escape-door/round', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -245,7 +247,7 @@ export function EscapeDoorGame() {
     }
 
     try {
-      const res = await fetch('/api/games/escape-door/pick', {
+      const res = await authenticatedFetch('/api/games/escape-door/pick', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

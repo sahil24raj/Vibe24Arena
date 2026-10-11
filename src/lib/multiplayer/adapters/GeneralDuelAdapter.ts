@@ -48,7 +48,9 @@ export const createGeneralDuelAdapter = (gameId: string, gameTitle: string): Gam
       action: GeneralDuelAction,
       playerId: string
     ): ActionValidationResult => {
-      if (typeof action.score !== 'number' || action.score < 0) {
+      if (!['SUBMIT_SCORE', 'FINISH_ATTEMPT'].includes(action.type) || !Object.hasOwn(state.playerAttempts, playerId) || state.playerAttempts[playerId] >= state.maxAttempts) return { valid: false, error: 'Invalid attempt.' };
+      if (action.description !== undefined && (typeof action.description !== 'string' || action.description.length > 200)) return { valid: false, error: 'Invalid description.' };
+      if (!Number.isFinite(action.score) || action.score > 100000 || typeof action.score !== 'number' || action.score < 0) {
         return { valid: false, error: 'Invalid score submitted' };
       }
       return { valid: true };

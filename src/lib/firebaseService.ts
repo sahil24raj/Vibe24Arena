@@ -1,3 +1,4 @@
+import { authenticatedFetch } from './apiClient';
 import {
   signInWithPopup,
   signInWithRedirect,
@@ -36,6 +37,13 @@ import {
 } from './firebase';
 import { UserProfile, LeaderboardEntry } from '@/types';
 
+async function saveCloudProfile(data: object, _options?: object) {
+  const fields = ['username', 'displayName', 'bio', 'avatar', 'avatarType', 'photoURL', 'customAvatar', 'privacySettings'];
+  const updates = Object.fromEntries(Object.entries(data).filter(([key, value]) => fields.includes(key) && value !== undefined));
+  const res = await authenticatedFetch('/api/user/profile', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updates) });
+  if (!res.ok) throw new Error('Could not save cloud profile.');
+}
+
 export interface AuthResult {
   success: boolean;
   user?: UserProfile;
@@ -49,7 +57,7 @@ export interface AuthResult {
  */
 export const formatAuthError = (error: any): { message: string; code: string; isConfigIssue: boolean } => {
   const code = error?.code || 'auth/unknown';
-  let message = error?.message || 'Authentication error occurred.';
+  let message = 'Authentication could not be completed. Please try again.';
   let isConfigIssue = false;
 
   switch (code) {
@@ -77,7 +85,7 @@ export const formatAuthError = (error: any): { message: string; code: string; is
       message = 'This email address is already registered. Please login instead.';
       break;
     case 'auth/user-not-found':
-      message = 'No account found with this email or username. Please check your credentials or Sign Up.';
+      message = 'Invalid email or password. Please verify your login details.';
       break;
     case 'auth/wrong-password':
     case 'auth/invalid-credential':
@@ -220,12 +228,12 @@ export const signInWithGoogle = async (
             isCloudSynced: true,
             lastLoginDate: new Date().toISOString()
           };
-          await setDoc(userDocRef, { 
+          await saveCloudProfile({
             photoURL: photo,
             lastLoginDate: new Date().toISOString() 
           }, { merge: true });
         } else {
-          await setDoc(userDocRef, {
+          await saveCloudProfile({
             ...profile,
             usernameLower: profile.username.toLowerCase(),
             createdAt: serverTimestamp(),
@@ -302,7 +310,7 @@ export const signInAnonymouslyWithFirebase = async (
     if (db) {
       try {
         const userDocRef = doc(db, 'users', fbUser.uid);
-        await setDoc(userDocRef, {
+        await saveCloudProfile({
           ...profile,
           lastLoginDate: new Date().toISOString(),
           updatedAt: serverTimestamp()
@@ -336,34 +344,11 @@ export const checkUsernameAvailability = async (username: string, currentUid?: s
     return { available: false, error: 'Username can only contain letters, numbers, and underscores.' };
   }
 
-  const db = getFirebaseDb();
-  if (!isFirebaseConfigured() || !db) {
-    return { available: true };
-  }
-
   try {
-    const q = query(
-      collection(db, 'users'),
-      where('usernameLower', '==', cleanUsername.toLowerCase()),
-      limit(1)
-    );
-    const snap = await getDocs(q);
-
-    if (snap.empty) {
-      return { available: true };
-    }
-
-    // If the existing doc belongs to current user, it is available to them
-    const existingDoc = snap.docs[0];
-    if (currentUid && existingDoc.id === currentUid) {
-      return { available: true };
-    }
-
-    return { available: false, error: 'Username is already taken by another gamer.' };
-  } catch (err) {
-    console.warn('Username availability check fallback:', err);
-    return { available: true };
-  }
+    const res = await authenticatedFetch(`/api/auth/check-username?username=${encodeURIComponent(cleanUsername)}`);
+    if (!res.ok) return { available: false, error: 'Cannot verify username availability right now.' };
+    return await res.json();
+  } catch { return { available: false, error: 'Cannot verify username availability right now.' }; }
 };
 
 /**
@@ -446,7 +431,7 @@ export const signUpWithEmail = async (
     if (db) {
       try {
         const userDocRef = doc(db, 'users', fbUser.uid);
-        await setDoc(userDocRef, {
+        await saveCloudProfile({
           ...profile,
           usernameLower: cleanUsername.toLowerCase(),
           createdAt: serverTimestamp(),
@@ -492,30 +477,9 @@ export const signInWithEmail = async (
     // Configure session persistence
     await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
 
-    let targetEmail = identifier;
+    const targetEmail = identifier;
 
-    // If user provided a username instead of an email, look up email in Firestore
-    if (!identifier.includes('@')) {
-      const db = getFirebaseDb();
-      if (db) {
-        try {
-          const q = query(
-            collection(db, 'users'),
-            where('usernameLower', '==', identifier.toLowerCase()),
-            limit(1)
-          );
-          const snap = await getDocs(q);
-          if (!snap.empty) {
-            const userData = snap.docs[0].data();
-            if (userData.email) {
-              targetEmail = userData.email;
-            }
-          }
-        } catch (lookupErr) {
-          console.warn('Username-to-email lookup error:', lookupErr);
-        }
-      }
-    }
+    if (!identifier.includes('@')) return { success: false, error: 'Please sign in with your email address.' };
 
     const cred = await signInWithEmailAndPassword(auth, targetEmail, password);
     const fbUser = cred.user;
@@ -578,7 +542,7 @@ export const signInWithEmail = async (
             },
             lastLoginDate: new Date().toISOString()
           };
-          await setDoc(userDocRef, { lastLoginDate: new Date().toISOString() }, { merge: true });
+          await saveCloudProfile({ lastLoginDate: new Date().toISOString() }, { merge: true });
         }
       } catch (firestoreErr) {
         console.warn('Firestore profile fetch warning during sign-in:', firestoreErr);
@@ -697,7 +661,7 @@ export const updateUserProfileData = async (
     try {
       const userRef = doc(db, 'users', uid);
       safeUpdates.updatedAt = serverTimestamp();
-      await updateDoc(userRef, safeUpdates);
+      await saveCloudProfile(safeUpdates);
 
       // Also update auth displayName or photoURL if changed
       const auth = getFirebaseAuth();
@@ -720,7 +684,7 @@ export const updateUserProfileData = async (
       // Try merge if document does not exist yet
       try {
         const userRef = doc(db, 'users', uid);
-        await setDoc(userRef, safeUpdates, { merge: true });
+        await saveCloudProfile(safeUpdates);
       } catch (err: any) {
         return { success: false, error: err?.message || 'Failed to save profile changes to cloud.' };
       }
@@ -734,61 +698,10 @@ export const updateUserProfileData = async (
  * Fetch public gamer profile by username (strictly sanitized, no sensitive auth/emails)
  */
 export const getPublicProfileByUsername = async (username: string): Promise<Partial<UserProfile> | null> => {
-  const cleanUsername = username.replace(/^@/, '').trim().toLowerCase();
-  if (!cleanUsername) return null;
-
-  const db = getFirebaseDb();
-  if (db && isFirebaseConfigured()) {
-    try {
-      const q = query(
-        collection(db, 'users'),
-        where('usernameLower', '==', cleanUsername),
-        limit(1)
-      );
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        const d = snap.docs[0].data() as UserProfile;
-        // Never expose sensitive authentication data or secrets
-        return {
-          id: snap.docs[0].id,
-          username: d.username,
-          displayName: d.displayName || d.username,
-          avatar: d.avatar || '🎮',
-          avatarType: d.avatarType,
-          photoURL: d.photoURL,
-          bio: d.bio,
-          level: d.level || 1,
-          xp: d.xp || 0,
-          rank: d.rank || 'Bronze II',
-          streak: d.streak || 0,
-          badges: d.badges || [],
-          createdAt: d.createdAt,
-          stats: d.stats || {
-            gamesPlayed: 0,
-            totalWins: 0,
-            winRate: 0,
-            totalScore: 0,
-            bestScore: 0,
-            highScores: {},
-            roastsWon: 0,
-            sixesHit: 0,
-            chaiServed: 0,
-            penFlipsLanded: 0,
-            eraserHits: 0
-          },
-          privacySettings: d.privacySettings || {
-            isPublic: true,
-            showStats: true,
-            showGameHistory: true,
-            showAchievements: true
-          }
-        };
-      }
-    } catch (err) {
-      console.warn('getPublicProfileByUsername query note:', err);
-    }
-  }
-  return null;
+  try {
+    const res = await authenticatedFetch(`/api/user/profile?username=${encodeURIComponent(username.replace(/^@/, '').trim())}`);
+    return res.ok ? (await res.json()).profile : null;
+  } catch { return null; }
 };
 
 /**
@@ -870,8 +783,7 @@ export const syncUserProfileToCloud = async (profile: UserProfile): Promise<bool
 
   try {
     const userDocRef = doc(db, 'users', profile.uid);
-    await setDoc(
-      userDocRef,
+    await saveCloudProfile(
       {
         ...profile,
         isCloudSynced: true,
@@ -895,50 +807,8 @@ export const saveScoreToCloudLeaderboard = async (
   score: number,
   user: UserProfile
 ): Promise<boolean> => {
-  const db = getFirebaseDb();
-  if (!isFirebaseConfigured() || !db) {
-    return false;
-  }
-
-  try {
-    const scoreId = `${user.uid || user.id}_${gameId}`;
-    const scoreDocRef = doc(db, 'leaderboards', scoreId);
-
-    await setDoc(
-      scoreDocRef,
-      {
-        userId: user.uid || user.id,
-        username: user.username,
-        avatar: user.avatar,
-        gameId,
-        gameTitle,
-        score,
-        xp: user.xp,
-        wins: user.stats.totalWins,
-        country: '🇮🇳 Global',
-        updatedAt: serverTimestamp()
-      },
-      { merge: true }
-    );
-
-    // Also update high score in user doc
-    if (user.uid) {
-      const userRef = doc(db, 'users', user.uid);
-      await setDoc(
-        userRef,
-        {
-          [`stats.highScores.${gameId}`]: score,
-          updatedAt: serverTimestamp()
-        },
-        { merge: true }
-      );
-    }
-
-    return true;
-  } catch (err) {
-    console.error('Error saving score to cloud leaderboard:', err);
-    return false;
-  }
+  // Client scores are local practice results. Only trusted game engines may publish rankings.
+  return false;
 };
 
 /**
@@ -954,7 +824,7 @@ export const fetchCloudLeaderboard = async (
   }
 
   try {
-    const leaderboardsRef = collection(db, 'leaderboards');
+    const leaderboardsRef = collection(db, 'verifiedLeaderboards');
     const q = gameId && gameId !== 'all'
       ? query(leaderboardsRef, where('gameId', '==', gameId), orderBy('score', 'desc'), limit(limitCount))
       : query(leaderboardsRef, orderBy('score', 'desc'), limit(limitCount));
@@ -1000,50 +870,9 @@ export const fetchAllCloudLeaderboard = async (
   try {
     const usersMap = new Map<string, LeaderboardEntry>();
 
-    // 1. Fetch real registered users from Firestore 'users' collection
-    try {
-      const usersRef = collection(db, 'users');
-      const uSnap = await getDocs(query(usersRef, limit(500)));
-      uSnap.docs.forEach((d) => {
-        const data = d.data();
-        const userId = d.id;
-        const username = data.displayName || data.username || 'Gamer';
-        const avatar = data.avatar || '🚀';
-        const xp = Number(data.xp) || 0;
-        const wins = Number(data.stats?.totalWins) || 0;
-
-        let score = 0;
-        if (selectedGameId === 'all') {
-          const best = Number(data.stats?.bestScore) || 0;
-          const total = Number(data.stats?.totalScore) || 0;
-          const highScoresList = Object.values(data.stats?.highScores || {}).map(Number).filter((n) => !isNaN(n));
-          score = Math.max(best, total, xp, ...highScoresList, 0);
-        } else {
-          score = Number(data.stats?.highScores?.[selectedGameId]) || 0;
-        }
-
-        if (selectedGameId === 'all' || score > 0) {
-          usersMap.set(userId, {
-            rank: 0,
-            username,
-            avatar,
-            score,
-            wins,
-            xp,
-            gameId: selectedGameId,
-            gameTitle: selectedGameId === 'all' ? 'All Arena Games' : selectedGameId,
-            country: data.country || '🇮🇳 Global',
-            badge: wins >= 10 ? '👑 Master' : wins >= 3 ? '🥈 Champion' : '⚡ Contender'
-          });
-        }
-      });
-    } catch (e) {
-      console.warn('Users collection query note:', e);
-    }
-
     // 2. Fetch match records from 'leaderboards' collection to capture any new scores
     try {
-      const leaderboardsRef = collection(db, 'leaderboards');
+      const leaderboardsRef = collection(db, 'verifiedLeaderboards');
       const lSnap = await getDocs(query(leaderboardsRef, limit(500)));
       lSnap.docs.forEach((d) => {
         const data = d.data();
@@ -1114,7 +943,7 @@ export const subscribeToCloudLeaderboard = (
   }
 
   try {
-    const leaderboardsRef = collection(db, 'leaderboards');
+    const leaderboardsRef = collection(db, 'verifiedLeaderboards');
     const q = gameId && gameId !== 'all'
       ? query(leaderboardsRef, where('gameId', '==', gameId), orderBy('score', 'desc'), limit(limitCount))
       : query(leaderboardsRef, orderBy('score', 'desc'), limit(limitCount));

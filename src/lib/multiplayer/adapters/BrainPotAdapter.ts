@@ -72,6 +72,7 @@ export const BrainPotAdapter: GameAdapter<BrainPotState, BrainPotAction> = {
     if (action.type !== 'ANSWER_QUESTION') {
       return { valid: false, error: 'Unknown action' };
     }
+    if (typeof action.selectedOption !== 'string' || action.selectedOption.length > 100 || !Number.isFinite(action.timeRemainingSec) || action.timeRemainingSec < 0 || action.timeRemainingSec > 8) return { valid: false, error: 'Invalid answer.' };
     if (action.questionIndex !== state.currentQuestionIndex) {
       return { valid: false, error: 'Stale question answer' };
     }

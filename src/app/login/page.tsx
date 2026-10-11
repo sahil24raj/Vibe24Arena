@@ -39,7 +39,7 @@ export default function LoginPage() {
     setSuccessMsg(null);
 
     if (!identifier.trim()) {
-      setErrorMsg('Please enter your email or username.');
+      setErrorMsg('Please enter your email.');
       return;
     }
     if (!password) {
@@ -134,21 +134,21 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email or Username Input */}
+            {/* Email Input */}
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                Email or Username
+                Email
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                   <User className="w-4 h-4" />
                 </div>
                 <input
-                  type="text"
+                  type="email"
                   required
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="gamer@chillarena.com or Sigma_Gamer"
+                  placeholder="gamer@chillarena.com"
                   className="w-full pl-10 pr-4 py-3 bg-[#0a0d18]/90 border border-white/10 rounded-xl text-white placeholder-slate-600 text-sm focus:outline-none focus:border-[#00F0FF] focus:ring-1 focus:ring-[#00F0FF] transition-all"
                 />
               </div>

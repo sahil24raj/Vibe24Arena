@@ -115,16 +115,17 @@ export const ChorSipahiAdapter: GameAdapter<ChorSipahiState, ChorSipahiAction> =
     currentTurn: string | null,
     players: RoomPlayer[]
   ): ActionValidationResult => {
+    if (!players.some(p => p.id === playerId)) return { valid: false, error: 'Not a player.' };
+    const isHost = players.some(p => p.id === playerId && p.isHost);
     switch (action.type) {
       case 'CONFIRM_ROLE_VIEWED':
-        return { valid: true };
+        return { valid: state.phase === 'ROLE_REVEAL' };
 
       case 'START_GUESSING':
-        // Sipahi or Host can advance to guess
-        return { valid: true };
+        return { valid: state.phase === 'DISCUSSION' && (isHost || playerId === state.sipahiPlayerId) };
 
       case 'SUBMIT_SIPAHI_GUESS':
-        if (playerId !== state.sipahiPlayerId) {
+        if (state.phase !== 'SIPAHI_GUESS' || playerId !== state.sipahiPlayerId) {
           return { valid: false, error: 'Only the Sipahi can make the arrest guess!' };
         }
         if (!action.suspectId || !state.suspectPlayerIds.includes(action.suspectId)) {
@@ -133,7 +134,7 @@ export const ChorSipahiAdapter: GameAdapter<ChorSipahiState, ChorSipahiAction> =
         return { valid: true };
 
       case 'NEXT_ROUND':
-        return { valid: true };
+        return { valid: isHost && state.phase === 'ROUND_RESULT' && state.currentRound < state.maxRounds };
 
       default:
         return { valid: false, error: 'Unknown action' };

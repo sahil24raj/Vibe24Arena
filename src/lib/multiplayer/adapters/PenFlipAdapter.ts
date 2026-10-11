@@ -58,7 +58,7 @@ export const PenFlipAdapter: GameAdapter<PenFlipState, PenFlipAction> = {
     if (currentTurn !== playerId) {
       return { valid: false, error: 'Not your turn to flip!' };
     }
-    if (typeof action.power !== 'number' || action.power < 0 || action.power > 100) {
+    if (!Number.isFinite(action.power) || typeof action.power !== 'number' || action.power < 0 || action.power > 100) {
       return { valid: false, error: 'Invalid power value' };
     }
     return { valid: true };

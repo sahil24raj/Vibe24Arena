@@ -1,8 +1,10 @@
 import crypto from 'crypto';
 
-const RAW_SECRET = process.env.GAME_SESSION_SECRET || 'chill_arena_game_session_secret_key_2026';
-// Derive 32-byte key for AES-256-GCM
-const ENCRYPTION_KEY = crypto.createHash('sha256').update(RAW_SECRET).digest();
+function encryptionKey() {
+  const secret = process.env.GAME_SESSION_SECRET;
+  if (!secret || secret.length < 32) throw new Error('GAME_SESSION_SECRET must contain at least 32 random characters');
+  return crypto.createHash('sha256').update(secret).digest();
+}
 
 export interface RoundTokenPayload {
   sessionId: string;
@@ -107,7 +109,7 @@ export function getBaseXpForLevel(level: number): number {
  */
 export function encryptRoundToken(payload: RoundTokenPayload): string {
   const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv('aes-256-gcm', ENCRYPTION_KEY, iv);
+  const cipher = crypto.createCipheriv('aes-256-gcm', encryptionKey(), iv);
   const jsonStr = JSON.stringify(payload);
   const encrypted = Buffer.concat([cipher.update(jsonStr, 'utf8'), cipher.final()]);
   const tag = cipher.getAuthTag();
@@ -120,6 +122,7 @@ export function encryptRoundToken(payload: RoundTokenPayload): string {
  */
 export function decryptRoundToken(token: string): RoundTokenPayload | null {
   try {
+    if (token.length > 4096 || !/^[a-f0-9]{24}\.[a-f0-9]+\.[a-f0-9]{32}$/.test(token)) return null;
     const parts = token.split('.');
     if (parts.length !== 3) return null;
 
@@ -128,19 +131,18 @@ export function decryptRoundToken(token: string): RoundTokenPayload | null {
     const enc = Buffer.from(encHex, 'hex');
     const tag = Buffer.from(tagHex, 'hex');
 
-    const decipher = crypto.createDecipheriv('aes-256-gcm', ENCRYPTION_KEY, iv);
+    const decipher = crypto.createDecipheriv('aes-256-gcm', encryptionKey(), iv);
     decipher.setAuthTag(tag);
     const decrypted = Buffer.concat([decipher.update(enc), decipher.final()]);
     const parsed: RoundTokenPayload = JSON.parse(decrypted.toString('utf8'));
 
     // Expire token after 10 minutes
-    if (Date.now() - parsed.timestamp > 10 * 60 * 1000) {
+    if (!Number.isFinite(parsed.timestamp) || parsed.timestamp > Date.now() || Date.now() - parsed.timestamp > 10 * 60 * 1000) {
       return null;
     }
 
     return parsed;
   } catch (err) {
-    console.error('Failed to decrypt round token:', err);
     return null;
   }
 }

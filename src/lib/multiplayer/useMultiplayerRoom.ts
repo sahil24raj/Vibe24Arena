@@ -1,5 +1,7 @@
 'use client';
 
+import { authenticatedFetch } from '@/lib/apiClient';
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   MultiplayerRoomState,
@@ -77,7 +79,7 @@ export function useMultiplayerRoom({
           if (!joinRes.success) {
             // REST API fallback
             try {
-              const res = await fetch(`/api/rooms/${normalizedCode}/join`, {
+              const res = await authenticatedFetch(`/api/rooms/${normalizedCode}/join`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user })
@@ -103,7 +105,7 @@ export function useMultiplayerRoom({
           let getRes = await getRoomByCode(normalizedCode);
           if (!getRes.success) {
             try {
-              const res = await fetch(`/api/rooms/${normalizedCode}`);
+              const res = await authenticatedFetch(`/api/rooms/${normalizedCode}`);
               if (res.ok) {
                 const json = await res.json();
                 if (json.success && json.data) {

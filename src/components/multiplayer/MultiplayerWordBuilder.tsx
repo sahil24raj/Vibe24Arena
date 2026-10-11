@@ -6,7 +6,6 @@ import { WordBuilderState } from '@/lib/multiplayer/adapters/WordBuilderAdapter'
 import { soundFx } from '@/lib/audio';
 import { Sparkles, Trophy, Shuffle, Delete, Send, Clock, CheckCircle2, AlertCircle, Bot, Flame } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { PUZZLE_LEVELS, getAllValidWordsForPool } from '@/lib/word-builder/wordDatabase';
 
 interface MultiplayerWordBuilderProps {
   room: MultiplayerRoomState<WordBuilderState>;
@@ -70,46 +69,7 @@ export const MultiplayerWordBuilder: React.FC<MultiplayerWordBuilderProps> = ({
   const opponentWords = opponent ? gameState?.foundWordsMap?.[opponent.id] || [] : [];
   const targetWords = gameState?.targetWords || [];
 
-  // Bot Turn Automation (Host coordinates bot guesses)
-  const botTimerRef = useRef<NodeJS.Timeout | null>(null);
-  useEffect(() => {
-    if (!isHost || room.status !== 'PLAYING' || !opponent?.isBot || !gameState) return;
 
-    const level = PUZZLE_LEVELS.find((l) => l.id === gameState.levelId) || PUZZLE_LEVELS[0];
-    const validWords = Array.from(getAllValidWordsForPool(level));
-    const botFound = gameState.foundWordsMap?.[opponent.id] || [];
-    const remaining = validWords.filter((w) => !botFound.includes(w.toUpperCase()));
-
-    if (remaining.length === 0) return;
-
-    // Difficulty interval: Hard 6s, Med 9s, Easy 14s
-    const diff = opponent.botDifficulty || 'medium';
-    const intervalMs = diff === 'hard' ? 6000 : diff === 'easy' ? 14000 : 9000;
-
-    botTimerRef.current = setTimeout(async () => {
-      const chosenWord = remaining[Math.floor(Math.random() * remaining.length)];
-      if (chosenWord) {
-        // Direct REST action for bot
-        try {
-          await fetch(`/api/rooms/${room.roomCode}/action`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              playerId: opponent.id,
-              actionType: 'SUBMIT_WORD',
-              actionData: { word: chosenWord }
-            })
-          });
-        } catch (err) {
-          console.warn('Bot action error:', err);
-        }
-      }
-    }, intervalMs);
-
-    return () => {
-      if (botTimerRef.current) clearTimeout(botTimerRef.current);
-    };
-  }, [isHost, room.status, room.roomCode, opponent, gameState]);
 
   // Tile Clicks & Input
   const handleTileClick = (index: number) => {
@@ -166,7 +126,7 @@ export const MultiplayerWordBuilder: React.FC<MultiplayerWordBuilderProps> = ({
 
     if (res?.success) {
       soundFx.playCorrect();
-      const isTarget = targetWords.includes(wordToSubmit);
+      const isTarget = res.data?.gameState?.targetWords?.includes(wordToSubmit) || false;
       const pts = wordToSubmit.length * 50 + (isTarget ? 100 : 0);
       setLastScoredWord({ word: wordToSubmit, pts });
       handleClear();

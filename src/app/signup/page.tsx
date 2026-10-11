@@ -1,5 +1,7 @@
 'use client';
 
+import { authenticatedFetch } from '@/lib/apiClient';
+
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -86,7 +88,7 @@ export default function SignUpPage() {
     const timer = setTimeout(async () => {
       setIsCheckingUsername(true);
       try {
-        const res = await fetch(`/api/auth/check-username?username=${encodeURIComponent(username.trim())}`);
+        const res = await authenticatedFetch(`/api/auth/check-username?username=${encodeURIComponent(username.trim())}`);
         const data = await res.json();
         setUsernameAvailable(data.available);
         setUsernameError(data.error || null);

@@ -1,3 +1,5 @@
+
+import { authenticatedFetch } from '@/lib/apiClient';
 import { GameSessionStartResponse, GameSessionFinishResponse } from './types';
 import { UserProfile } from '@/types';
 
@@ -13,7 +15,7 @@ export class GameSessionManager {
 
   public static async startSession(gameId: string, user: UserProfile): Promise<GameSessionStartResponse> {
     try {
-      const res = await fetch('/api/session/start', {
+      const res = await authenticatedFetch('/api/session/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -76,7 +78,7 @@ export class GameSessionManager {
     const durationMs = session ? now - session.startTime : 3000;
 
     try {
-      const res = await fetch('/api/session/finish', {
+      const res = await authenticatedFetch('/api/session/finish', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

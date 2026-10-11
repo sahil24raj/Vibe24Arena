@@ -1,28 +1,18 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users profile collection
+    // Profiles include email and private preferences. Public views are filtered by the API.
     match /users/{userId} {
+      allow get: if request.auth != null && request.auth.uid == userId;
+      allow list, write: if false;
+    }
+    match /verifiedLeaderboards/{entry} {
       allow read: if true;
-      allow write: if true;
+      allow write: if false;
     }
-
-    // Public Leaderboards collection
-    match /leaderboards/{leaderboardId} {
-      allow read: if true;
-      allow write: if true;
-    }
-
-    // Multiplayer Rooms collection (real-time state synchronization)
-    match /rooms/{roomCode} {
-      allow read, write: if true;
-    }
-
-    // Game Sessions and match history
-    match /gameSessions/{sessionId} {
-      allow read, write: if true;
+    // Trusted server endpoints own all writes and mask hidden game state.
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
-

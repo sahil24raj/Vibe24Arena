@@ -1,32 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { checkUsernameAvailability } from '@/lib/firebaseService';
-
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const username = searchParams.get('username');
-  const uid = searchParams.get('uid') || undefined;
-
-  if (!username) {
-    return NextResponse.json({ available: false, error: 'Username is required' }, { status: 400 });
-  }
-
-  const cleanUsername = username.trim();
-  if (cleanUsername.length < 3) {
-    return NextResponse.json({ available: false, error: 'Username must be at least 3 characters' }, { status: 200 });
-  }
-
-  if (cleanUsername.length > 20) {
-    return NextResponse.json({ available: false, error: 'Username cannot exceed 20 characters' }, { status: 200 });
-  }
-
-  if (!/^[a-zA-Z0-9_]+$/.test(cleanUsername)) {
-    return NextResponse.json({ available: false, error: 'Username can only contain alphanumeric characters and underscores' }, { status: 200 });
-  }
-
-  try {
-    const result = await checkUsernameAvailability(cleanUsername, uid);
-    return NextResponse.json(result);
-  } catch (error: any) {
-    return NextResponse.json({ available: true, message: 'Availability check fallback' }, { status: 200 });
-  }
+import { api, ApiError, identity, rateLimit } from '@/lib/server/api';
+import { adminDb } from '@/lib/server/firebaseAdmin';
+export async function GET(req: Request) {
+  return api(async () => {
+    const auth = await identity(req);
+    await rateLimit(auth.uid, 'username', 60);
+    const username = new URL(req.url).searchParams.get('username')?.trim().toLowerCase() || '';
+    if (!/^[a-z0-9_]{3,20}$/.test(username)) throw new ApiError(400, 'Username must be 3–20 letters, digits or underscores.');
+    const uid = auth.uid;
+    const existing = await adminDb().collection('users').where('usernameLower', '==', username).limit(2).get();
+    return { available: existing.empty || existing.docs.every(d => d.id === uid) };
+  });
 }

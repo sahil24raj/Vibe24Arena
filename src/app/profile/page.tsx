@@ -1,5 +1,7 @@
 'use client';
 
+import { authenticatedFetch } from '@/lib/apiClient';
+
 import React, { useState, useEffect, useRef, useTransition, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -238,7 +240,7 @@ function ProfileContent() {
 
     usernameDebounceRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/auth/check-username?username=${encodeURIComponent(cleaned)}&uid=${user.uid || user.id}`);
+        const res = await authenticatedFetch(`/api/auth/check-username?username=${encodeURIComponent(cleaned)}&uid=${user.uid || user.id}`);
         const data = await res.json();
         if (data.available) {
           setUsernameStatus('available');

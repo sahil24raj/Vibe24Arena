@@ -63,7 +63,8 @@ export const WordBuilderAdapter: GameAdapter<WordBuilderState, WordBuilderAction
     if (action.type !== 'SUBMIT_WORD') {
       return { valid: false, error: 'Unknown action' };
     }
-    const cleanWord = action.word?.trim().toUpperCase();
+    if (typeof action.word !== 'string' || action.word.length > 32) return { valid: false, error: 'Invalid word.' };
+    const cleanWord = action.word.trim().toUpperCase();
     if (!cleanWord || cleanWord.length < 3) {
       return { valid: false, error: 'Word must be at least 3 letters' };
     }
