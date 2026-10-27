@@ -15,18 +15,16 @@ function GamesContent() {
 
   const { openMultiplayerModal } = useAppStore();
   const [selectedFilter, setSelectedFilter] = useState<string>(
-    initialCat === 'school' ? 'SCHOOL VIBES' : initialCat === 'mind' ? 'MIND GAMES' : initialCat === 'meme' ? 'TRENDING MEME' : 'ALL'
+    initialCat === 'school' ? 'school' : initialCat === 'meme' ? 'meme' : initialCat === 'squad' ? 'squad' : 'ALL'
   );
   const [search, setSearch] = useState(initialQuery);
   const [sortBy, setSortBy] = useState<'popular' | 'rating' | 'plays' | 'duration'>('popular');
 
   const filterTabs = [
-    { id: 'ALL', label: 'ALL GAMES' },
-    { id: 'TRENDING MEME', label: '🔥 TRENDING MEME' },
-    { id: 'SCHOOL VIBES', label: '🏫 SCHOOL VIBES' },
-    { id: 'MIND GAMES', label: '🧠 MIND GAMES' },
-    { id: 'MULTIPLAYER', label: '👥 1v1 MULTIPLAYER' },
-    { id: 'NEW', label: '⚡ NEW RELEASES' }
+    { id: 'ALL', label: '🌟 ALL GAMES' },
+    { id: 'meme', label: '🔥 TRENDING MEME VIBES' },
+    { id: 'school', label: '🏫 SCHOOL VIBES' },
+    { id: 'squad', label: '👥 SQUAD VIBES' }
   ];
 
   const filteredGames = useMemo(() => {
@@ -39,12 +37,7 @@ function GamesContent() {
       if (!matchesSearch) return false;
 
       if (selectedFilter === 'ALL') return true;
-      if (selectedFilter === 'TRENDING MEME') return game.categoryKey === 'meme';
-      if (selectedFilter === 'SCHOOL VIBES') return game.categoryKey === 'school';
-      if (selectedFilter === 'MIND GAMES') return game.categoryKey === 'mind';
-      if (selectedFilter === 'MULTIPLAYER') return game.multiplayer;
-      if (selectedFilter === 'NEW') return game.isNew;
-      return true;
+      return game.categoryKey === selectedFilter;
     });
 
     // Sorting

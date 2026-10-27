@@ -1,26 +1,14 @@
 export type GameCategory =
-  | '🔥 Trending Meme'
-  | '☕ Desi Meme Vibes'
+  | '🔥 Trending Meme Vibes'
   | '🏫 School Vibes'
-  | '🧠 Mind Games'
-  | '⚡ Quick Duels'
-  | '😂 Meme Games'
-  | '🏃 Endless Runner'
-  | '🎯 Skill Games'
-  | '🏏 Sports'
+  | '👥 Squad Vibes'
   | (string & {});
 
 export type CategoryKey =
   | 'meme'
   | 'school'
-  | 'mind'
-  | 'duels'
-  | 'all'
   | 'squad'
-  | 'brain'
-  | 'duel'
-  | 'nostalgia'
-  | 'quick';
+  | 'all';
 
 export interface GameItem {
   id: string;

@@ -19,12 +19,10 @@ import {
 } from 'lucide-react';
 
 const CATEGORY_PILLS = [
-  { id: 'ALL', label: '🌟 All Collections', icon: Sparkles, color: 'text-white' },
-  { id: 'school', label: '🏫 School Nostalgia', icon: Backpack, color: 'text-amber-400' },
-  { id: 'mind', label: '🧠 Mind Battles & IQ', icon: Brain, color: 'text-purple-400' },
-  { id: 'meme', label: '☕ Desi Meme Vibes', icon: Coffee, color: 'text-pink-400' },
-  { id: 'multiplayer', label: '👥 1v1 Squad Duels', icon: Users, color: 'text-[#00F0FF]' },
-  { id: 'rapid', label: '⚡ Rapid 60s Battles', icon: Zap, color: 'text-[#ADFF2F]' }
+  { id: 'ALL', label: '🌟 All Games', icon: Sparkles, color: 'text-white' },
+  { id: 'meme', label: '🔥 Trending Meme Vibes', icon: Flame, color: 'text-orange-400' },
+  { id: 'school', label: '🏫 School Vibes', icon: Backpack, color: 'text-amber-400' },
+  { id: 'squad', label: '👥 Squad Vibes', icon: Users, color: 'text-[#D946EF]' }
 ];
 
 function CategoriesContent() {
@@ -52,10 +50,6 @@ function CategoriesContent() {
     let matchesCat = false;
     if (selectedCat === 'ALL') {
       matchesCat = true;
-    } else if (selectedCat === 'multiplayer') {
-      matchesCat = !!game.multiplayer;
-    } else if (selectedCat === 'rapid') {
-      matchesCat = game.duration.includes('30s') || game.duration.includes('60s') || game.duration.includes('1m');
     } else {
       matchesCat = game.categoryKey === selectedCat;
     }

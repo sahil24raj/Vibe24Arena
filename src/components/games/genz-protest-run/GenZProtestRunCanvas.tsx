@@ -886,6 +886,12 @@ class DesiProtestAudioEngine {
     if (!this.ctx) return;
 
     this.isPlayingMusic = true;
+    if (this.musicGain && this.ctx) {
+      this.musicGain.gain.setValueAtTime(0.75, this.ctx.currentTime);
+    }
+    if (this.crowdGain && this.ctx) {
+      this.crowdGain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+    }
     this.nextStepTime = this.ctx.currentTime + 0.05;
     this.currentStep = 0;
     this.melodyIndex = 0;
@@ -959,6 +965,38 @@ class DesiProtestAudioEngine {
     if (this.timerId) {
       clearInterval(this.timerId);
       this.timerId = null;
+    }
+    if (this.ctx) {
+      const now = this.ctx.currentTime;
+      if (this.musicGain) {
+        this.musicGain.gain.cancelScheduledValues(now);
+        this.musicGain.gain.setValueAtTime(0, now);
+      }
+      if (this.leadSynth) {
+        this.leadSynth.g.gain.cancelScheduledValues(now);
+        this.leadSynth.g.gain.setValueAtTime(0, now);
+      }
+    }
+  }
+
+  public stopAll() {
+    this.stopDesiBGM();
+    this.stopContinuousSiren();
+    if (this.ctx) {
+      const now = this.ctx.currentTime;
+      if (this.sfxGain) {
+        this.sfxGain.gain.cancelScheduledValues(now);
+        this.sfxGain.gain.setValueAtTime(0, now);
+        setTimeout(() => {
+          if (this.sfxGain && this.ctx) {
+            this.sfxGain.gain.setValueAtTime(0.95, this.ctx.currentTime);
+          }
+        }, 50);
+      }
+      if (this.crowdGain) {
+        this.crowdGain.gain.cancelScheduledValues(now);
+        this.crowdGain.gain.setValueAtTime(0, now);
+      }
     }
   }
 
@@ -1804,9 +1842,7 @@ export function GenZProtestRunCanvas() {
         if (p.d >= g.totalDistanceTarget) {
           g.running = false;
           setGameState('victory');
-          audio.stopDesiBGM();
-          audio.stopContinuousSiren();
-          audio.playVictory();
+          audio.stopAll();
           confetti({ particleCount: 130, spread: 85, origin: { y: 0.6 } });
 
           setUser({
@@ -2727,16 +2763,21 @@ export function GenZProtestRunCanvas() {
 
     return () => {
       cancelAnimationFrame(animId);
-      audio.stopContinuousSiren();
+      audio.stopAll();
       window.removeEventListener('resize', resizeCanvas);
     };
   }, [gameState, selectedChar, maxHealth, spawnObstaclesAhead, addParticles, addComicBubble, score, user, setUser]);
 
+  // Ensure full audio cleanup whenever player leaves the screen
+  useEffect(() => {
+    return () => {
+      audio.stopAll();
+    };
+  }, []);
+
   const triggerGameOver = (reason: string) => {
     gameRef.current.running = false;
-    audio.stopDesiBGM();
-    audio.stopContinuousSiren();
-    audio.playHit();
+    audio.stopAll();
     setGameState('gameover');
   };
 

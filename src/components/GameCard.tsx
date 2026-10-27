@@ -27,45 +27,13 @@ export const GameCard: React.FC<GameCardProps> = ({ game, theme = 'default', onQ
           : 'bg-[#11141c]/95 border-gray-800/80 hover:border-[#00F0FF] hover:shadow-xl hover:shadow-[#00F0FF]/15'
       } hover:-translate-y-1.5`}
     >
-      {/* Thumbnail Banner Image */}
+      {/* Thumbnail Banner Image (Clean Cover - No Overlays) */}
       <div className="relative aspect-[16/10] bg-slate-950 overflow-hidden">
         <img
           src={game.bannerImage}
           alt={game.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-75 group-hover:opacity-90"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
         />
-
-        {/* Top Badges */}
-        <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1.5">
-          {game.isTrending && (
-            <span className="px-2 py-0.5 rounded-full text-[9px] font-black font-display bg-pink-600/90 text-white backdrop-blur-md flex items-center gap-1 shadow">
-              <Flame className="w-2.5 h-2.5" /> TRENDING
-            </span>
-          )}
-          {game.isNew && (
-            <span className="px-2 py-0.5 rounded-full text-[9px] font-black font-display bg-[#00F0FF]/90 text-slate-950 backdrop-blur-md flex items-center gap-1 shadow">
-              <Zap className="w-2.5 h-2.5 fill-slate-950" /> NEW
-            </span>
-          )}
-          {game.isPopular && (
-            <span className="px-2 py-0.5 rounded-full text-[9px] font-black font-display bg-amber-500/90 text-slate-950 backdrop-blur-md flex items-center gap-1 shadow">
-              <Crown className="w-2.5 h-2.5 fill-slate-950" /> POPULAR
-            </span>
-          )}
-        </div>
-
-        {/* Rating Badge */}
-        <div className="absolute top-2.5 right-2.5 bg-black/80 backdrop-blur-md px-2 py-0.5 rounded-full text-[9px] font-mono text-[#ADFF2F] flex items-center gap-1 border border-[#ADFF2F]/30 shadow">
-          <Star className="w-2.5 h-2.5 fill-[#ADFF2F] text-[#ADFF2F]" />
-          <span>{game.rating}</span>
-        </div>
-
-        {/* Multiplayer Badge */}
-        {game.multiplayer && (
-          <div className="absolute bottom-2.5 left-2.5 bg-slate-950/80 backdrop-blur-md px-2 py-0.5 rounded-full text-[9px] font-mono text-cyan-300 flex items-center gap-1 border border-cyan-500/30">
-            <Users className="w-2.5 h-2.5" /> 1v1 DUEL
-          </div>
-        )}
 
         {/* Hover Play Button Overlay */}
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -75,9 +43,31 @@ export const GameCard: React.FC<GameCardProps> = ({ game, theme = 'default', onQ
         </div>
       </div>
 
-      {/* Card Info Content */}
+      {/* Card Info Content (Badges moved below image) */}
       <div className="p-4 space-y-2.5 flex-1 flex flex-col justify-between">
-        <div className="space-y-1">
+        <div className="space-y-2">
+          {/* Category & Status Badges */}
+          <div className="flex items-center justify-between gap-2">
+            <span className="px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/10 text-[10px] font-mono font-semibold text-slate-300">
+              {game.category}
+            </span>
+            <div className="flex items-center gap-1.5">
+              {game.multiplayer ? (
+                <span className="px-2 py-0.5 rounded-md bg-[#D946EF]/15 border border-[#D946EF]/30 text-[10px] font-mono font-bold text-[#F472B6]">
+                  MULTIPLAYER
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 rounded-md bg-[#06B6D4]/15 border border-[#06B6D4]/30 text-[10px] font-mono font-bold text-[#38BDF8]">
+                  SOLO ARCADE
+                </span>
+              )}
+              <div className="flex items-center gap-1 text-[10px] font-mono text-amber-400 font-bold">
+                <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                <span>{game.rating}</span>
+              </div>
+            </div>
+          </div>
+
           <div className="flex items-center gap-2">
             <span className="text-xl shrink-0">{game.thumbnail}</span>
             <h3 className="text-sm font-bold text-white group-hover:text-[#00F0FF] transition-colors font-display line-clamp-1">

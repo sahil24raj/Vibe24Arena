@@ -23,10 +23,9 @@ import {
 
 const CATEGORIES = [
   { id: 'all', label: 'All Vibes', icon: Sparkles, color: 'text-[#F472B6]' },
-  { id: 'squad', label: 'Squad Games (4P)', icon: Users, color: 'text-[#D946EF]' },
-  { id: 'duel', label: '1v1 Battles', icon: Swords, color: 'text-[#06B6D4]' },
-  { id: 'brain', label: 'Brain & IQ', icon: Brain, color: 'text-purple-400' },
-  { id: 'nostalgia', label: 'School Nostalgia', icon: GraduationCap, color: 'text-amber-400' }
+  { id: 'meme', label: 'Trending Meme Vibes', icon: Flame, color: 'text-orange-400' },
+  { id: 'school', label: 'School Vibes', icon: GraduationCap, color: 'text-amber-400' },
+  { id: 'squad', label: 'Squad Vibes', icon: Users, color: 'text-[#D946EF]' }
 ];
 
 export const PickYourVibeSection: React.FC = () => {
@@ -35,9 +34,6 @@ export const PickYourVibeSection: React.FC = () => {
 
   const filteredGames = useMemo(() => {
     if (activeCategory === 'all') return GAMES_CATALOG;
-    if (activeCategory === 'brain') {
-      return GAMES_CATALOG.filter((g) => g.categoryKey === 'brain' || g.categoryKey === 'mind');
-    }
     return GAMES_CATALOG.filter((g) => g.categoryKey === activeCategory);
   }, [activeCategory]);
 
@@ -96,14 +92,12 @@ export const PickYourVibeSection: React.FC = () => {
       {/* Game Cards Grid - 2 balanced rows of 3 games */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredGames.map((game, idx) => {
-          const isFeatured = game.isFeatured || idx === 0;
-
           return (
             <div
               key={game.id}
               className="va-card rounded-2xl overflow-hidden flex flex-col group relative"
             >
-              {/* Poster Image Container */}
+              {/* Poster Image Container (CLEAN COVER - NO OVERLAY BADGES ON IMAGE) */}
               <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#0A0C16]">
                 <Image
                   src={game.bannerImage || `/games/${game.id}.jpg`}
@@ -116,23 +110,6 @@ export const PickYourVibeSection: React.FC = () => {
 
                 {/* Subtle Gradient Overlays */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#10131D] via-transparent to-black/20 opacity-80" />
-
-                {/* Top Badges */}
-                <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between">
-                  <span className="px-2 py-0.5 rounded-md bg-[#080A12]/85 backdrop-blur-md border border-white/10 text-[10px] font-mono font-semibold text-slate-200">
-                    {game.category}
-                  </span>
-
-                  {game.multiplayer ? (
-                    <span className="px-2 py-0.5 rounded-md bg-[#D946EF]/25 border border-[#D946EF]/50 text-[10px] font-mono font-bold text-[#F472B6]">
-                      MULTIPLAYER
-                    </span>
-                  ) : (
-                    <span className="px-2 py-0.5 rounded-md bg-[#06B6D4]/20 border border-[#06B6D4]/40 text-[10px] font-mono font-bold text-[#38BDF8]">
-                      SOLO ARCADE
-                    </span>
-                  )}
-                </div>
 
                 {/* Hover Quick Action Overlay */}
                 <div className="absolute inset-0 bg-[#080A12]/70 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-4">
@@ -164,7 +141,24 @@ export const PickYourVibeSection: React.FC = () => {
 
               {/* Card Content */}
               <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
-                <div className="space-y-1">
+                <div className="space-y-2">
+                  {/* Category & Multiplayer Badges MOVED BELOW COVER IMAGE */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="px-2 py-0.5 rounded-md bg-white/[0.06] border border-white/10 text-[10px] font-mono font-semibold text-slate-300">
+                      {game.category}
+                    </span>
+
+                    {game.multiplayer ? (
+                      <span className="px-2 py-0.5 rounded-md bg-[#D946EF]/20 border border-[#D946EF]/40 text-[10px] font-mono font-bold text-[#F472B6]">
+                        MULTIPLAYER
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-md bg-[#06B6D4]/15 border border-[#06B6D4]/30 text-[10px] font-mono font-bold text-[#38BDF8]">
+                        SOLO ARCADE
+                      </span>
+                    )}
+                  </div>
+
                   <div className="flex items-center justify-between">
                     <h3 className="font-display font-bold text-sm text-white group-hover:text-[#F472B6] transition-colors truncate">
                       {game.title}
