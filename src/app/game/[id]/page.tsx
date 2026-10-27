@@ -21,6 +21,7 @@ import { ChaiTapriCanvas } from '@/components/games/ChaiTapriCanvas';
 import { MemeClickerCanvas } from '@/components/games/MemeClickerCanvas';
 import { FakeBombCanvas } from '@/components/games/fake-bomb/FakeBombCanvas';
 import { EscapeDoorGame } from '@/components/games/escape-door/EscapeDoorGame';
+import { GenZProtestRunCanvas } from '@/components/games/genz-protest-run/GenZProtestRunCanvas';
 
 import { SingleUnifiedMultiplayerModal } from '@/components/game-shell/SingleUnifiedMultiplayerModal';
 import {
@@ -143,6 +144,12 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
 
   const renderGameCanvas = () => {
     switch (game.id) {
+      case 'genz-protest-run':
+        return (
+          <React.Suspense fallback={<div className="p-8 text-center text-xs font-mono text-[#00F0FF]">Loading GenZ Protest Run...</div>}>
+            <GenZProtestRunCanvas />
+          </React.Suspense>
+        );
       case 'escape-door':
         return (
           <React.Suspense fallback={<div className="p-8 text-center text-xs font-mono text-[#00F0FF]">Loading Escape From The Door...</div>}>

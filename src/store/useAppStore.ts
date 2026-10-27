@@ -122,6 +122,41 @@ export const INITIAL_RECENT_MATCHES: RecentMatch[] = [];
 
 export const GAMES_CATALOG: GameItem[] = [
   {
+    id: 'genz-protest-run',
+    title: 'GenZ Protest Run 🏃📢',
+    slug: 'genz-protest-run',
+    tagline: 'Dodge Delhi police vans, jump barricades, chug chai & reach Jantar Mantar!',
+    description: 'Comic arcade protest corridor runner through the streets of Delhi! Steer 4 highway lanes, jump yellow police barricades, dodge incoming blue Delhi Police vans to avoid 5-second van detention, and chug hot cutting chai to march 1000m to Jantar Mantar victory!',
+    category: '🔥 Trending Meme',
+    categoryKey: 'meme',
+    thumbnail: '📢',
+    bannerImage: '/games/genz-protest-run.jpg',
+    playCount: 284000,
+    rating: 4.99,
+    difficulty: 'Medium',
+    duration: '1-3 min',
+    multiplayer: false,
+    isTrending: true,
+    isNew: true,
+    isPopular: true,
+    isFeatured: true,
+    controls: [
+      '← / → or A / D: Steer Across 4 Road Lanes',
+      '↑ / ↓ or W / S: Sprint Forward / Brake',
+      'SPACEBAR or JUMP button: Leap over Barricades',
+      'Mobile: Drag Virtual 360° Joystick & Tap JUMP'
+    ],
+    tags: ['Delhi', 'Protest', 'GenZ', 'Arcade', 'Endless Runner', 'Comic Art', 'Desi Memes', 'Jantar Mantar'],
+    rules: [
+      'Dodge incoming blue Delhi Police vans — getting hit sends you into a 5-second Van Detention!',
+      'Watch out for Khaki stick squad cops — lathi strikes deduct -40% of your जान (Health).',
+      'Time your JUMP over yellow-and-black police barricades using Spacebar or the JUMP button.',
+      'Collect steaming glasses of cutting chai to restore +30% health.',
+      'Grab Slogan Megaphones for 5 seconds of invincibility and supersonic sprint boost!',
+      'Survive the full 1000m road to trigger the Jantar Mantar victory celebration!'
+    ]
+  },
+  {
     id: 'escape-door',
     title: 'Escape From The Door 🚪',
     slug: 'escape-door',
