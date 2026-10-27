@@ -158,7 +158,7 @@ export default function LeaderboardPage() {
               : 'bg-slate-900 border border-slate-800 text-gray-400 hover:text-white'
           }`}
         >
-          🌐 All Games Global
+          🌐 All Vibes Global
         </button>
 
         {GAMES_CATALOG.map((g) => (

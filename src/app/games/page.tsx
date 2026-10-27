@@ -21,7 +21,7 @@ function GamesContent() {
   const [sortBy, setSortBy] = useState<'popular' | 'rating' | 'plays' | 'duration'>('popular');
 
   const filterTabs = [
-    { id: 'ALL', label: '🌟 ALL GAMES' },
+    { id: 'ALL', label: '🌟 ALL VIBES' },
     { id: 'meme', label: '🔥 TRENDING MEME VIBES' },
     { id: 'school', label: '🏫 SCHOOL VIBES' },
     { id: 'squad', label: '👥 SQUAD VIBES' }

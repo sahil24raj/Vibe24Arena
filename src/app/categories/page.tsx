@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 const CATEGORY_PILLS = [
-  { id: 'ALL', label: '🌟 All Games', icon: Sparkles, color: 'text-white' },
+  { id: 'ALL', label: '🌟 All Vibes', icon: Sparkles, color: 'text-white' },
   { id: 'meme', label: '🔥 Trending Meme Vibes', icon: Flame, color: 'text-orange-400' },
   { id: 'school', label: '🏫 School Vibes', icon: Backpack, color: 'text-amber-400' },
   { id: 'squad', label: '👥 Squad Vibes', icon: Users, color: 'text-[#D946EF]' }
@@ -77,7 +77,7 @@ function CategoriesContent() {
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-black text-white flex items-center gap-2 font-display uppercase tracking-wide">
-            EXPLORE ALL GAMES & VIBES
+            EXPLORE ALL VIBES
           </h1>
           <p className="text-xs sm:text-sm text-gray-400 font-sans max-w-xl leading-relaxed">
             From 90s school bench duels to rapid cognitive battles and viral Indian meme games — pick your vibe and jump in instantly.
@@ -132,7 +132,7 @@ function CategoriesContent() {
         <span className="flex items-center gap-2">
           <span>Showing:</span>
           <strong className="text-[#00F0FF]">
-            {CATEGORY_PILLS.find((p) => p.id === selectedCat)?.label || 'All Collections'}
+            {CATEGORY_PILLS.find((p) => p.id === selectedCat)?.label || 'All Vibes'}
           </strong>
         </span>
         <span>
@@ -157,7 +157,7 @@ function CategoriesContent() {
           <Gamepad2 className="w-12 h-12 text-gray-500 mx-auto animate-bounce" />
           <h3 className="text-base font-bold text-white font-display">No games found matching your search.</h3>
           <p className="text-xs text-gray-400 font-sans">
-            Try searching for another game like Pen Flip, Cricket, Modi Run, or switch to All Collections.
+            Try searching for another game like Pen Flip, Cricket, Modi Run, or switch to All Vibes.
           </p>
           <button
             onClick={() => {

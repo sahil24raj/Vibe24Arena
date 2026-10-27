@@ -881,7 +881,7 @@ export function EscapeDoorGame() {
               className="px-5 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-gray-300 hover:text-white text-xs font-bold font-mono transition-all flex items-center gap-1.5"
             >
               <Home className="w-3.5 h-3.5" />
-              <span>ALL GAMES</span>
+              <span>ALL VIBES</span>
             </Link>
           </div>
         </div>

@@ -44,7 +44,7 @@ export const PickYourVibeSection: React.FC = () => {
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 text-xs font-mono text-[#D946EF] uppercase tracking-wider">
             <span>●</span>
-            <span>CURATED ARCADE COLLECTION</span>
+            <span>CURATED ARCADE ALL VIBES</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-black text-white font-display uppercase tracking-tight">
             PICK YOUR <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D946EF] to-[#06B6D4]">VIBE</span>

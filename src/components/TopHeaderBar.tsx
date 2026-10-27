@@ -89,7 +89,7 @@ export const TopHeaderBar: React.FC = () => {
   };
 
   const navItems = [
-    { href: '/categories', label: 'Collection', icon: LayoutGrid },
+    { href: '/categories', label: 'All Vibes', icon: LayoutGrid },
     { href: '/multiplayer', label: 'Play with Friends', icon: Swords, badge: 'SQUAD' },
     { href: '/leaderboard', label: 'Leaderboard', icon: Trophy }
   ];
