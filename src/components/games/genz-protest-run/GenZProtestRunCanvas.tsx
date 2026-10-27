@@ -7,22 +7,19 @@ import { soundFx } from '@/lib/audio';
 import {
   Volume2,
   VolumeX,
-  RotateCcw,
   Trophy,
   Share2,
-  Sparkles,
   Zap,
-  Users,
-  ShieldAlert,
   ArrowLeft,
-  ChevronRight,
   Flame,
-  Award
+  Award,
+  ShieldAlert,
+  Sparkles
 } from 'lucide-react';
 
-// ==========================================
-// CHARACTER DEFINITIONS
-// ==========================================
+// =========================================================================
+// 1. CHARACTER DEFINITIONS
+// =========================================================================
 export interface ProtesterChar {
   id: string;
   name: string;
@@ -30,9 +27,9 @@ export interface ProtesterChar {
   tagline: string;
   avatarEmoji: string;
   badge: string;
-  speed: number;       // speed multiplier
-  agility: number;     // lateral speed multiplier
-  health: number;      // max health points
+  speed: number;       // forward speed multiplier
+  agility: number;     // lane switch agility
+  health: number;      // maximum health
   special: string;
   callout: string;
   colors: {
@@ -41,6 +38,7 @@ export interface ProtesterChar {
     pants: string;
     accent: string;
     hair: string;
+    shoes: string;
   };
 }
 
@@ -60,9 +58,10 @@ export const PROTEST_CHARACTERS: ProtesterChar[] = [
     colors: {
       skin: '#e0a97a',
       shirt: '#ff5e00',
-      pants: '#475569',
+      pants: '#334155',
       accent: '#a855f7',
-      hair: '#7c3aed'
+      hair: '#7c3aed',
+      shoes: '#ffffff'
     }
   },
   {
@@ -82,7 +81,8 @@ export const PROTEST_CHARACTERS: ProtesterChar[] = [
       shirt: '#f59e0b',
       pants: '#b91c1c',
       accent: '#ef4444',
-      hair: '#1f2937'
+      hair: '#111827',
+      shoes: '#78350f'
     }
   },
   {
@@ -102,7 +102,8 @@ export const PROTEST_CHARACTERS: ProtesterChar[] = [
       shirt: '#2563eb',
       pants: '#1e293b',
       accent: '#06b6d4',
-      hair: '#111827'
+      hair: '#0f172a',
+      shoes: '#1e293b'
     }
   },
   {
@@ -119,10 +120,11 @@ export const PROTEST_CHARACTERS: ProtesterChar[] = [
     callout: 'YEH TOH MEME MATERIAL HAIN!',
     colors: {
       skin: '#eab308',
-      shirt: '#e2e8f0',
+      shirt: '#f1f5f9',
       pants: '#0f172a',
       accent: '#eab308',
-      hair: '#ca8a04'
+      hair: '#ca8a04',
+      shoes: '#f8fafc'
     }
   },
   {
@@ -142,7 +144,8 @@ export const PROTEST_CHARACTERS: ProtesterChar[] = [
       shirt: '#0284c7',
       pants: '#334155',
       accent: '#38bdf8',
-      hair: '#18181b'
+      hair: '#18181b',
+      shoes: '#0f172a'
     }
   },
   {
@@ -162,19 +165,30 @@ export const PROTEST_CHARACTERS: ProtesterChar[] = [
       shirt: '#f8fafc',
       pants: '#f1f5f9',
       accent: '#64748b',
-      hair: '#94a3b8'
+      hair: '#94a3b8',
+      shoes: '#451a03'
     }
   }
 ];
 
-// ==========================================
-// PROCEDURAL AUDIO SYNTHESIZER
-// ==========================================
-class ProtestAudioEngine {
+// =========================================================================
+// 2. ADVANCED PROCEDURAL AUDIO ENGINE (Sirens, Crowd, Van Engine, SFX)
+// =========================================================================
+class RealisticProtestAudio {
   private ctx: AudioContext | null = null;
   public isMuted: boolean = false;
   private bgmInterval: number | null = null;
   private beatStep: number = 0;
+
+  // Spatial siren nodes
+  private sirenOsc: OscillatorNode | null = null;
+  private sirenGain: GainNode | null = null;
+  private sirenLfo: OscillatorNode | null = null;
+  private sirenActive: boolean = false;
+
+  // Van engine rumble
+  private engineSource: AudioBufferSourceNode | null = null;
+  private engineGain: GainNode | null = null;
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -206,6 +220,7 @@ class ProtestAudioEngine {
     } catch {}
     if (muted) {
       this.stopBGM();
+      this.stopContinuousSiren();
     } else {
       this.startBGM();
     }
@@ -216,17 +231,18 @@ class ProtestAudioEngine {
     return this.isMuted;
   }
 
+  // Realistic Jump & Land
   public playJump() {
     if (this.isMuted) return;
     this.initCtx();
     if (!this.ctx) return;
+    const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
-    const now = this.ctx.currentTime;
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(180, now);
-    osc.frequency.exponentialRampToValueAtTime(560, now + 0.15);
-    gain.gain.setValueAtTime(0.25, now);
+    osc.frequency.setValueAtTime(140, now);
+    osc.frequency.exponentialRampToValueAtTime(580, now + 0.16);
+    gain.gain.setValueAtTime(0.24, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
     osc.connect(gain);
     gain.connect(this.ctx.destination);
@@ -238,13 +254,13 @@ class ProtestAudioEngine {
     if (this.isMuted) return;
     this.initCtx();
     if (!this.ctx) return;
+    const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
-    const now = this.ctx.currentTime;
     osc.type = 'triangle';
-    osc.frequency.setValueAtTime(120, now);
+    osc.frequency.setValueAtTime(130, now);
     osc.frequency.exponentialRampToValueAtTime(45, now + 0.12);
-    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.setValueAtTime(0.35, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
     osc.connect(gain);
     gain.connect(this.ctx.destination);
@@ -252,45 +268,141 @@ class ProtestAudioEngine {
     osc.stop(now + 0.14);
   }
 
+  public playFootstep() {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(80, now);
+    osc.frequency.exponentialRampToValueAtTime(30, now + 0.04);
+    gain.gain.setValueAtTime(0.06, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.04);
+  }
+
+  // Police Whistle with authentic dual-tone trill
   public playWhistle() {
     if (this.isMuted) return;
     this.initCtx();
     if (!this.ctx) return;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
     const now = this.ctx.currentTime;
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(2400, now);
-    osc.frequency.setValueAtTime(2650, now + 0.05);
-    osc.frequency.setValueAtTime(2350, now + 0.1);
-    gain.gain.setValueAtTime(0.2, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
-    osc.connect(gain);
+    const o1 = this.ctx.createOscillator();
+    const o2 = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    o1.type = 'sawtooth';
+    o2.type = 'sine';
+    o1.frequency.setValueAtTime(2600, now);
+    o2.frequency.setValueAtTime(2850, now);
+    o1.frequency.setValueAtTime(2450, now + 0.08);
+    o2.frequency.setValueAtTime(2700, now + 0.08);
+
+    gain.gain.setValueAtTime(0.18, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+    o1.connect(gain);
+    o2.connect(gain);
     gain.connect(this.ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.22);
+
+    o1.start(now);
+    o2.start(now);
+    o1.stop(now + 0.25);
+    o2.stop(now + 0.25);
   }
 
-  public playSiren() {
+  // Spatial Continuous Police Van Siren
+  public updateSpatialSiren(closestVanDistance: number) {
+    if (this.isMuted || closestVanDistance > 75) {
+      if (this.sirenActive) this.stopContinuousSiren();
+      return;
+    }
+
+    this.initCtx();
+    if (!this.ctx) return;
+
+    if (!this.sirenActive) {
+      // Start siren oscillators
+      this.sirenOsc = this.ctx.createOscillator();
+      this.sirenGain = this.ctx.createGain();
+      this.sirenLfo = this.ctx.createOscillator();
+      const lfoGain = this.ctx.createGain();
+
+      this.sirenOsc.type = 'sawtooth';
+      this.sirenOsc.frequency.setValueAtTime(750, this.ctx.currentTime);
+
+      // LFO frequency wail between 650Hz and 980Hz
+      this.sirenLfo.type = 'sine';
+      this.sirenLfo.frequency.setValueAtTime(1.8, this.ctx.currentTime); // wail cycles per sec
+      lfoGain.gain.setValueAtTime(220, this.ctx.currentTime);
+
+      this.sirenLfo.connect(lfoGain);
+      lfoGain.connect(this.sirenOsc.frequency);
+
+      this.sirenGain.gain.setValueAtTime(0.001, this.ctx.currentTime);
+
+      this.sirenOsc.connect(this.sirenGain);
+      this.sirenGain.connect(this.ctx.destination);
+
+      this.sirenOsc.start();
+      this.sirenLfo.start();
+      this.sirenActive = true;
+    }
+
+    // Distance attenuation volume (closer = much louder)
+    if (this.sirenGain && this.ctx) {
+      const norm = Math.max(0, 1 - closestVanDistance / 75);
+      const targetGain = norm * norm * 0.22;
+      this.sirenGain.gain.setTargetAtTime(targetGain, this.ctx.currentTime, 0.08);
+    }
+  }
+
+  public stopContinuousSiren() {
+    if (!this.sirenActive) return;
+    try {
+      if (this.sirenOsc) {
+        this.sirenOsc.stop();
+        this.sirenOsc.disconnect();
+      }
+      if (this.sirenLfo) {
+        this.sirenLfo.stop();
+        this.sirenLfo.disconnect();
+      }
+      if (this.sirenGain) {
+        this.sirenGain.disconnect();
+      }
+    } catch {}
+    this.sirenOsc = null;
+    this.sirenLfo = null;
+    this.sirenGain = null;
+    this.sirenActive = false;
+  }
+
+  // Van Brake Screech when police intercept
+  public playTireScreech() {
     if (this.isMuted) return;
     this.initCtx();
     if (!this.ctx) return;
+    const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
-    const now = this.ctx.currentTime;
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(650, now);
-    osc.frequency.linearRampToValueAtTime(950, now + 0.25);
-    osc.frequency.linearRampToValueAtTime(650, now + 0.5);
-    gain.gain.setValueAtTime(0.28, now);
-    gain.gain.linearRampToValueAtTime(0.28, now + 0.45);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(1850, now);
+    osc.frequency.linearRampToValueAtTime(1200, now + 0.35);
+    gain.gain.setValueAtTime(0.25, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
     osc.connect(gain);
     gain.connect(this.ctx.destination);
     osc.start(now);
-    osc.stop(now + 0.55);
+    osc.stop(now + 0.4);
   }
 
+  // Lathi stick hit / barricade crash
   public playHit() {
     if (this.isMuted) return;
     this.initCtx();
@@ -299,14 +411,14 @@ class ProtestAudioEngine {
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
     osc.type = 'square';
-    osc.frequency.setValueAtTime(140, now);
-    osc.frequency.exponentialRampToValueAtTime(40, now + 0.2);
-    gain.gain.setValueAtTime(0.4, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
+    osc.frequency.setValueAtTime(160, now);
+    osc.frequency.exponentialRampToValueAtTime(45, now + 0.22);
+    gain.gain.setValueAtTime(0.42, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.24);
     osc.connect(gain);
     gain.connect(this.ctx.destination);
     osc.start(now);
-    osc.stop(now + 0.22);
+    osc.stop(now + 0.24);
   }
 
   public playChai() {
@@ -370,6 +482,7 @@ class ProtestAudioEngine {
     });
   }
 
+  // Upbeat Bhangra / Dhol Protest March Beat
   public startBGM() {
     if (this.isMuted || this.bgmInterval) return;
     this.initCtx();
@@ -377,25 +490,27 @@ class ProtestAudioEngine {
     this.bgmInterval = window.setInterval(() => {
       if (this.isMuted || !this.ctx) return;
       const now = this.ctx.currentTime;
-      // Dhol kick on step 0 and 2
+
+      // Heavy Dhol Bass Kick on step 0 and 2
       if (this.beatStep % 2 === 0) {
         const kick = this.ctx.createOscillator();
         const kGain = this.ctx.createGain();
         kick.type = 'sine';
-        kick.frequency.setValueAtTime(110, now);
-        kick.frequency.exponentialRampToValueAtTime(42, now + 0.12);
-        kGain.gain.setValueAtTime(0.2, now);
-        kGain.gain.exponentialRampToValueAtTime(0.01, now + 0.14);
+        kick.frequency.setValueAtTime(115, now);
+        kick.frequency.exponentialRampToValueAtTime(42, now + 0.13);
+        kGain.gain.setValueAtTime(0.22, now);
+        kGain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
         kick.connect(kGain);
         kGain.connect(this.ctx.destination);
         kick.start(now);
-        kick.stop(now + 0.14);
+        kick.stop(now + 0.15);
       }
-      // Clack / hi-hat on every step
+
+      // Snappy Hi-Hat / Dholki Slap
       const hat = this.ctx.createOscillator();
       const hGain = this.ctx.createGain();
       hat.type = 'triangle';
-      hat.frequency.setValueAtTime(this.beatStep % 4 === 1 ? 800 : 1200, now);
+      hat.frequency.setValueAtTime(this.beatStep % 4 === 1 ? 850 : 1300, now);
       hGain.gain.setValueAtTime(0.05, now);
       hGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
       hat.connect(hGain);
@@ -404,7 +519,7 @@ class ProtestAudioEngine {
       hat.stop(now + 0.05);
 
       this.beatStep = (this.beatStep + 1) % 8;
-    }, 240); // ~125 BPM Bhangra / Protest march tempo
+    }, 240); // 125 BPM
   }
 
   public stopBGM() {
@@ -415,18 +530,19 @@ class ProtestAudioEngine {
   }
 }
 
-const audio = new ProtestAudioEngine();
+const audio = new RealisticProtestAudio();
 
-// ==========================================
-// 3D WORLD TYPES & ENTITIES
-// ==========================================
-interface WorldPoint {
-  x: number; // lateral: -6.5 (left curb) to +6.5 (right curb)
-  d: number; // depth distance forward along road (0 to 1000m)
-  h: number; // vertical height (0 = ground, > 0 = airborne)
+// =========================================================================
+// 3. 3D TYPES & SIMULATION ENTITIES
+// =========================================================================
+interface Camera3D {
+  x: number;
+  d: number;
+  h: number;
+  pitch: number;
 }
 
-interface Obstacle {
+interface Obstacle3D {
   id: number;
   type: 'van' | 'barricade' | 'cop' | 'puddle' | 'chai' | 'megaphone' | 'coin';
   x: number;
@@ -434,6 +550,7 @@ interface Obstacle {
   h: number;
   w: number;
   length: number;
+  height3D: number;
   active: boolean;
   state?: 'patrol' | 'chase' | 'return';
   dir?: number;
@@ -441,26 +558,46 @@ interface Obstacle {
   patrolMax?: number;
   speed?: number;
   sirenPhase?: number;
-  chaseCool?: number;
+  headlightGlow?: number;
   label?: string;
 }
 
-interface SceneryShop {
+interface Building3D {
   side: 'left' | 'right';
+  x: number;
   d: number;
+  w: number;
+  depth: number;
+  height: number;
   title: string;
   sub: string;
+  wallCol: string;
   awningCol: string;
   signCol: string;
 }
 
-interface BannerGantry {
+interface Tree3D {
+  side: 'left' | 'right';
+  x: number;
+  d: number;
+  trunkH: number;
+  canopyR: number;
+}
+
+interface Lamppost3D {
+  side: 'left' | 'right';
+  x: number;
+  d: number;
+  h: number;
+}
+
+interface BannerGantry3D {
   d: number;
   bannerText: string;
   bannerColor: string;
 }
 
-interface ComicBubble {
+interface ComicBubble3D {
   id: number;
   text: string;
   x: number;
@@ -471,7 +608,7 @@ interface ComicBubble {
   maxLife: number;
 }
 
-interface Particle {
+interface Particle3D {
   x: number;
   d: number;
   h: number;
@@ -484,13 +621,16 @@ interface Particle {
   maxLife: number;
 }
 
+// =========================================================================
+// 4. MAIN REACT GAME COMPONENT
+// =========================================================================
 export function GenZProtestRunCanvas() {
   const { user, setUser } = useAppStore();
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // Game UI States: 'title' | 'select' | 'play' | 'detained' | 'gameover' | 'victory'
+  // Game UI States
   const [gameState, setGameState] = useState<'title' | 'select' | 'play' | 'detained' | 'gameover' | 'victory'>('title');
   const [selectedChar, setSelectedChar] = useState<ProtesterChar>(PROTEST_CHARACTERS[0]);
   const [health, setHealth] = useState(100);
@@ -504,7 +644,7 @@ export function GenZProtestRunCanvas() {
   const [slogansBoosted, setSlogansBoosted] = useState(0);
   const [isMuted, setIsMuted] = useState(audio.isMuted);
 
-  // Virtual Touch Joystick State
+  // Virtual Joystick State
   const [touchActive, setTouchActive] = useState(false);
   const [knobPos, setKnobPos] = useState({ x: 0, y: 0 });
   const touchStickRef = useRef<{ active: boolean; startX: number; startY: number; dx: number; dy: number }>({
@@ -515,7 +655,7 @@ export function GenZProtestRunCanvas() {
     dy: 0
   });
 
-  // Keyboard input state
+  // Desktop Keyboard Input State
   const keysRef = useRef<{ left: boolean; right: boolean; up: boolean; down: boolean; jump: boolean }>({
     left: false,
     right: false,
@@ -524,7 +664,7 @@ export function GenZProtestRunCanvas() {
     jump: false
   });
 
-  // Game Simulation Engine Ref
+  // Master Engine Simulation Ref
   const gameRef = useRef<{
     running: boolean;
     player: {
@@ -542,18 +682,16 @@ export function GenZProtestRunCanvas() {
       speedBoostTimer: number;
       stumbleTimer: number;
       isJumping: boolean;
+      footstepTimer: number;
     };
-    camera: {
-      x: number;
-      d: number;
-      h: number;
-      pitch: number;
-    };
-    obstacles: Obstacle[];
-    shops: SceneryShop[];
-    gantries: BannerGantry[];
-    bubbles: ComicBubble[];
-    particles: Particle[];
+    camera: Camera3D;
+    obstacles: Obstacle3D[];
+    buildings: Building3D[];
+    trees: Tree3D[];
+    lampposts: Lamppost3D[];
+    gantries: BannerGantry3D[];
+    bubbles: ComicBubble3D[];
+    particles: Particle3D[];
     nextObstacleId: number;
     nextBubbleId: number;
     detainedTimer: number;
@@ -564,7 +702,7 @@ export function GenZProtestRunCanvas() {
     running: false,
     player: {
       x: 0,
-      d: 0,
+      d: 4,
       h: 0,
       vx: 0,
       vd: 0,
@@ -576,16 +714,19 @@ export function GenZProtestRunCanvas() {
       invincibleTimer: 0,
       speedBoostTimer: 0,
       stumbleTimer: 0,
-      isJumping: false
+      isJumping: false,
+      footstepTimer: 0
     },
     camera: {
       x: 0,
-      d: -8,
-      h: 5.2,
+      d: -4,
+      h: 5.4,
       pitch: 0.38
     },
     obstacles: [],
-    shops: [],
+    buildings: [],
+    trees: [],
+    lampposts: [],
     gantries: [],
     bubbles: [],
     particles: [],
@@ -594,68 +735,113 @@ export function GenZProtestRunCanvas() {
     detainedTimer: 0,
     totalDistanceTarget: 1000,
     lastTime: 0,
-    nextSpawnDistance: 30
+    nextSpawnDistance: 32
   });
 
-  // Spawn Delhi Roadside Shops & Footbridges
-  const initEnvironment = useCallback(() => {
-    const shops: SceneryShop[] = [];
-    const shopThemes = [
-      { title: 'SHARMA JI XEROX', sub: 'STUDENT NOTES 50P', awning: '#e11d48', sign: '#fef08a' },
-      { title: 'KADAK CHAI TAPRI', sub: 'CHAI 10₹ · SAMOSA 15₹', awning: '#d97706', sign: '#fed7aa' },
-      { title: 'CONSTITUTION BOOK HUB', sub: 'LAW & LEGAL RIGHTS', awning: '#2563eb', sign: '#bfdbfe' },
-      { title: 'AGGARWAL SWEETS', sub: 'DESI GHEE JALEBI', awning: '#ea580c', sign: '#ffedd5' },
-      { title: 'VIRAL REELS STUDIO', sub: 'WIFI FREE · RING LIGHT', awning: '#9333ea', sign: '#f3e8ff' },
-      { title: 'DELHI PAAN & STATIONERY', sub: 'CHIPPED PENCILS & WATER', awning: '#059669', sign: '#a7f3d0' }
+  // Initialize 3D City Environment (Delhi buildings, trees, streetlamps, gantries)
+  const init3DEnvironment = useCallback(() => {
+    const buildings: Building3D[] = [];
+    const trees: Tree3D[] = [];
+    const lampposts: Lamppost3D[] = [];
+
+    const shopCatalog = [
+      { title: 'SHARMA XEROX & STATIONERY', sub: 'STUDENT NOTES 50P · LAW BOOKS', wall: '#334155', awning: '#dc2626', sign: '#fef08a' },
+      { title: 'KADAK CHAI KI TAPRI', sub: 'MASALA CHAI 10₹ · SAMOSA 15₹', wall: '#475569', awning: '#d97706', sign: '#fed7aa' },
+      { title: 'CONSTITUTION LAW CORNER', sub: 'RIGHTS & CITIZEN FORUM', wall: '#1e293b', awning: '#2563eb', sign: '#bfdbfe' },
+      { title: 'DELHI SAMOSA & JALEBI', sub: 'DESI GHEE REFRESHMENTS', wall: '#3f3f46', awning: '#ea580c', sign: '#ffedd5' },
+      { title: 'VIRAL REELS & PODCAST LAB', sub: 'LIVE STREAMING · FREE WIFI', wall: '#2e1065', awning: '#9333ea', sign: '#f3e8ff' },
+      { title: 'DELHI POLICE OUTPOST', sub: 'BEAT BOX · TRAFFIC CHECK', wall: '#172554', awning: '#1e40af', sign: '#dbeafe' }
     ];
 
-    for (let d = 40; d < 1000; d += 65) {
-      const leftTheme = shopThemes[Math.floor(Math.random() * shopThemes.length)];
-      shops.push({
+    // Left & Right buildings with true 3D blocks
+    for (let d = 30; d < 1000; d += 48) {
+      const leftTheme = shopCatalog[Math.floor(Math.random() * shopCatalog.length)];
+      buildings.push({
         side: 'left',
-        d: d + (Math.random() * 10 - 5),
+        x: -11.5,
+        d: d + (Math.random() * 6 - 3),
+        w: 6.5,
+        depth: 26,
+        height: 6.8 + Math.random() * 3.5,
         title: leftTheme.title,
         sub: leftTheme.sub,
+        wallCol: leftTheme.wall,
         awningCol: leftTheme.awning,
         signCol: leftTheme.sign
       });
 
-      const rightTheme = shopThemes[Math.floor(Math.random() * shopThemes.length)];
-      shops.push({
+      const rightTheme = shopCatalog[Math.floor(Math.random() * shopCatalog.length)];
+      buildings.push({
         side: 'right',
-        d: d + 30 + (Math.random() * 10 - 5),
+        x: 11.5,
+        d: d + 22 + (Math.random() * 6 - 3),
+        w: 6.5,
+        depth: 26,
+        height: 6.8 + Math.random() * 3.5,
         title: rightTheme.title,
         sub: rightTheme.sub,
+        wallCol: rightTheme.wall,
         awningCol: rightTheme.awning,
         signCol: rightTheme.sign
       });
+
+      // 3D Trees on sidewalk
+      trees.push({
+        side: 'left',
+        x: -7.8,
+        d: d + 12,
+        trunkH: 2.8,
+        canopyR: 2.4
+      });
+      trees.push({
+        side: 'right',
+        x: 7.8,
+        d: d + 34,
+        trunkH: 2.8,
+        canopyR: 2.4
+      });
+
+      // 3D Street Lampposts
+      lampposts.push({
+        side: 'left',
+        x: -7.2,
+        d: d + 24,
+        h: 4.8
+      });
+      lampposts.push({
+        side: 'right',
+        x: 7.2,
+        d: d + 24,
+        h: 4.8
+      });
     }
 
-    const gantries: BannerGantry[] = [
-      { d: 150, bannerText: '🚫 NO PAPER LEAKS — SIKSHA HAMARA HAK HAI! 🚫', bannerColor: '#dc2626' },
-      { d: 350, bannerText: '🔥 VIBE ARENA STUDENTS UNION MARCHING TO JANTAR MANTAR 🔥', bannerColor: '#7c3aed' },
-      { d: 550, bannerText: '📢 SAMAAN RUKHEGA NAHI! MARCH OF DIGNITY & TRUTH 📢', bannerColor: '#0284c7' },
-      { d: 750, bannerText: '⚖️ RE-EXAM DILWAO! BACKBENCHERS UNITED ⚖️', bannerColor: '#ca8a04' },
-      { d: 920, bannerText: '🇮🇳 JANTAR MANTAR PROTEST CAMP AHEAD (100M) 🇮🇳', bannerColor: '#16a34a' }
+    // Footbridges & Overhead Gantries
+    const gantries: BannerGantry3D[] = [
+      { d: 150, bannerText: '🚫 NO PAPER LEAKS — RE-EXAM DILWAO! 🚫', bannerColor: '#dc2626' },
+      { d: 340, bannerText: '🔥 VIBE ARENA MARCH TO JANTAR MANTAR 🔥', bannerColor: '#7c3aed' },
+      { d: 520, bannerText: '📢 INQUILAB ZINDABAD — STUDENTS UNITED! 📢', bannerColor: '#0284c7' },
+      { d: 720, bannerText: '⚖️ JUSTICE FOR BACKBENCHERS · NO CORRUPTION ⚖️', bannerColor: '#ca8a04' },
+      { d: 910, bannerText: '🇮🇳 JANTAR MANTAR CAMP AHEAD (100M) 🇮🇳', bannerColor: '#16a34a' }
     ];
 
-    gameRef.current.shops = shops;
+    gameRef.current.buildings = buildings;
+    gameRef.current.trees = trees;
+    gameRef.current.lampposts = lampposts;
     gameRef.current.gantries = gantries;
   }, []);
 
-  // Spawn Obstacles (Police Vans, Barricades, Stick Police, Puddles, Chai, Megaphones, Coins)
+  // Spawn Dynamic Obstacles & 3D Police Vans
   const spawnObstaclesAhead = useCallback((currentDist: number) => {
     const g = gameRef.current;
-    if (currentDist + 140 < g.nextSpawnDistance || g.nextSpawnDistance >= g.totalDistanceTarget - 30) return;
+    if (currentDist + 150 < g.nextSpawnDistance || g.nextSpawnDistance >= g.totalDistanceTarget - 30) return;
 
     const d = g.nextSpawnDistance;
-    const lanePositions = [-4.5, -1.8, 1.8, 4.5];
+    const lanePositions = [-4.6, -1.8, 1.8, 4.6];
+    const roll = Math.random();
 
-    // Every 30-50m, spawn obstacle cluster
-    const clusterType = Math.random();
-
-    if (clusterType < 0.32) {
-      // Police Van blockade (1 or 2 lanes occupied)
+    if (roll < 0.36) {
+      // 3D Delhi Police Van with Cop inside & rooftop siren!
       const lane = lanePositions[Math.floor(Math.random() * lanePositions.length)];
       g.obstacles.push({
         id: g.nextObstacleId++,
@@ -663,15 +849,17 @@ export function GenZProtestRunCanvas() {
         x: lane,
         d: d,
         h: 0,
-        w: 2.5,
-        length: 4.8,
+        w: 2.8,
+        length: 5.4,
+        height3D: 2.6,
         active: true,
-        speed: 1.5,
+        speed: 2.8,
         sirenPhase: 0,
+        headlightGlow: 1.0,
         label: 'POLICE'
       });
-    } else if (clusterType < 0.62) {
-      // Yellow Barricade (Requires Jumping!)
+    } else if (roll < 0.64) {
+      // 3D Yellow/Black Police Barricade (Jumpable!)
       const laneA = lanePositions[Math.floor(Math.random() * 2)];
       const laneB = lanePositions[2 + Math.floor(Math.random() * 2)];
       [laneA, laneB].forEach((x) => {
@@ -681,33 +869,34 @@ export function GenZProtestRunCanvas() {
           x: x,
           d: d,
           h: 0,
-          w: 2.2,
-          length: 0.8,
+          w: 2.4,
+          length: 0.9,
+          height3D: 1.4,
           active: true,
-          label: 'POLICE BARRIER'
+          label: 'POLICE'
         });
       });
-    } else if (clusterType < 0.82) {
-      // Lathi Stick Squad (Khaki police patrolling laterally)
-      const startX = (Math.random() < 0.5 ? -1 : 1) * 3.5;
+    } else if (roll < 0.84) {
+      // 3D Khaki Lathi Cop Squad
+      const startX = (Math.random() < 0.5 ? -1 : 1) * 3.6;
       g.obstacles.push({
         id: g.nextObstacleId++,
         type: 'cop',
         x: startX,
         d: d,
         h: 0,
-        w: 1.2,
-        length: 1.2,
+        w: 1.4,
+        length: 1.4,
+        height3D: 2.2,
         active: true,
         state: 'patrol',
         dir: startX > 0 ? -1 : 1,
-        patrolMin: -4.5,
-        patrolMax: 4.5,
-        speed: 2.5,
-        chaseCool: 0
+        patrolMin: -4.8,
+        patrolMax: 4.8,
+        speed: 2.8
       });
     } else {
-      // Water puddle or slippery hazard
+      // Road Puddle / Pothole
       const lane = lanePositions[Math.floor(Math.random() * lanePositions.length)];
       g.obstacles.push({
         id: g.nextObstacleId++,
@@ -715,15 +904,16 @@ export function GenZProtestRunCanvas() {
         x: lane,
         d: d,
         h: 0,
-        w: 2.6,
-        length: 2.6,
+        w: 2.8,
+        length: 2.8,
+        height3D: 0.1,
         active: true
       });
     }
 
-    // Add Collectibles along road: Chai Cup or Megaphone or Coins
+    // Collectibles: Chai, Megaphone, Meme Coins
     const itemRoll = Math.random();
-    const freeLanes = lanePositions.filter((lx) => !g.obstacles.some((o) => o.d === d && Math.abs(o.x - lx) < 2));
+    const freeLanes = lanePositions.filter((lx) => !g.obstacles.some((o) => o.d === d && Math.abs(o.x - lx) < 2.2));
     const targetLane = freeLanes.length > 0 ? freeLanes[Math.floor(Math.random() * freeLanes.length)] : 0;
 
     if (itemRoll < 0.35) {
@@ -731,10 +921,11 @@ export function GenZProtestRunCanvas() {
         id: g.nextObstacleId++,
         type: 'chai',
         x: targetLane,
-        d: d + 12,
-        h: 0.4,
+        d: d + 14,
+        h: 0.5,
         w: 1.2,
         length: 1.2,
+        height3D: 1.0,
         active: true
       });
     } else if (itemRoll < 0.6) {
@@ -742,10 +933,11 @@ export function GenZProtestRunCanvas() {
         id: g.nextObstacleId++,
         type: 'megaphone',
         x: targetLane,
-        d: d + 14,
-        h: 0.5,
+        d: d + 16,
+        h: 0.6,
         w: 1.2,
         length: 1.2,
+        height3D: 1.0,
         active: true
       });
     } else {
@@ -753,15 +945,16 @@ export function GenZProtestRunCanvas() {
         id: g.nextObstacleId++,
         type: 'coin',
         x: targetLane,
-        d: d + 10,
-        h: 0.4,
+        d: d + 12,
+        h: 0.5,
         w: 1.0,
         length: 1.0,
+        height3D: 0.8,
         active: true
       });
     }
 
-    g.nextSpawnDistance += 32 + Math.random() * 18;
+    g.nextSpawnDistance += 30 + Math.random() * 16;
   }, []);
 
   // Add floating comic bubble
@@ -787,11 +980,11 @@ export function GenZProtestRunCanvas() {
         h: h + Math.random() * 0.4,
         vx: (Math.random() - 0.5) * 3.5,
         vd: (Math.random() - 0.5) * 2.5,
-        vh: Math.random() * 4 + 1,
+        vh: Math.random() * 4 + 1.2,
         color,
-        size: Math.random() * 0.2 + 0.15,
+        size: Math.random() * 0.22 + 0.16,
         life: 0,
-        maxLife: Math.random() * 0.4 + 0.4
+        maxLife: Math.random() * 0.45 + 0.35
       });
     }
   }, []);
@@ -815,7 +1008,7 @@ export function GenZProtestRunCanvas() {
       d: 4,
       h: 0,
       vx: 0,
-      vd: 8 * char.speed,
+      vd: 8.5 * char.speed,
       vh: 0,
       scaleX: 1,
       scaleY: 1,
@@ -824,12 +1017,13 @@ export function GenZProtestRunCanvas() {
       invincibleTimer: 0,
       speedBoostTimer: 0,
       stumbleTimer: 0,
-      isJumping: false
+      isJumping: false,
+      footstepTimer: 0
     };
     g.camera = {
       x: 0,
       d: -4,
-      h: 5.2,
+      h: 5.4,
       pitch: 0.38
     };
     g.obstacles = [];
@@ -838,24 +1032,24 @@ export function GenZProtestRunCanvas() {
     g.nextSpawnDistance = 35;
     g.lastTime = performance.now();
 
-    initEnvironment();
+    init3DEnvironment();
     setGameState('play');
     audio.startBGM();
 
-    addComicBubble(char.callout, 0, 8, 2.5, '#4ade80');
+    addComicBubble(char.callout, 0, 8, 2.8, '#4ade80');
     soundFx.playLevelUp();
-  }, [initEnvironment, addComicBubble]);
+  }, [init3DEnvironment, addComicBubble]);
 
   // Jump Action Trigger
   const triggerJump = useCallback(() => {
     const p = gameRef.current.player;
     if (p.h === 0 && !p.isJumping) {
       p.isJumping = true;
-      p.vh = 8.8; // jump upward velocity
-      p.scaleX = 0.75;
-      p.scaleY = 1.35;
+      p.vh = 9.2; // upward velocity
+      p.scaleX = 0.72;
+      p.scaleY = 1.38;
       audio.playJump();
-      addParticles(p.x, p.d, 0.1, 8, '#e2e8f0');
+      addParticles(p.x, p.d, 0.1, 9, '#e2e8f0');
     }
   }, [addParticles]);
 
@@ -932,7 +1126,7 @@ export function GenZProtestRunCanvas() {
     setKnobPos({ x: 0, y: 0 });
   };
 
-  // Main 2.5D Canvas Render Loop
+  // Main 3D Canvas Render Loop
   useEffect(() => {
     let animId: number;
 
@@ -954,16 +1148,16 @@ export function GenZProtestRunCanvas() {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // ==========================================
-    // PERSPECTIVE PROJECTION MATHEMATICS
-    // ==========================================
+    // =====================================================================
+    // 3D PERSPECTIVE PROJECTION SYSTEM (Accurate Camera & Focal Horizon)
+    // =====================================================================
     const project = (
       wx: number,
       wd: number,
       wh: number,
       W: number,
       H: number,
-      cam: { x: number; d: number; h: number; pitch: number }
+      cam: Camera3D
     ) => {
       const cosP = Math.cos(cam.pitch);
       const sinP = Math.sin(cam.pitch);
@@ -973,7 +1167,7 @@ export function GenZProtestRunCanvas() {
       const td = wd - cam.d;
       const oh = wh - cam.h;
 
-      // transformed distance along camera ray
+      // Depth along camera ray
       const depth = td * cosP - oh * sinP;
       if (depth < 0.35) return null;
 
@@ -989,58 +1183,150 @@ export function GenZProtestRunCanvas() {
       };
     };
 
-    // ==========================================
-    // MAIN GAME FRAME TICK
-    // ==========================================
+    // Helper: Draw 3D Polygonal Box with Perspective Shading
+    const drawBox3D = (
+      x: number,
+      d: number,
+      h: number,
+      w: number,
+      len: number,
+      height: number,
+      topColor: string,
+      frontColor: string,
+      sideColor: string
+    ) => {
+      const x1 = x - w / 2;
+      const x2 = x + w / 2;
+      const d1 = d - len / 2;
+      const d2 = d + len / 2;
+      const h1 = h;
+      const h2 = h + height;
+
+      const W = canvas.width;
+      const H = canvas.height;
+
+      // Project 8 corners
+      const p1 = project(x1, d1, h1, W, H, g.camera); // bottom-front-left
+      const p2 = project(x2, d1, h1, W, H, g.camera); // bottom-front-right
+      const p3 = project(x2, d1, h2, W, H, g.camera); // top-front-right
+      const p4 = project(x1, d1, h2, W, H, g.camera); // top-front-left
+
+      const p5 = project(x1, d2, h1, W, H, g.camera); // bottom-back-left
+      const p6 = project(x2, d2, h1, W, H, g.camera); // bottom-back-right
+      const p7 = project(x2, d2, h2, W, H, g.camera); // top-back-right
+      const p8 = project(x1, d2, h2, W, H, g.camera); // top-back-left
+
+      if (!p1 || !p2 || !p3 || !p4 || !p5 || !p6 || !p7 || !p8) return;
+
+      // Front Face
+      if (p1.y > p4.y) {
+        ctx.fillStyle = frontColor;
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.lineTo(p3.x, p3.y);
+        ctx.lineTo(p4.x, p4.y);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+
+      // Top Face
+      if (p4.y > p8.y) {
+        ctx.fillStyle = topColor;
+        ctx.beginPath();
+        ctx.moveTo(p4.x, p4.y);
+        ctx.lineTo(p3.x, p3.y);
+        ctx.lineTo(p7.x, p7.y);
+        ctx.lineTo(p8.x, p8.y);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+        ctx.stroke();
+      }
+
+      // Left Face
+      if (g.camera.x < x1) {
+        ctx.fillStyle = sideColor;
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p4.x, p4.y);
+        ctx.lineTo(p8.x, p8.y);
+        ctx.lineTo(p5.x, p5.y);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+        ctx.stroke();
+      }
+      // Right Face
+      else if (g.camera.x > x2) {
+        ctx.fillStyle = sideColor;
+        ctx.beginPath();
+        ctx.moveTo(p2.x, p2.y);
+        ctx.lineTo(p3.x, p3.y);
+        ctx.lineTo(p7.x, p7.y);
+        ctx.lineTo(p6.x, p6.y);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+        ctx.stroke();
+      }
+    };
+
+    const g = gameRef.current;
+
+    // =====================================================================
+    // ANIMATION & PHYSICS SIMULATION
+    // =====================================================================
     const renderFrame = (now: number) => {
       animId = requestAnimationFrame(renderFrame);
 
-      const g = gameRef.current;
       const dt = Math.min((now - (g.lastTime || now)) / 1000, 0.05);
       g.lastTime = now;
 
       const W = canvas.width;
       const H = canvas.height;
 
-      // Update simulation if playing
+      let closestVanDist = 999;
+
       if (gameState === 'play' && g.running) {
         setElapsedTime((prev) => prev + dt);
 
         const p = g.player;
 
-        // Invincibility & Speed Boost Timers
         if (p.invincibleTimer > 0) p.invincibleTimer -= dt;
         if (p.speedBoostTimer > 0) p.speedBoostTimer -= dt;
         if (p.stumbleTimer > 0) p.stumbleTimer -= dt;
 
-        // Steering & Accelerating input
+        // Player Controls (Keyboard & Virtual Joystick)
         let inputX = 0;
-        let inputZ = 1.0; // base running forward
+        let inputZ = 1.0;
 
         if (keysRef.current.left) inputX -= 1;
         if (keysRef.current.right) inputX += 1;
         if (keysRef.current.up) inputZ += 0.45;
         if (keysRef.current.down) inputZ -= 0.55;
 
-        // Combine with Touch Joystick
         if (touchStickRef.current.active) {
           inputX += touchStickRef.current.dx * 1.3;
           inputZ += -touchStickRef.current.dy * 0.7;
         }
 
-        // Apply Speeds with Character Stats
+        // Forward Velocity
         const baseSpeed = 16 * selectedChar.speed;
         const targetVd = Math.max(5, (baseSpeed * inputZ) * (p.speedBoostTimer > 0 ? 1.45 : 1) * (p.stumbleTimer > 0 ? 0.45 : 1));
         p.vd += (targetVd - p.vd) * Math.min(1, dt * 7);
 
-        const targetVx = inputX * 12.5 * selectedChar.agility;
+        // Lateral Steering Velocity
+        const targetVx = inputX * 13.5 * selectedChar.agility;
         p.vx += (targetVx - p.vx) * Math.min(1, dt * 9);
 
-        // Update positions
         p.d += p.vd * dt;
         p.x = Math.max(-6.2, Math.min(6.2, p.x + p.vx * dt));
 
-        // Jump & Gravity Physics
+        // Jump & Gravity
         if (p.isJumping || p.h > 0) {
           p.vh -= 26 * dt; // gravity
           p.h += p.vh * dt;
@@ -1048,31 +1334,37 @@ export function GenZProtestRunCanvas() {
             p.h = 0;
             p.vh = 0;
             p.isJumping = false;
-            p.scaleX = 1.35;
-            p.scaleY = 0.75;
+            p.scaleX = 1.38;
+            p.scaleY = 0.72;
             audio.playLand();
-            addParticles(p.x, p.d, 0.1, 7, '#cbd5e1');
+            addParticles(p.x, p.d, 0.1, 8, '#cbd5e1');
           }
         }
 
-        // Squash & stretch recovery
+        // Footstep audio synchronization
+        p.footstepTimer += dt * p.vd;
+        if (p.footstepTimer > 3.2 && p.h === 0) {
+          p.footstepTimer = 0;
+          audio.playFootstep();
+        }
+
         p.scaleX += (1 - p.scaleX) * Math.min(1, dt * 12);
         p.scaleY += (1 - p.scaleY) * Math.min(1, dt * 12);
-        p.tilt += ((p.vx / 12) - p.tilt) * Math.min(1, dt * 10);
-        p.walkPhase += dt * (p.vd * 1.4);
+        p.tilt += ((p.vx / 13.5) - p.tilt) * Math.min(1, dt * 10);
+        p.walkPhase += dt * (p.vd * 1.5);
 
         setDistance(Math.min(1000, Math.floor(p.d)));
         setScore((prev) => prev + Math.round(p.vd * dt * 10));
 
-        // Check if reached Jantar Mantar (1000m)
+        // Check Victory at 1000m
         if (p.d >= g.totalDistanceTarget) {
           g.running = false;
           setGameState('victory');
           audio.stopBGM();
+          audio.stopContinuousSiren();
           audio.playVictory();
-          confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+          confetti({ particleCount: 130, spread: 85, origin: { y: 0.6 } });
 
-          // Update user awards
           setUser({
             xp: (user.xp || 0) + 500,
             coins: (user.coins || 0) + 350,
@@ -1086,13 +1378,12 @@ export function GenZProtestRunCanvas() {
           });
         }
 
-        // Spawn new obstacles ahead
         spawnObstaclesAhead(p.d);
 
-        // Update Camera smoothly tracking player
+        // Camera smoothly chasing player
         const targetCamX = p.x * 0.55;
         const targetCamD = p.d - 8.2;
-        const targetCamH = 5.2 + p.h * 0.25;
+        const targetCamH = 5.4 + p.h * 0.25;
         g.camera.x += (targetCamX - g.camera.x) * Math.min(1, dt * 8);
         g.camera.d += (targetCamD - g.camera.d) * Math.min(1, dt * 8);
         g.camera.h += (targetCamH - g.camera.h) * Math.min(1, dt * 8);
@@ -1101,80 +1392,82 @@ export function GenZProtestRunCanvas() {
         for (const obs of g.obstacles) {
           if (!obs.active) continue;
 
-          // Police Van oncoming movement & flashing light
+          // 3D Police Van Oncoming Drive & Siren
           if (obs.type === 'van') {
-            obs.sirenPhase = ((obs.sirenPhase || 0) + dt * 10) % 2;
+            obs.sirenPhase = ((obs.sirenPhase || 0) + dt * 12) % 2;
             obs.d -= obs.speed! * dt;
+
+            // Compute distance from player for spatial siren
+            const distFromPlayer = obs.d - p.d;
+            if (distFromPlayer > 0 && distFromPlayer < closestVanDist) {
+              closestVanDist = distFromPlayer;
+            }
           }
 
-          // Lathi Cop Patrol & Chase AI
+          // 3D Lathi Cop Patrol & Pursuit
           if (obs.type === 'cop') {
             const distToPlayer = Math.hypot(p.x - obs.x, p.d - obs.d);
 
-            if (distToPlayer < 9 && p.invincibleTimer <= 0) {
+            if (distToPlayer < 9.5 && p.invincibleTimer <= 0) {
               obs.state = 'chase';
-              // Chase player direction
               const angle = Math.atan2(p.d - obs.d, p.x - obs.x);
               obs.x += Math.cos(angle) * obs.speed! * 1.35 * dt;
               obs.d += Math.sin(angle) * obs.speed! * 0.7 * dt;
 
               if (Math.random() < 0.015) {
                 audio.playWhistle();
-                addComicBubble(Math.random() < 0.5 ? 'OYE! RUK!' : 'PAKDO!', obs.x, obs.d, 2.5, '#ef4444');
+                addComicBubble(Math.random() < 0.5 ? 'OYE! RUK!' : 'PAKDO!', obs.x, obs.d, 2.6, '#ef4444');
               }
             } else {
-              // Standard Lane Patrol
               obs.state = 'patrol';
               obs.x += (obs.dir || 1) * obs.speed! * dt;
-              if (obs.x >= (obs.patrolMax || 4.5)) {
-                obs.x = obs.patrolMax || 4.5;
+              if (obs.x >= (obs.patrolMax || 4.8)) {
+                obs.x = obs.patrolMax || 4.8;
                 obs.dir = -1;
-              } else if (obs.x <= (obs.patrolMin || -4.5)) {
-                obs.x = obs.patrolMin || -4.5;
+              } else if (obs.x <= (obs.patrolMin || -4.8)) {
+                obs.x = obs.patrolMin || -4.8;
                 obs.dir = 1;
               }
             }
           }
 
-          // ==========================================
-          // COLLISION DETECTION (Player vs Obstacle)
-          // ==========================================
+          // =================================================================
+          // 3D COLLISION DETECTION
+          // =================================================================
           const dx = Math.abs(p.x - obs.x);
           const dd = Math.abs(p.d - obs.d);
 
           if (dx < (obs.w * 0.7) && dd < (obs.length * 0.8)) {
-            // Collision with Police Van -> DETAINED in Van for 5s
+            // Police Van Interception -> 5s Van Seva
             if (obs.type === 'van') {
               if (p.invincibleTimer <= 0) {
                 obs.active = false;
-                audio.playSiren();
+                audio.playTireScreech();
                 setDetainedVansCount((c) => c + 1);
                 setDetainedCountdown(5);
                 setGameState('detained');
                 g.detainedTimer = 5.0;
-                addComicBubble('DETAINED BY DILLI POLICE!', p.x, p.d, 3, '#38bdf8');
+                addComicBubble('POLICE VAN INTERCEPTION!', p.x, p.d, 3.2, '#38bdf8');
                 return;
               }
             }
 
-            // Collision with Barricade -> Can be jumped over!
+            // Yellow Police Barricade -> Cleared if Jumping!
             else if (obs.type === 'barricade') {
-              if (p.h > 1.1) {
-                // Successfully cleared barricade by jumping!
+              if (p.h > 1.05) {
                 if (obs.active) {
                   obs.active = false;
-                  addComicBubble('WHOOSH! JUMPED!', p.x, p.d, 2.8, '#4ade80');
+                  addComicBubble('WHOOSH! JUMPED BARRICADE!', p.x, p.d, 2.8, '#4ade80');
                   setScore((s) => s + 150);
                 }
               } else if (p.invincibleTimer <= 0) {
                 obs.active = false;
                 audio.playHit();
                 addParticles(p.x, p.d, 1.0, 10, '#f59e0b');
-                p.stumbleTimer = 0.8;
-                p.vd = 2; // slow down impact
-                const dmg = 25;
+                p.stumbleTimer = 0.85;
+                p.vd = 2;
                 setHealth((h) => {
-                  const nextH = Math.max(0, h - dmg);
+                  const nextH = Math.max(0, h - 25);
                   if (nextH <= 0) triggerGameOver('Barricade se takkar ho gayi! Exam hall miss ho gaya.');
                   return nextH;
                 });
@@ -1182,16 +1475,15 @@ export function GenZProtestRunCanvas() {
               }
             }
 
-            // Collision with Lathi Cop -> Hit with lathi stick
+            // Lathi Police Strike
             else if (obs.type === 'cop') {
               if (p.invincibleTimer <= 0) {
                 obs.active = false;
                 audio.playHit();
                 addParticles(p.x, p.d, 1.2, 12, '#ef4444');
                 p.stumbleTimer = 0.9;
-                const dmg = 40;
                 setHealth((h) => {
-                  const nextH = Math.max(0, h - dmg);
+                  const nextH = Math.max(0, h - 40);
                   if (nextH <= 0) triggerGameOver('Lathi charge mein pack ho gaye! Health zero.');
                   return nextH;
                 });
@@ -1199,9 +1491,9 @@ export function GenZProtestRunCanvas() {
               }
             }
 
-            // Collision with Puddle -> Slip & slide
+            // Puddle Skid
             else if (obs.type === 'puddle') {
-              if (selectedChar.id !== 'kabir') { // Kabir's wheelchair is immune to puddles
+              if (selectedChar.id !== 'kabir') {
                 obs.active = false;
                 p.stumbleTimer = 0.6;
                 addParticles(p.x, p.d, 0.2, 8, '#38bdf8');
@@ -1209,7 +1501,7 @@ export function GenZProtestRunCanvas() {
               }
             }
 
-            // Collect Chai -> Health Restore
+            // Chai Health Restore
             else if (obs.type === 'chai') {
               obs.active = false;
               audio.playChai();
@@ -1221,7 +1513,7 @@ export function GenZProtestRunCanvas() {
               addParticles(p.x, p.d, 1.0, 10, '#fde68a');
             }
 
-            // Collect Slogan Megaphone -> Invincibility & Speed Boost
+            // Megaphone Slogan Speed Boost
             else if (obs.type === 'megaphone') {
               obs.active = false;
               audio.playMegaphone();
@@ -1233,7 +1525,7 @@ export function GenZProtestRunCanvas() {
               addParticles(p.x, p.d, 1.2, 14, '#c084fc');
             }
 
-            // Collect Meme Coin -> Score boost
+            // Meme Coin
             else if (obs.type === 'coin') {
               obs.active = false;
               soundFx.playCoin();
@@ -1255,47 +1547,48 @@ export function GenZProtestRunCanvas() {
         });
         g.particles = g.particles.filter((part) => part.life < part.maxLife);
 
-        // Update floating bubbles
         g.bubbles.forEach((b) => {
           b.h += dt * 0.8;
           b.life += dt;
         });
         g.bubbles = g.bubbles.filter((b) => b.life < b.maxLife);
+
+        // Update Spatial Doppler Siren
+        audio.updateSpatialSiren(closestVanDist);
       }
 
-      // Handle Detained Countdown Screen
+      // Detained Countdown Timer
       if (gameState === 'detained') {
         g.detainedTimer -= dt;
         setDetainedCountdown(Math.ceil(Math.max(0, g.detainedTimer)));
         if (g.detainedTimer <= 0) {
           setGameState('play');
-          g.player.invincibleTimer = 3.0; // 3 seconds grace period after release
-          addComicBubble('RELEASED FROM POLICE VAN!', g.player.x, g.player.d, 3, '#4ade80');
+          g.player.invincibleTimer = 3.0;
+          addComicBubble('RELEASED FROM POLICE VAN!', g.player.x, g.player.d, 3.2, '#4ade80');
         }
       }
 
-      // ==========================================
-      // CANVAS RENDERING PIPELINE
-      // ==========================================
+      // =====================================================================
+      // COMPLETE 3D SCENE RENDERING PIPELINE
+      // =====================================================================
       ctx.clearRect(0, 0, W, H);
 
-      // 1. Delhi Smog / Twilight Sky Gradient
+      // 1. Sky & Atmosphere (Delhi Twilight smog gradient)
       const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.52);
-      skyGrad.addColorStop(0, '#1e1124');
-      skyGrad.addColorStop(0.4, '#4a1525');
+      skyGrad.addColorStop(0, '#11091a');
+      skyGrad.addColorStop(0.35, '#3b1227');
       skyGrad.addColorStop(0.75, '#ea580c');
-      skyGrad.addColorStop(1, '#fed7aa');
+      skyGrad.addColorStop(1, '#ffedd5');
       ctx.fillStyle = skyGrad;
       ctx.fillRect(0, 0, W, H * 0.55);
 
-      // 2. Distant Horizon Silhouette: Delhi Parliament & India Gate
+      // 2. Distant Horizon: Delhi Skyline & Parliament / India Gate
       const horizonY = H * 0.52;
       ctx.fillStyle = '#1e1b2e';
       ctx.beginPath();
       ctx.moveTo(0, horizonY);
-      // Skyline bumps
       for (let sx = 0; sx < W; sx += 40) {
-        const bh = Math.sin(sx * 0.05) * 12 + Math.cos(sx * 0.02) * 8 + 14;
+        const bh = Math.sin(sx * 0.05) * 14 + Math.cos(sx * 0.02) * 9 + 16;
         ctx.lineTo(sx, horizonY - bh);
         ctx.lineTo(sx + 35, horizonY - bh);
       }
@@ -1303,33 +1596,33 @@ export function GenZProtestRunCanvas() {
       ctx.closePath();
       ctx.fill();
 
-      // Parliament Dome in center background
+      // Parliament Dome
       const domeX = W / 2;
       ctx.fillStyle = '#2d1f3d';
       ctx.beginPath();
-      ctx.arc(domeX, horizonY - 14, 28, Math.PI, 0, false);
-      ctx.lineTo(domeX + 28, horizonY);
-      ctx.lineTo(domeX - 28, horizonY);
+      ctx.arc(domeX, horizonY - 16, 32, Math.PI, 0, false);
+      ctx.lineTo(domeX + 32, horizonY);
+      ctx.lineTo(domeX - 32, horizonY);
       ctx.closePath();
       ctx.fill();
 
-      // 3. Ground Pavements (Left & Right Sidewalks)
+      // 3. Ground Terrain & Sidewalk Floor
       const groundGrad = ctx.createLinearGradient(0, horizonY, 0, H);
-      groundGrad.addColorStop(0, '#57534e');
-      groundGrad.addColorStop(1, '#292524');
+      groundGrad.addColorStop(0, '#44403c');
+      groundGrad.addColorStop(1, '#1c1917');
       ctx.fillStyle = groundGrad;
       ctx.fillRect(0, horizonY, W, H - horizonY);
 
-      // 4. Perspective Road Surface (4 Lanes)
-      const roadHalfWidth = 6.8;
+      // 4. 4-Lane Highway Surface with Depth
+      const roadHalfWidth = 7.2;
       const roadNearLeft = project(-roadHalfWidth, g.camera.d + 1.5, 0, W, H, g.camera);
       const roadNearRight = project(roadHalfWidth, g.camera.d + 1.5, 0, W, H, g.camera);
       const roadFarLeft = project(-roadHalfWidth, g.camera.d + 180, 0, W, H, g.camera);
       const roadFarRight = project(roadHalfWidth, g.camera.d + 180, 0, W, H, g.camera);
 
       if (roadNearLeft && roadNearRight && roadFarLeft && roadFarRight) {
-        // Dark Asphalt Highway
-        ctx.fillStyle = '#1e293b';
+        // Road Asphalt
+        ctx.fillStyle = '#0f172a';
         ctx.beginPath();
         ctx.moveTo(roadNearLeft.x, roadNearLeft.y);
         ctx.lineTo(roadFarLeft.x, roadFarLeft.y);
@@ -1338,19 +1631,51 @@ export function GenZProtestRunCanvas() {
         ctx.closePath();
         ctx.fill();
 
-        // Yellow Road Curbs on sides
-        ctx.strokeStyle = '#facc15';
-        ctx.lineWidth = Math.max(3, roadNearLeft.s * 0.12);
-        ctx.beginPath();
-        ctx.moveTo(roadNearLeft.x, roadNearLeft.y);
-        ctx.lineTo(roadFarLeft.x, roadFarLeft.y);
-        ctx.moveTo(roadNearRight.x, roadNearRight.y);
-        ctx.lineTo(roadFarRight.x, roadFarRight.y);
-        ctx.stroke();
+        // 3D Elevated Sidewalk Curb Step (Yellow & Black Striped Stone Blocks)
+        const curbHeight = 0.35;
+        const curbStepDist = 6;
+        const curbStart = Math.floor(g.camera.d / curbStepDist) * curbStepDist;
+
+        for (let cd = curbStart; cd < g.camera.d + 150; cd += curbStepDist) {
+          const isYellow = Math.floor(cd / curbStepDist) % 2 === 0;
+          ctx.fillStyle = isYellow ? '#eab308' : '#18181b';
+
+          // Left curb face
+          const cl1 = project(-roadHalfWidth, cd, 0, W, H, g.camera);
+          const cl2 = project(-roadHalfWidth, cd + curbStepDist, 0, W, H, g.camera);
+          const cl3 = project(-roadHalfWidth - 0.45, cd + curbStepDist, curbHeight, W, H, g.camera);
+          const cl4 = project(-roadHalfWidth - 0.45, cd, curbHeight, W, H, g.camera);
+
+          if (cl1 && cl2 && cl3 && cl4) {
+            ctx.beginPath();
+            ctx.moveTo(cl1.x, cl1.y);
+            ctx.lineTo(cl2.x, cl2.y);
+            ctx.lineTo(cl3.x, cl3.y);
+            ctx.lineTo(cl4.x, cl4.y);
+            ctx.closePath();
+            ctx.fill();
+          }
+
+          // Right curb face
+          const cr1 = project(roadHalfWidth, cd, 0, W, H, g.camera);
+          const cr2 = project(roadHalfWidth, cd + curbStepDist, 0, W, H, g.camera);
+          const cr3 = project(roadHalfWidth + 0.45, cd + curbStepDist, curbHeight, W, H, g.camera);
+          const cr4 = project(roadHalfWidth + 0.45, cd, curbHeight, W, H, g.camera);
+
+          if (cr1 && cr2 && cr3 && cr4) {
+            ctx.beginPath();
+            ctx.moveTo(cr1.x, cr1.y);
+            ctx.lineTo(cr2.x, cr2.y);
+            ctx.lineTo(cr3.x, cr3.y);
+            ctx.lineTo(cr4.x, cr4.y);
+            ctx.closePath();
+            ctx.fill();
+          }
+        }
 
         // Dashed White Lane Dividers
-        const laneXValues = [-3.4, 0, 3.4];
-        ctx.strokeStyle = '#ffffff';
+        const laneXValues = [-3.6, 0, 3.6];
+        ctx.strokeStyle = '#f8fafc';
         ctx.lineWidth = Math.max(2, roadNearLeft.s * 0.08);
 
         for (const lx of laneXValues) {
@@ -1359,7 +1684,7 @@ export function GenZProtestRunCanvas() {
           const startDist = Math.floor(g.camera.d / stepDist) * stepDist;
           for (let segD = startDist; segD < g.camera.d + 160; segD += stepDist) {
             const p1 = project(lx, segD, 0, W, H, g.camera);
-            const p2 = project(lx, segD + 4.5, 0, W, H, g.camera);
+            const p2 = project(lx, segD + 4.8, 0, W, H, g.camera);
             if (p1 && p2) {
               ctx.moveTo(p1.x, p1.y);
               ctx.lineTo(p2.x, p2.y);
@@ -1369,72 +1694,145 @@ export function GenZProtestRunCanvas() {
         }
       }
 
-      // ==========================================
-      // DEPTH-SORTED DRAWABLE OBJECTS
-      // ==========================================
-      interface Renderable {
+      // =====================================================================
+      // 3D DRAW LIST WITH BACK-TO-FRONT DEPTH SORTING
+      // =====================================================================
+      interface Renderable3D {
         depth: number;
         draw: () => void;
       }
 
-      const drawList: Renderable[] = [];
+      const drawList: Renderable3D[] = [];
 
-      // 5. Draw Roadside Shops
-      for (const shop of g.shops) {
-        if (shop.d < g.camera.d + 1 || shop.d > g.camera.d + 180) continue;
-        const sideX = shop.side === 'left' ? -9.5 : 9.5;
-        const pt = project(sideX, shop.d, 0, W, H, g.camera);
+      // 5. Draw 3D Buildings with Depth, Awnings, Windows & Signboards
+      for (const bld of g.buildings) {
+        if (bld.d < g.camera.d + 1 || bld.d > g.camera.d + 180) continue;
+        const pt = project(bld.x, bld.d, 0, W, H, g.camera);
         if (!pt) continue;
 
         drawList.push({
           depth: pt.depth,
           draw: () => {
-            const sw = pt.s * 4.8;
-            const sh = pt.s * 3.6;
+            // Main 3D Building Box
+            drawBox3D(
+              bld.x,
+              bld.d,
+              0,
+              bld.w,
+              bld.depth,
+              bld.height,
+              '#1e293b',       // roof
+              bld.wallCol,     // front
+              '#0f172a'        // side
+            );
 
-            // Shop Building facade
-            ctx.fillStyle = '#334155';
-            ctx.fillRect(pt.x - sw / 2, pt.y - sh, sw, sh);
+            // 3D Striped Awning & Signboard
+            const signPt = project(bld.x, bld.d - bld.depth * 0.45, bld.height * 0.55, W, H, g.camera);
+            if (signPt && signPt.s > 8) {
+              const sw = signPt.s * 4.2;
+              const sh = signPt.s * 1.6;
 
-            // Striped Awning roof
-            ctx.fillStyle = shop.awningCol;
-            ctx.fillRect(pt.x - sw / 2 - 4, pt.y - sh, sw + 8, sh * 0.28);
+              ctx.fillStyle = bld.signCol;
+              ctx.fillRect(signPt.x - sw / 2, signPt.y - sh / 2, sw, sh);
+              ctx.strokeStyle = '#0f172a';
+              ctx.lineWidth = Math.max(1, signPt.s * 0.05);
+              ctx.strokeRect(signPt.x - sw / 2, signPt.y - sh / 2, sw, sh);
 
-            // Bright Comic Shop Signboard
-            ctx.fillStyle = shop.signCol;
-            ctx.fillRect(pt.x - sw * 0.42, pt.y - sh * 0.88, sw * 0.84, sh * 0.38);
-            ctx.strokeStyle = '#0f172a';
-            ctx.lineWidth = Math.max(1, pt.s * 0.04);
-            ctx.strokeRect(pt.x - sw * 0.42, pt.y - sh * 0.88, sw * 0.84, sh * 0.38);
-
-            // Text
-            if (pt.s > 10) {
               ctx.fillStyle = '#0f172a';
-              ctx.font = `bold ${Math.max(8, Math.round(pt.s * 0.28))}px sans-serif`;
+              ctx.font = `bold ${Math.max(7, Math.round(signPt.s * 0.26))}px sans-serif`;
               ctx.textAlign = 'center';
-              ctx.fillText(shop.title, pt.x, pt.y - sh * 0.68);
-              ctx.font = `bold ${Math.max(6, Math.round(pt.s * 0.18))}px sans-serif`;
-              ctx.fillText(shop.sub, pt.x, pt.y - sh * 0.54);
+              ctx.fillText(bld.title, signPt.x, signPt.y - sh * 0.08);
+              ctx.font = `bold ${Math.max(6, Math.round(signPt.s * 0.16))}px sans-serif`;
+              ctx.fillText(bld.sub, signPt.x, signPt.y + sh * 0.28);
             }
           }
         });
       }
 
-      // 6. Draw Overhead Banner Gantries (Footbridges)
+      // 6. Draw 3D Trees on Sidewalks
+      for (const tree of g.trees) {
+        if (tree.d < g.camera.d + 1 || tree.d > g.camera.d + 180) continue;
+        const pt = project(tree.x, tree.d, 0, W, H, g.camera);
+        if (!pt) continue;
+
+        drawList.push({
+          depth: pt.depth,
+          draw: () => {
+            const scale = pt.s;
+            // Tree Trunk
+            const topPt = project(tree.x, tree.d, tree.trunkH, W, H, g.camera);
+            if (!topPt) return;
+
+            ctx.strokeStyle = '#78350f';
+            ctx.lineWidth = Math.max(3, scale * 0.35);
+            ctx.beginPath();
+            ctx.moveTo(pt.x, pt.y);
+            ctx.lineTo(topPt.x, topPt.y);
+            ctx.stroke();
+
+            // 3D Canopy Spheres
+            const cr = scale * tree.canopyR;
+            ctx.fillStyle = '#15803d';
+            ctx.beginPath();
+            ctx.arc(topPt.x, topPt.y - cr * 0.5, cr, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Highlight layer
+            ctx.fillStyle = '#22c55e';
+            ctx.beginPath();
+            ctx.arc(topPt.x - cr * 0.25, topPt.y - cr * 0.75, cr * 0.65, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        });
+      }
+
+      // 7. Draw 3D Street Lampposts
+      for (const lamp of g.lampposts) {
+        if (lamp.d < g.camera.d + 1 || lamp.d > g.camera.d + 180) continue;
+        const pt = project(lamp.x, lamp.d, 0, W, H, g.camera);
+        const topPt = project(lamp.x, lamp.d, lamp.h, W, H, g.camera);
+        if (!pt || !topPt) continue;
+
+        drawList.push({
+          depth: pt.depth,
+          draw: () => {
+            const scale = pt.s;
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = Math.max(2, scale * 0.12);
+            ctx.beginPath();
+            ctx.moveTo(pt.x, pt.y);
+            ctx.lineTo(topPt.x, topPt.y);
+            // Arm arching over sidewalk
+            ctx.lineTo(topPt.x + (lamp.side === 'left' ? scale * 0.8 : -scale * 0.8), topPt.y + scale * 0.2);
+            ctx.stroke();
+
+            // Glowing lantern bulb
+            ctx.fillStyle = '#fef08a';
+            ctx.shadowColor = '#fef08a';
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.arc(topPt.x + (lamp.side === 'left' ? scale * 0.8 : -scale * 0.8), topPt.y + scale * 0.25, Math.max(3, scale * 0.18), 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+          }
+        });
+      }
+
+      // 8. Draw 3D Overhead Banner Gantries
       for (const gantry of g.gantries) {
         if (gantry.d < g.camera.d + 2 || gantry.d > g.camera.d + 180) continue;
-        const leftPt = project(-7.5, gantry.d, 4.5, W, H, g.camera);
-        const rightPt = project(7.5, gantry.d, 4.5, W, H, g.camera);
-        const leftGround = project(-7.5, gantry.d, 0, W, H, g.camera);
-        const rightGround = project(7.5, gantry.d, 0, W, H, g.camera);
+        const leftPt = project(-7.8, gantry.d, 4.6, W, H, g.camera);
+        const rightPt = project(7.8, gantry.d, 4.6, W, H, g.camera);
+        const leftGround = project(-7.8, gantry.d, 0, W, H, g.camera);
+        const rightGround = project(7.8, gantry.d, 0, W, H, g.camera);
 
         if (leftPt && rightPt && leftGround && rightGround) {
           drawList.push({
             depth: leftPt.depth,
             draw: () => {
-              // Steel Pillars
+              // 3D Steel Truss Pillars
               ctx.strokeStyle = '#475569';
-              ctx.lineWidth = Math.max(3, leftPt.s * 0.14);
+              ctx.lineWidth = Math.max(3, leftPt.s * 0.16);
               ctx.beginPath();
               ctx.moveTo(leftGround.x, leftGround.y);
               ctx.lineTo(leftPt.x, leftPt.y);
@@ -1443,32 +1841,31 @@ export function GenZProtestRunCanvas() {
               ctx.stroke();
 
               // Crossbar
-              ctx.lineWidth = Math.max(4, leftPt.s * 0.2);
+              ctx.lineWidth = Math.max(4, leftPt.s * 0.22);
               ctx.beginPath();
               ctx.moveTo(leftPt.x, leftPt.y);
               ctx.lineTo(rightPt.x, rightPt.y);
               ctx.stroke();
 
-              // Huge Banner Board
-              const bannerH = leftPt.s * 1.6;
+              // Banner
+              const bannerH = leftPt.s * 1.8;
               const bannerW = rightPt.x - leftPt.x;
               ctx.fillStyle = gantry.bannerColor;
               ctx.fillRect(leftPt.x, leftPt.y - bannerH / 2, bannerW, bannerH);
               ctx.strokeStyle = '#ffffff';
-              ctx.lineWidth = 2;
+              ctx.lineWidth = 2.5;
               ctx.strokeRect(leftPt.x, leftPt.y - bannerH / 2, bannerW, bannerH);
 
-              // Banner Text
               ctx.fillStyle = '#ffffff';
-              ctx.font = `900 ${Math.max(9, Math.round(leftPt.s * 0.35))}px sans-serif`;
+              ctx.font = `900 ${Math.max(9, Math.round(leftPt.s * 0.36))}px sans-serif`;
               ctx.textAlign = 'center';
-              ctx.fillText(gantry.bannerText, (leftPt.x + rightPt.x) / 2, leftPt.y + leftPt.s * 0.1);
+              ctx.fillText(gantry.bannerText, (leftPt.x + rightPt.x) / 2, leftPt.y + leftPt.s * 0.12);
             }
           });
         }
       }
 
-      // 7. Draw Dynamic Obstacles (Vans, Barricades, Cops, Collectibles)
+      // 9. Draw Dynamic 3D Obstacles (Police Vans with Cops, Barricades, Stick Police, Collectibles)
       for (const obs of g.obstacles) {
         if (!obs.active) continue;
         if (obs.d < g.camera.d + 1 || obs.d > g.camera.d + 180) continue;
@@ -1481,122 +1878,282 @@ export function GenZProtestRunCanvas() {
           draw: () => {
             const scale = pt.s;
 
-            // --- POLICE VAN ---
+            // =============================================================
+            // REALISTIC 3D POLICE VAN (With Cops Inside & Flashing Siren)
+            // =============================================================
             if (obs.type === 'van') {
-              const vw = scale * 2.6;
-              const vh = scale * 2.2;
+              const vw = scale * 2.8;
+              const vh = scale * 2.6;
 
-              // Van Shadow
-              ctx.fillStyle = 'rgba(15, 23, 42, 0.45)';
+              // 1. Ground Shadow
+              ctx.fillStyle = 'rgba(15, 23, 42, 0.55)';
               ctx.beginPath();
               ctx.ellipse(pt.x, pt.y, vw * 0.65, scale * 0.35, 0, 0, Math.PI * 2);
               ctx.fill();
 
-              // Van Body (Delhi Police Navy & White)
-              ctx.fillStyle = '#1e3a8a';
-              ctx.fillRect(pt.x - vw / 2, pt.y - vh, vw, vh);
+              // 2. Headlight Beams illuminating the road toward the player!
+              const beamLeft = project(obs.x - 0.9, obs.d - 7, 0, W, H, g.camera);
+              const beamRight = project(obs.x + 0.9, obs.d - 7, 0, W, H, g.camera);
+              if (beamLeft && beamRight) {
+                const beamGrad = ctx.createLinearGradient(pt.x, pt.y, (beamLeft.x + beamRight.x) / 2, (beamLeft.y + beamRight.y) / 2);
+                beamGrad.addColorStop(0, 'rgba(254, 240, 138, 0.45)');
+                beamGrad.addColorStop(1, 'rgba(254, 240, 138, 0)');
+                ctx.fillStyle = beamGrad;
+                ctx.beginPath();
+                ctx.moveTo(pt.x - vw * 0.38, pt.y - vh * 0.25);
+                ctx.lineTo(beamLeft.x - scale * 0.8, beamLeft.y);
+                ctx.lineTo(beamRight.x + scale * 0.8, beamRight.y);
+                ctx.lineTo(pt.x + vw * 0.38, pt.y - vh * 0.25);
+                ctx.closePath();
+                ctx.fill();
+              }
 
-              // White police stripe in center
-              ctx.fillStyle = '#f8fafc';
-              ctx.fillRect(pt.x - vw / 2, pt.y - vh * 0.65, vw, vh * 0.32);
+              // 3. 3D Van Main Chassis Box
+              drawBox3D(
+                obs.x,
+                obs.d,
+                0.3,
+                obs.w,
+                obs.length,
+                obs.height3D,
+                '#1e3a8a',       // Navy roof
+                '#1e3a8a',       // Navy front
+                '#0f172a'        // Dark side
+              );
 
-              // Windshield
-              ctx.fillStyle = '#0ea5e9';
-              ctx.fillRect(pt.x - vw * 0.42, pt.y - vh * 0.92, vw * 0.84, vh * 0.28);
+              // 4. White Delhi Police Center Band
+              const bandPt = project(obs.x, obs.d - obs.length * 0.48, 1.0, W, H, g.camera);
+              if (bandPt) {
+                const bw = vw * 0.94;
+                const bh = vh * 0.28;
+                ctx.fillStyle = '#f8fafc';
+                ctx.fillRect(bandPt.x - bw / 2, bandPt.y - bh / 2, bw, bh);
 
-              // "POLICE" Text
-              ctx.fillStyle = '#1e3a8a';
-              ctx.font = `bold ${Math.max(7, Math.round(scale * 0.22))}px sans-serif`;
-              ctx.textAlign = 'center';
-              ctx.fillText('POLICE', pt.x, pt.y - vh * 0.44);
+                ctx.fillStyle = '#1e3a8a';
+                ctx.font = `900 ${Math.max(7, Math.round(scale * 0.26))}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.fillText('POLICE', bandPt.x, bandPt.y + bh * 0.2);
+              }
 
-              // Flashing Rooftop Beacon Siren (Alternating Red / Blue)
-              const isRed = (obs.sirenPhase || 0) < 1;
-              ctx.fillStyle = isRed ? '#ef4444' : '#3b82f6';
-              ctx.shadowColor = isRed ? '#ef4444' : '#3b82f6';
-              ctx.shadowBlur = 12;
-              ctx.fillRect(pt.x - scale * 0.35, pt.y - vh - scale * 0.35, scale * 0.7, scale * 0.35);
-              ctx.shadowBlur = 0; // reset
+              // 5. 3D Windshield Glass
+              const glassPt = project(obs.x, obs.d - obs.length * 0.46, 1.8, W, H, g.camera);
+              if (glassPt) {
+                const gw = vw * 0.86;
+                const gh = vh * 0.36;
+
+                // Dark tinted glass
+                ctx.fillStyle = '#0369a1';
+                ctx.fillRect(glassPt.x - gw / 2, glassPt.y - gh / 2, gw, gh);
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(glassPt.x - gw / 2, glassPt.y - gh / 2, gw, gh);
+
+                // =========================================================
+                // POLICE COPS SITTING INSIDE THE VAN!
+                // =========================================================
+                // Left Driver Cop (Khaki uniform, Police Beret/Cap, Hands on Steering Wheel)
+                const copLeftX = glassPt.x - gw * 0.25;
+                const copY = glassPt.y + gh * 0.05;
+                const copSize = scale * 0.45;
+
+                // Khaki uniform body
+                ctx.fillStyle = '#b45309';
+                ctx.fillRect(copLeftX - copSize * 0.4, copY - copSize * 0.3, copSize * 0.8, copSize * 0.7);
+                // Police Cap
+                ctx.fillStyle = '#78350f';
+                ctx.beginPath();
+                ctx.arc(copLeftX, copY - copSize * 0.45, copSize * 0.35, Math.PI, 0, false);
+                ctx.fill();
+                // Face
+                ctx.fillStyle = '#d97706';
+                ctx.beginPath();
+                ctx.arc(copLeftX, copY - copSize * 0.25, copSize * 0.28, 0, Math.PI * 2);
+                ctx.fill();
+                // Steering Wheel
+                ctx.strokeStyle = '#18181b';
+                ctx.lineWidth = Math.max(2, scale * 0.08);
+                ctx.beginPath();
+                ctx.arc(copLeftX, copY + copSize * 0.15, copSize * 0.3, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Right Passenger Cop (Navigator Cop with Radio/Specs)
+                const copRightX = glassPt.x + gw * 0.25;
+                ctx.fillStyle = '#b45309';
+                ctx.fillRect(copRightX - copSize * 0.4, copY - copSize * 0.3, copSize * 0.8, copSize * 0.7);
+                ctx.fillStyle = '#78350f';
+                ctx.beginPath();
+                ctx.arc(copRightX, copY - copSize * 0.45, copSize * 0.35, Math.PI, 0, false);
+                ctx.fill();
+                ctx.fillStyle = '#c2410c';
+                ctx.beginPath();
+                ctx.arc(copRightX, copY - copSize * 0.25, copSize * 0.28, 0, Math.PI * 2);
+                ctx.fill();
+              }
+
+              // 6. Chrome Front Grille & Headlights
+              const grillePt = project(obs.x, obs.d - obs.length * 0.5, 0.6, W, H, g.camera);
+              if (grillePt) {
+                const grw = vw * 0.55;
+                const grh = vh * 0.22;
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(grillePt.x - grw / 2, grillePt.y - grh / 2, grw, grh);
+                // Silver slats
+                ctx.strokeStyle = '#cbd5e1';
+                ctx.lineWidth = 1.5;
+                for (let slat = -grh * 0.3; slat <= grh * 0.3; slat += 3) {
+                  ctx.beginPath();
+                  ctx.moveTo(grillePt.x - grw * 0.42, grillePt.y + slat);
+                  ctx.lineTo(grillePt.x + grw * 0.42, grillePt.y + slat);
+                  ctx.stroke();
+                }
+
+                // Dual Glowing Headlights
+                ctx.fillStyle = '#fef08a';
+                ctx.shadowColor = '#fef08a';
+                ctx.shadowBlur = 12;
+                ctx.fillRect(grillePt.x - vw * 0.42, grillePt.y - grh * 0.35, scale * 0.38, scale * 0.28);
+                ctx.fillRect(grillePt.x + vw * 0.42 - scale * 0.38, grillePt.y - grh * 0.35, scale * 0.38, scale * 0.28);
+                ctx.shadowBlur = 0;
+              }
+
+              // 7. Rooftop 3D Lightbar Siren (Flashing Blue & Red with Strobe Pulse)
+              const sirenPt = project(obs.x, obs.d - obs.length * 0.2, obs.height3D + 0.3, W, H, g.camera);
+              if (sirenPt) {
+                const sw = scale * 1.5;
+                const sh = scale * 0.38;
+                const isRed = (obs.sirenPhase || 0) < 1;
+
+                // Siren mounting bracket
+                ctx.fillStyle = '#334155';
+                ctx.fillRect(sirenPt.x - sw / 2, sirenPt.y - sh / 2, sw, sh);
+
+                // Flashing Dual Beacons
+                // Left Red strobe
+                ctx.fillStyle = isRed ? '#ef4444' : '#7f1d1d';
+                ctx.shadowColor = '#ef4444';
+                ctx.shadowBlur = isRed ? 18 : 2;
+                ctx.fillRect(sirenPt.x - sw * 0.46, sirenPt.y - sh * 0.8, sw * 0.4, sh * 1.3);
+
+                // Right Blue strobe
+                ctx.fillStyle = !isRed ? '#38bdf8' : '#1e3a8a';
+                ctx.shadowColor = '#38bdf8';
+                ctx.shadowBlur = !isRed ? 18 : 2;
+                ctx.fillRect(sirenPt.x + sw * 0.06, sirenPt.y - sh * 0.8, sw * 0.4, sh * 1.3);
+                ctx.shadowBlur = 0;
+              }
             }
 
-            // --- YELLOW/BLACK BARRICADE ---
+            // =============================================================
+            // 3D YELLOW/BLACK POLICE BARRICADE
+            // =============================================================
             else if (obs.type === 'barricade') {
               const bw = scale * 2.4;
-              const bh = scale * 1.35;
-
-              // Shadow
-              ctx.fillStyle = 'rgba(15, 23, 42, 0.35)';
-              ctx.beginPath();
-              ctx.ellipse(pt.x, pt.y, bw * 0.55, scale * 0.2, 0, 0, Math.PI * 2);
-              ctx.fill();
-
-              // Steel Legs
-              ctx.strokeStyle = '#475569';
-              ctx.lineWidth = Math.max(2, scale * 0.08);
-              ctx.beginPath();
-              ctx.moveTo(pt.x - bw * 0.4, pt.y);
-              ctx.lineTo(pt.x - bw * 0.4, pt.y - bh);
-              ctx.moveTo(pt.x + bw * 0.4, pt.y);
-              ctx.lineTo(pt.x + bw * 0.4, pt.y - bh);
-              ctx.stroke();
-
-              // Barricade Face (Yellow with diagonal black stripes)
-              ctx.fillStyle = '#eab308';
-              ctx.fillRect(pt.x - bw / 2, pt.y - bh, bw, bh * 0.75);
-
-              // Stencil "DELHI POLICE"
-              ctx.fillStyle = '#0f172a';
-              ctx.font = `900 ${Math.max(6, Math.round(scale * 0.2))}px sans-serif`;
-              ctx.textAlign = 'center';
-              ctx.fillText('POLICE', pt.x, pt.y - bh * 0.45);
-            }
-
-            // --- LATHI POLICE COP ---
-            else if (obs.type === 'cop') {
-              const cw = scale * 1.1;
-              const ch = scale * 1.9;
+              const bh = scale * 1.4;
 
               // Shadow
               ctx.fillStyle = 'rgba(15, 23, 42, 0.4)';
               ctx.beginPath();
+              ctx.ellipse(pt.x, pt.y, bw * 0.55, scale * 0.2, 0, 0, Math.PI * 2);
+              ctx.fill();
+
+              // 3D Tubular Steel Legs
+              ctx.strokeStyle = '#475569';
+              ctx.lineWidth = Math.max(2, scale * 0.1);
+              ctx.beginPath();
+              ctx.moveTo(pt.x - bw * 0.42, pt.y);
+              ctx.lineTo(pt.x - bw * 0.42, pt.y - bh);
+              ctx.moveTo(pt.x + bw * 0.42, pt.y);
+              ctx.lineTo(pt.x + bw * 0.42, pt.y - bh);
+              ctx.stroke();
+
+              // Barricade Face with Chevron Hazard Stripes
+              ctx.fillStyle = '#eab308';
+              ctx.fillRect(pt.x - bw / 2, pt.y - bh, bw, bh * 0.75);
+
+              // Black Diagonal Chevrons
+              ctx.fillStyle = '#0f172a';
+              for (let stripe = -bw / 2; stripe < bw / 2; stripe += 16) {
+                ctx.beginPath();
+                ctx.moveTo(pt.x + stripe, pt.y - bh);
+                ctx.lineTo(pt.x + stripe + 8, pt.y - bh);
+                ctx.lineTo(pt.x + stripe + 16, pt.y - bh + bh * 0.75);
+                ctx.lineTo(pt.x + stripe + 8, pt.y - bh + bh * 0.75);
+                ctx.closePath();
+                ctx.fill();
+              }
+
+              // "POLICE" Sign Plate
+              ctx.fillStyle = '#f8fafc';
+              ctx.fillRect(pt.x - scale * 0.7, pt.y - bh * 0.65, scale * 1.4, scale * 0.38);
+              ctx.fillStyle = '#dc2626';
+              ctx.font = `900 ${Math.max(6, Math.round(scale * 0.22))}px sans-serif`;
+              ctx.textAlign = 'center';
+              ctx.fillText('POLICE', pt.x, pt.y - bh * 0.42);
+            }
+
+            // =============================================================
+            // 3D LATHI COP SQUAD (Khaki Officer with Bamboo Lathi)
+            // =============================================================
+            else if (obs.type === 'cop') {
+              const cw = scale * 1.2;
+              const ch = scale * 2.2;
+
+              // Shadow
+              ctx.fillStyle = 'rgba(15, 23, 42, 0.45)';
+              ctx.beginPath();
               ctx.ellipse(pt.x, pt.y, cw * 0.5, scale * 0.2, 0, 0, Math.PI * 2);
               ctx.fill();
 
-              // Khaki Uniform Shirt & Pants
-              ctx.fillStyle = '#d97706'; // khaki
-              ctx.fillRect(pt.x - cw * 0.35, pt.y - ch * 0.75, cw * 0.7, ch * 0.45); // shirt
+              // Legs in khaki trousers
               ctx.fillStyle = '#b45309';
-              ctx.fillRect(pt.x - cw * 0.32, pt.y - ch * 0.32, cw * 0.64, ch * 0.32); // trousers
+              ctx.fillRect(pt.x - cw * 0.3, pt.y - ch * 0.4, cw * 0.24, ch * 0.4);
+              ctx.fillRect(pt.x + cw * 0.06, pt.y - ch * 0.4, cw * 0.24, ch * 0.4);
 
-              // Police Cap
-              ctx.fillStyle = '#78350f';
+              // Khaki Shirt with Belt & Police Badge
+              ctx.fillStyle = '#d97706';
+              ctx.fillRect(pt.x - cw * 0.38, pt.y - ch * 0.82, cw * 0.76, ch * 0.45);
+
+              // Black Police Belt with Brass Buckle
+              ctx.fillStyle = '#18181b';
+              ctx.fillRect(pt.x - cw * 0.38, pt.y - ch * 0.44, cw * 0.76, ch * 0.08);
+              ctx.fillStyle = '#eab308';
+              ctx.fillRect(pt.x - cw * 0.1, pt.y - ch * 0.45, cw * 0.2, ch * 0.1);
+
+              // Head & Mustache
+              ctx.fillStyle = '#c2410c';
               ctx.beginPath();
-              ctx.arc(pt.x, pt.y - ch * 0.85, cw * 0.35, 0, Math.PI * 2);
+              ctx.arc(pt.x, pt.y - ch * 0.9, cw * 0.3, 0, Math.PI * 2);
               ctx.fill();
 
-              // Bamboo Lathi (Stick in hand)
-              ctx.strokeStyle = '#ca8a04';
-              ctx.lineWidth = Math.max(2, scale * 0.08);
+              // Khaki Police Beret / Peaked Cap
+              ctx.fillStyle = '#78350f';
               ctx.beginPath();
-              ctx.moveTo(pt.x + cw * 0.38, pt.y - ch * 0.6);
-              ctx.lineTo(pt.x + cw * 0.75, pt.y - ch * 0.1);
+              ctx.arc(pt.x, pt.y - ch * 0.98, cw * 0.35, Math.PI, 0, false);
+              ctx.fill();
+
+              // 3D Bamboo Lathi in hand
+              ctx.strokeStyle = '#ca8a04';
+              ctx.lineWidth = Math.max(2, scale * 0.1);
+              ctx.beginPath();
+              ctx.moveTo(pt.x + cw * 0.4, pt.y - ch * 0.65);
+              ctx.lineTo(pt.x + cw * 0.85, pt.y - ch * 0.12);
               ctx.stroke();
             }
 
-            // --- WATER PUDDLE ---
+            // Puddle
             else if (obs.type === 'puddle') {
-              ctx.fillStyle = 'rgba(56, 189, 248, 0.65)';
+              ctx.fillStyle = 'rgba(56, 189, 248, 0.7)';
               ctx.beginPath();
-              ctx.ellipse(pt.x, pt.y, scale * 1.3, scale * 0.55, 0, 0, Math.PI * 2);
+              ctx.ellipse(pt.x, pt.y, scale * 1.4, scale * 0.6, 0, 0, Math.PI * 2);
               ctx.fill();
-              ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+              ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
               ctx.lineWidth = 1.5;
               ctx.stroke();
             }
 
-            // --- CHAI GLASS COLLECTIBLE ---
+            // Cutting Chai Glass
             else if (obs.type === 'chai') {
-              const sz = scale * 0.9;
+              const sz = scale * 0.95;
               ctx.fillStyle = '#f59e0b';
               ctx.beginPath();
               ctx.moveTo(pt.x - sz * 0.4, pt.y - sz);
@@ -1609,16 +2166,16 @@ export function GenZProtestRunCanvas() {
               ctx.lineWidth = 2;
               ctx.stroke();
 
-              // Steaming Aroma Wave
+              // Steam aroma wave
               ctx.strokeStyle = '#fed7aa';
               ctx.beginPath();
-              ctx.arc(pt.x, pt.y - sz * 1.3, sz * 0.25, 0, Math.PI);
+              ctx.arc(pt.x, pt.y - sz * 1.35, sz * 0.25, 0, Math.PI);
               ctx.stroke();
             }
 
-            // --- SLOGAN MEGAPHONE ---
+            // Slogan Megaphone
             else if (obs.type === 'megaphone') {
-              const sz = scale * 0.9;
+              const sz = scale * 0.95;
               ctx.fillStyle = '#a855f7';
               ctx.beginPath();
               ctx.moveTo(pt.x - sz * 0.4, pt.y - sz * 0.3);
@@ -1631,7 +2188,7 @@ export function GenZProtestRunCanvas() {
               ctx.stroke();
             }
 
-            // --- MEME COIN ---
+            // Meme Coin
             else if (obs.type === 'coin') {
               const r = scale * 0.55;
               ctx.fillStyle = '#eab308';
@@ -1643,7 +2200,7 @@ export function GenZProtestRunCanvas() {
               ctx.stroke();
 
               ctx.fillStyle = '#0f172a';
-              ctx.font = `bold ${Math.max(7, Math.round(scale * 0.25))}px sans-serif`;
+              ctx.font = `bold ${Math.max(7, Math.round(scale * 0.26))}px sans-serif`;
               ctx.textAlign = 'center';
               ctx.fillText('₹', pt.x, pt.y - r * 0.7);
             }
@@ -1651,7 +2208,7 @@ export function GenZProtestRunCanvas() {
         });
       }
 
-      // 8. Draw Player Character (In 3D World)
+      // 10. Draw 3D Player Character with Hierarchical Joint Anatomy
       const playerPt = project(g.player.x, g.player.d, g.player.h, W, H, g.camera);
       if (playerPt) {
         drawList.push({
@@ -1661,15 +2218,15 @@ export function GenZProtestRunCanvas() {
             const px = playerPt.x;
             const py = playerPt.y;
             const pw = scale * 1.35 * g.player.scaleX;
-            const ph = scale * 2.2 * g.player.scaleY;
+            const ph = scale * 2.3 * g.player.scaleY;
 
-            // Player Shadow (Stretches when jumping)
+            // Accurate 3D Ground Shadow (scales with airborne jump height)
             const shadowPt = project(g.player.x, g.player.d, 0, W, H, g.camera);
             if (shadowPt) {
-              const shadowAlpha = Math.max(0.12, 0.45 - g.player.h * 0.12);
+              const shadowAlpha = Math.max(0.12, 0.48 - g.player.h * 0.12);
               ctx.fillStyle = `rgba(15, 23, 42, ${shadowAlpha})`;
               ctx.beginPath();
-              ctx.ellipse(shadowPt.x, shadowPt.y, pw * 0.5, scale * 0.2, 0, 0, Math.PI * 2);
+              ctx.ellipse(shadowPt.x, shadowPt.y, pw * 0.5, scale * 0.22, 0, 0, Math.PI * 2);
               ctx.fill();
             }
 
@@ -1677,47 +2234,68 @@ export function GenZProtestRunCanvas() {
             ctx.translate(px, py);
             ctx.rotate(g.player.tilt);
 
-            // Flashing Invincibility Glow
+            // Invincibility Strobe
             if (g.player.invincibleTimer > 0) {
               ctx.shadowColor = '#c084fc';
               ctx.shadowBlur = 18;
             }
 
-            // Legs with walking animation
-            const legSwing = Math.sin(g.player.walkPhase) * (scale * 0.28);
+            // Animated Running Legs with Knee Bend & Shoes
+            const legSwing = Math.sin(g.player.walkPhase) * (scale * 0.32);
             ctx.fillStyle = selectedChar.colors.pants;
             // Left leg
-            ctx.fillRect(-pw * 0.32, -ph * 0.35, pw * 0.26, ph * 0.35 + legSwing);
+            ctx.fillRect(-pw * 0.32, -ph * 0.38, pw * 0.26, ph * 0.38 + legSwing);
             // Right leg
-            ctx.fillRect(pw * 0.06, -ph * 0.35, pw * 0.26, ph * 0.35 - legSwing);
+            ctx.fillRect(pw * 0.06, -ph * 0.38, pw * 0.26, ph * 0.38 - legSwing);
 
-            // Torso / Shirt
+            // Sneakers / Shoes
+            ctx.fillStyle = selectedChar.colors.shoes;
+            ctx.fillRect(-pw * 0.34, -ph * 0.04 + legSwing, pw * 0.3, ph * 0.08);
+            ctx.fillRect(pw * 0.04, -ph * 0.04 - legSwing, pw * 0.3, ph * 0.08);
+
+            // 3D Torso / Shirt with folds
             ctx.fillStyle = selectedChar.colors.shirt;
-            ctx.fillRect(-pw * 0.4, -ph * 0.78, pw * 0.8, ph * 0.45);
+            ctx.fillRect(-pw * 0.42, -ph * 0.8, pw * 0.84, ph * 0.45);
 
-            // Backpack (Abhijit or GenZ)
+            // Swinging Arms opposing legs
+            const armSwing = Math.sin(g.player.walkPhase + Math.PI) * (scale * 0.25);
+            ctx.fillStyle = selectedChar.colors.skin;
+            ctx.fillRect(-pw * 0.52, -ph * 0.76 + armSwing, pw * 0.16, ph * 0.35);
+            ctx.fillRect(pw * 0.38, -ph * 0.76 - armSwing, pw * 0.16, ph * 0.35);
+
+            // 3D Backpack
             ctx.fillStyle = '#0f172a';
-            ctx.fillRect(-pw * 0.28, -ph * 0.74, pw * 0.56, ph * 0.36);
+            ctx.fillRect(-pw * 0.3, -ph * 0.76, pw * 0.6, ph * 0.38);
 
-            // Head
+            // Head & Face
             ctx.fillStyle = selectedChar.colors.skin;
             ctx.beginPath();
-            ctx.arc(0, -ph * 0.86, pw * 0.32, 0, Math.PI * 2);
+            ctx.arc(0, -ph * 0.88, pw * 0.34, 0, Math.PI * 2);
             ctx.fill();
 
             // Hair / Bucket Hat
             ctx.fillStyle = selectedChar.colors.hair;
             ctx.beginPath();
-            ctx.arc(0, -ph * 0.94, pw * 0.34, Math.PI, 0, false);
+            ctx.arc(0, -ph * 0.96, pw * 0.36, Math.PI, 0, false);
             ctx.fill();
 
-            // Special Wheelchair prop for Kabir
+            // GenZ Sunglasses or Abhijit Specs
+            if (selectedChar.id === 'genz') {
+              ctx.fillStyle = '#0f172a';
+              ctx.fillRect(-pw * 0.22, -ph * 0.92, pw * 0.44, ph * 0.1);
+            } else if (selectedChar.id === 'abhijit') {
+              ctx.strokeStyle = '#38bdf8';
+              ctx.lineWidth = 1.5;
+              ctx.strokeRect(-pw * 0.22, -ph * 0.92, pw * 0.44, ph * 0.1);
+            }
+
+            // Wheelchair structure for Kabir
             if (selectedChar.id === 'kabir') {
               ctx.strokeStyle = '#38bdf8';
-              ctx.lineWidth = Math.max(2, scale * 0.1);
+              ctx.lineWidth = Math.max(2, scale * 0.12);
               ctx.beginPath();
-              ctx.arc(-pw * 0.3, -ph * 0.15, scale * 0.45, 0, Math.PI * 2);
-              ctx.arc(pw * 0.3, -ph * 0.15, scale * 0.45, 0, Math.PI * 2);
+              ctx.arc(-pw * 0.32, -ph * 0.15, scale * 0.48, 0, Math.PI * 2);
+              ctx.arc(pw * 0.32, -ph * 0.15, scale * 0.48, 0, Math.PI * 2);
               ctx.stroke();
             }
 
@@ -1727,7 +2305,7 @@ export function GenZProtestRunCanvas() {
         });
       }
 
-      // 9. Draw Impact Particles
+      // 11. Draw Impact Particles
       for (const part of g.particles) {
         const pt = project(part.x, part.d, part.h, W, H, g.camera);
         if (!pt) continue;
@@ -1744,13 +2322,13 @@ export function GenZProtestRunCanvas() {
         });
       }
 
-      // Sort Drawables back to front (highest depth to lowest depth)
+      // Execute Draw List in Depth Order (Farthest to Nearest)
       drawList.sort((a, b) => b.depth - a.depth);
       for (const item of drawList) {
         item.draw();
       }
 
-      // 10. Draw 2D Comic Speech Bubbles (Overhead UI layer)
+      // 12. Draw Comic Speech Bubbles (Overhead 2D Layer)
       for (const bubble of g.bubbles) {
         const pt = project(bubble.x, bubble.d, bubble.h, W, H, g.camera);
         if (!pt) continue;
@@ -1762,13 +2340,11 @@ export function GenZProtestRunCanvas() {
         ctx.font = '900 13px sans-serif';
         const txtW = ctx.measureText(bubble.text).width;
         const padX = 12;
-        const padY = 6;
         const bx = pt.x - txtW / 2 - padX;
-        const by = pt.y - 32;
+        const by = pt.y - 34;
         const bw = txtW + padX * 2;
         const bh = 24;
 
-        // Comic Bubble Box
         ctx.fillStyle = bubble.color;
         ctx.strokeStyle = '#0f172a';
         ctx.lineWidth = 2.5;
@@ -1777,7 +2353,6 @@ export function GenZProtestRunCanvas() {
         ctx.fill();
         ctx.stroke();
 
-        // Pointer triangle
         ctx.beginPath();
         ctx.moveTo(pt.x - 6, by + bh);
         ctx.lineTo(pt.x + 6, by + bh);
@@ -1786,7 +2361,6 @@ export function GenZProtestRunCanvas() {
         ctx.fill();
         ctx.stroke();
 
-        // Text
         ctx.fillStyle = '#0f172a';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -1795,7 +2369,7 @@ export function GenZProtestRunCanvas() {
         ctx.restore();
       }
 
-      // 11. Subtle Comic Halftone Dot Effect Overlay
+      // Subtle Halftone Overlay
       ctx.fillStyle = 'rgba(15, 23, 42, 0.03)';
       ctx.fillRect(0, 0, W, H);
     };
@@ -1804,19 +2378,21 @@ export function GenZProtestRunCanvas() {
 
     return () => {
       cancelAnimationFrame(animId);
+      audio.stopContinuousSiren();
       window.removeEventListener('resize', resizeCanvas);
     };
   }, [gameState, selectedChar, maxHealth, spawnObstaclesAhead, addParticles, addComicBubble, score, user, setUser]);
 
-  // Trigger Game Over
+  // Game Over Handler
   const triggerGameOver = (reason: string) => {
     gameRef.current.running = false;
     audio.stopBGM();
+    audio.stopContinuousSiren();
     audio.playHit();
     setGameState('gameover');
   };
 
-  // Share Score / Challenge Friends
+  // Share score
   const shareProtestRun = () => {
     soundFx.playClick();
     const text = `📢 Just ran ${distance}m in GENZ PROTEST RUN! Dodged ${detainedVansCount} Delhi police vans and collected ${chaiCollected} cutting chais! Can you beat my score of ${score}? 🇮🇳🔥`;
@@ -1829,29 +2405,26 @@ export function GenZProtestRunCanvas() {
   return (
     <div
       ref={containerRef}
-      className="relative w-full aspect-[4/3] sm:aspect-[16/9] min-h-[500px] max-h-[85vh] rounded-3xl overflow-hidden select-none bg-[#0a0710] border-2 border-[#ff5e00]/30 shadow-2xl font-sans"
+      className="relative w-full aspect-[4/3] sm:aspect-[16/9] min-h-[520px] max-h-[85vh] rounded-3xl overflow-hidden select-none bg-[#0a0710] border-2 border-[#ff5e00]/30 shadow-2xl font-sans"
     >
-      {/* Canvas Viewport */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block cursor-pointer" />
 
       {/* ==================================================== */}
-      {/* 1. TITLE SCREEN OVERLAY                              */}
+      {/* TITLE SCREEN OVERLAY                                 */}
       {/* ==================================================== */}
       {gameState === 'title' && (
         <div className="absolute inset-0 z-30 flex flex-col items-center justify-between p-6 sm:p-10 bg-gradient-to-b from-[#0a0710]/70 via-[#180a1c]/85 to-[#050209]/95 backdrop-blur-sm">
-          {/* Top Pill */}
           <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-orange-500/20 to-purple-500/20 border border-orange-500/40 text-orange-400 text-xs font-mono font-bold tracking-wider animate-pulse">
             <Flame className="w-4 h-4 text-orange-400" />
-            <span>TRENDING INDIAN MEME ARENA ARCADE</span>
+            <span>TRENDING 3D INDIAN MEME ARENA ARCADE</span>
           </div>
 
-          {/* Main Title Banner */}
           <div className="flex flex-col items-center text-center space-y-3 max-w-xl">
             <div className="px-6 py-2 rounded-2xl bg-gradient-to-r from-red-600 to-orange-600 text-white font-black text-2xl sm:text-4xl tracking-tight shadow-xl border-2 border-yellow-300 transform -rotate-1">
               द जेनज़ी प्रोटेस्ट रन
             </div>
             <h1 className="text-3xl sm:text-5xl font-black text-white font-display tracking-wide uppercase drop-shadow-lg">
-              GENZ PROTEST RUN
+              GENZ PROTEST RUN 3D
             </h1>
             <p className="text-xs sm:text-sm text-yellow-200/90 font-medium max-w-md">
               Dodge Dilli police vans, jump barricades, chug cutting chai & march 1000m all the way to Jantar Mantar!
@@ -1859,7 +2432,7 @@ export function GenZProtestRunCanvas() {
 
             <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
               <span className="px-3 py-1 rounded-lg bg-slate-900/80 border border-slate-700 text-[11px] font-mono text-gray-300">
-                🚐 Blue Police Van = 5s Free Van Seva
+                🚐 3D Police Van = 5s Free Van Seva
               </span>
               <span className="px-3 py-1 rounded-lg bg-slate-900/80 border border-slate-700 text-[11px] font-mono text-red-300">
                 👮 Khaki Stick Squad = −40% जान
@@ -1870,7 +2443,6 @@ export function GenZProtestRunCanvas() {
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full max-w-md">
             <button
               onClick={() => {
@@ -1884,7 +2456,6 @@ export function GenZProtestRunCanvas() {
             </button>
           </div>
 
-          {/* Controls Footer */}
           <div className="text-[11px] font-mono text-gray-400 text-center">
             <kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-white">← / A</kbd>{' '}
             <kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-white">→ / D</kbd> Steer &nbsp;|&nbsp;{' '}
@@ -1894,11 +2465,10 @@ export function GenZProtestRunCanvas() {
       )}
 
       {/* ==================================================== */}
-      {/* 2. CHARACTER SELECTION SCREEN                        */}
+      {/* CHARACTER SELECTION SCREEN                           */}
       {/* ==================================================== */}
       {gameState === 'select' && (
         <div className="absolute inset-0 z-30 flex flex-col justify-between p-4 sm:p-8 bg-gradient-to-b from-[#0a0710]/90 to-[#120817]/98 backdrop-blur-md overflow-y-auto">
-          {/* Top Bar */}
           <div className="flex items-center justify-between">
             <button
               onClick={() => {
@@ -1912,12 +2482,11 @@ export function GenZProtestRunCanvas() {
             </button>
             <div className="text-center">
               <h2 className="text-xl sm:text-2xl font-black text-white font-display">कौन चलेगा जंतर मंतर?</h2>
-              <p className="text-[11px] font-mono text-orange-400">PICK YOUR PROTESTER</p>
+              <p className="text-[11px] font-mono text-orange-400">PICK YOUR 3D PROTESTER</p>
             </div>
             <div className="w-16" />
           </div>
 
-          {/* Character Cards Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 my-4 max-w-4xl mx-auto w-full">
             {PROTEST_CHARACTERS.map((char) => (
               <div
@@ -1972,11 +2541,10 @@ export function GenZProtestRunCanvas() {
       )}
 
       {/* ==================================================== */}
-      {/* 3. ACTIVE GAMEPLAY HUD                               */}
+      {/* ACTIVE GAMEPLAY HUD                                  */}
       {/* ==================================================== */}
       {gameState === 'play' && (
         <div className="absolute inset-0 pointer-events-none z-20 flex flex-col justify-between p-4 sm:p-6">
-          {/* Top HUD Bar */}
           <div className="flex items-center justify-between gap-3">
             {/* Health Bar (जान) */}
             <div className="pointer-events-auto flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-slate-950/85 border border-slate-800 shadow-xl backdrop-blur-md">
@@ -1998,7 +2566,7 @@ export function GenZProtestRunCanvas() {
               </span>
             </div>
 
-            {/* Distance Route Progress */}
+            {/* Distance Progress */}
             <div className="flex-1 max-w-xs hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-2xl bg-slate-950/85 border border-slate-800 shadow-xl backdrop-blur-md">
               <span className="text-[10px] font-mono text-gray-400">0M</span>
               <div className="flex-1 h-2 rounded-full bg-slate-800 relative overflow-hidden">
@@ -2011,7 +2579,7 @@ export function GenZProtestRunCanvas() {
               <span className="text-xs">🇮🇳</span>
             </div>
 
-            {/* Stats Pills (Time, Van count, Sound toggle) */}
+            {/* Stats Pills */}
             <div className="pointer-events-auto flex items-center gap-2">
               <div className="px-2.5 py-1 rounded-xl bg-slate-950/85 border border-slate-800 text-xs font-mono text-white">
                 <span className="text-gray-400">TIME </span>
@@ -2036,9 +2604,8 @@ export function GenZProtestRunCanvas() {
             </div>
           </div>
 
-          {/* Bottom Virtual Controls (Touch Mobile JoyStick & Jump Button) */}
+          {/* Virtual Mobile Joystick + Jump Button */}
           <div className="flex items-end justify-between pointer-events-auto">
-            {/* Virtual Joystick Pad */}
             <div
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
@@ -2053,7 +2620,6 @@ export function GenZProtestRunCanvas() {
               />
             </div>
 
-            {/* Jump Button */}
             <button
               onClick={triggerJump}
               className="px-6 py-4 rounded-3xl bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-slate-950 font-black text-sm tracking-widest shadow-2xl active:scale-95 transition-all cursor-pointer border-2 border-white/50"
@@ -2065,10 +2631,10 @@ export function GenZProtestRunCanvas() {
       )}
 
       {/* ==================================================== */}
-      {/* 4. DETAINED OVERLAY (Police Van Mini-Scene)         */}
+      {/* DETAINED OVERLAY (Police Van Detention Cutscene)     */}
       {/* ==================================================== */}
       {gameState === 'detained' && (
-        <div className="absolute inset-0 z-40 flex flex-col items-center justify-center p-6 bg-slate-950/90 backdrop-blur-md text-center">
+        <div className="absolute inset-0 z-40 flex flex-col items-center justify-center p-6 bg-slate-950/92 backdrop-blur-md text-center">
           <div className="max-w-md w-full p-6 rounded-3xl bg-slate-900 border-2 border-blue-500 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
             <div className="w-16 h-16 rounded-full bg-blue-600/20 border-2 border-blue-500 text-3xl flex items-center justify-center mx-auto animate-bounce">
               🚐
@@ -2078,20 +2644,20 @@ export function GenZProtestRunCanvas() {
             </h2>
             <p className="text-xs sm:text-sm text-gray-300 font-medium">
               Dilli Police ki free van seva mein aapka swaagat hain.<br />
-              Tea & biscuits pending. Releasing in:
+              Chai & Parle-G pending. Releasing in:
             </p>
             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-red-600 to-blue-600 text-white font-black text-4xl flex items-center justify-center mx-auto shadow-xl border-4 border-white animate-pulse">
               {detainedCountdown}
             </div>
             <p className="text-[11px] font-mono text-gray-400">
-              Hold tight! You will be released back on the road automatically.
+              Hold tight! Van doors will open automatically.
             </p>
           </div>
         </div>
       )}
 
       {/* ==================================================== */}
-      {/* 5. GAME OVER OVERLAY                                */}
+      {/* GAME OVER OVERLAY                                    */}
       {/* ==================================================== */}
       {gameState === 'gameover' && (
         <div className="absolute inset-0 z-40 flex flex-col items-center justify-center p-6 bg-slate-950/95 backdrop-blur-md text-center">
@@ -2140,7 +2706,7 @@ export function GenZProtestRunCanvas() {
       )}
 
       {/* ==================================================== */}
-      {/* 6. VICTORY OVERLAY (Jantar Mantar Reached!)         */}
+      {/* VICTORY OVERLAY (Jantar Mantar Reached!)             */}
       {/* ==================================================== */}
       {gameState === 'victory' && (
         <div className="absolute inset-0 z-40 flex flex-col items-center justify-center p-6 bg-slate-950/95 backdrop-blur-md text-center">
