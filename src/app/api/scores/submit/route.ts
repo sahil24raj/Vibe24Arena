@@ -10,7 +10,8 @@ const GAME_CEILINGS: Record<string, number> = {
   'eraser-football': 100,
   'hand-cricket': 300,
   'pappu-pakia': 25000,
-  'escape-door': 50000
+  'escape-door': 50000,
+  'indian-politics-arena': 50000
 };
 
 export async function POST(request: NextRequest) {

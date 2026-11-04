@@ -24,6 +24,7 @@ const GAME_RULES: Record<string, GameRule> = {
   'tic-tac-toe': { maxScore: 500, minDurationMs: 1000, maxPointsPerSecond: 30 },
   'brain-pot': { maxScore: 3000, minDurationMs: 2000, maxPointsPerSecond: 60 },
   'escape-door': { maxScore: 50000, minDurationMs: 1000, maxPointsPerSecond: 500 },
+  'indian-politics-arena': { maxScore: 50000, minDurationMs: 1000, maxPointsPerSecond: 500 },
 };
 
 const FinishSessionSchema = z.object({

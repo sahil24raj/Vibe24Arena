@@ -122,6 +122,44 @@ export const INITIAL_RECENT_MATCHES: RecentMatch[] = [];
 
 export const GAMES_CATALOG: GameItem[] = [
   {
+    id: 'indian-politics-arena',
+    title: 'Indian Politics Arena ⚔️🏛️',
+    slug: 'indian-politics-arena',
+    tagline: 'Sansad Se Sadak Tak, Fight Karo! 8 satirical netas, real fighting engine & super attacks!',
+    description: 'The ultimate 2D browser-based political satire fighting game powered by Vibe Arena! Choose from 8 original satirical caricatures including Chai Commander, Vikas Baba, Jumlebaaz, Dharna King, and Media Master. Fight across the Parliament, Election Rally, Jantar Mantar, and 9 PM Studio with high/low blocks, combos, and cinematic SHAKTI super moves!',
+    category: '🔥 Trending Meme Vibes',
+    categoryKey: 'meme',
+    thumbnail: '🏛️',
+    bannerImage: '/games/indian-politics-arena.jpg',
+    playCount: 420000,
+    rating: 4.99,
+    difficulty: 'Hard',
+    duration: '2-4 min',
+    multiplayer: true,
+    multiplayerModes: ['local', 'online', 'ai'],
+    isTrending: true,
+    isNew: true,
+    isPopular: true,
+    isFeatured: true,
+    tags: ['Fighting', 'Arcade', 'Action', 'Satire', 'Political', 'Multiplayer', '2-Player'],
+    controls: [
+      'A / D or ← / →: Move Forward & Backward',
+      'W or ↑: High Jump / S or ↓: Crouch & Low Guard',
+      'Hold Back: Block High & Mid Attacks',
+      'J: Punch (Chains to Cross & Uppercut)',
+      'K: Kick (Chains to Roundhouse & Sweeps)',
+      'I or J + K: Command Throw / Grab',
+      'L or SPACEBAR: Unleash 100% SHAKTI Super Attack',
+      'ESC: Chai Break Pause Menu'
+    ],
+    rules: [
+      'Deplete the opponent HP to 0 or have more HP when the 60-second timer hits zero.',
+      'Win 2 out of 3 rounds to capture the Supreme Kursi.',
+      'Block high/mid attacks standing, block sweeps crouching, and command-grab blocking turtles.',
+      'Deal and take damage to build the 100% SHAKTI meter for your signature finisher.'
+    ]
+  },
+  {
     id: 'genz-protest-run',
     title: 'GenZ Protest Run 🏃📢',
     slug: 'genz-protest-run',
