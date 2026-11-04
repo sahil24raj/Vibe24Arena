@@ -122,6 +122,44 @@ export const INITIAL_RECENT_MATCHES: RecentMatch[] = [];
 
 export const GAMES_CATALOG: GameItem[] = [
   {
+    id: 'auto-rush',
+    title: 'Auto Rush 3D 🛺💨',
+    slug: 'auto-rush',
+    tagline: 'The Gurugram Grand Prix! 8 Indian auto-rickshaws, real 3-wheel physics, drift & nitro!',
+    description: 'The ultimate 3D Indian auto-rickshaw racing game powered by Vibe Arena! Inspired by the legendary streets of Delhi NCR, race against 7 intelligent CPU rivals or real players across Cyber City, NH-48 Expressway, Kartavya Path India Gate, and Old Delhi Red Fort. Customize and tune your autos in the 3D garage with custom paint, engine upgrades, drift mechanics, dual nitro exhaust flames, and realistic 2-stroke sound!',
+    category: '👥 Squad & Multiplayer Thrills',
+    categoryKey: 'squad',
+    thumbnail: '🛺',
+    bannerImage: '/games/auto-rush.jpg',
+    playCount: 480000,
+    rating: 4.98,
+    difficulty: 'Medium',
+    duration: '2-5 min',
+    multiplayer: true,
+    multiplayerModes: ['local', 'online', 'ai'],
+    isTrending: true,
+    isNew: true,
+    isPopular: true,
+    isFeatured: true,
+    tags: ['Racing', '3D', 'Auto-Rickshaw', 'Physics', 'Drift', 'Nitro', 'Multiplayer'],
+    controls: [
+      'W or ↑: Accelerate (गैस दबाएं)',
+      'S or ↓: Brake & Reverse (ब्रेक / पीछे)',
+      'A / D or ← / →: Steer Left & Right (मोड़ें)',
+      'Shift: Drift Slip (ड्रिफ्ट स्लाइड)',
+      'Space: Nitro Boost (नाइट्रो बूस्ट)',
+      'H: Horn (हॉर्न बजाएं)',
+      'C: Toggle Camera Views (Chase / Hood / Bumper)',
+      'F: Fullscreen Mode (पूर्ण स्क्रीन)'
+    ],
+    rules: [
+      'Navigate the circuits and cross all checkpoints without going off-track.',
+      'Hold Shift into corners to drift and maintain high exit momentum.',
+      'Deploy your Nitro on long highway straightaways to overtake rivals.',
+      'Finish 1st on the podium to earn maximum coins and upgrade your garage!'
+    ]
+  },
+  {
     id: 'indian-politics-arena',
     title: 'Indian Politics Arena ⚔️🏛️',
     slug: 'indian-politics-arena',

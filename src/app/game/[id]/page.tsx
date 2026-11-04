@@ -23,6 +23,7 @@ import { FakeBombCanvas } from '@/components/games/fake-bomb/FakeBombCanvas';
 import { EscapeDoorGame } from '@/components/games/escape-door/EscapeDoorGame';
 import { GenZProtestRunCanvas } from '@/components/games/genz-protest-run/GenZProtestRunCanvas';
 import { IndianPoliticsArenaGame } from '@/components/games/indian-politics-arena/IndianPoliticsArenaGame';
+import { AutoRushGame } from '@/components/games/auto-rush/AutoRushGame';
 
 import { SingleUnifiedMultiplayerModal } from '@/components/game-shell/SingleUnifiedMultiplayerModal';
 import {
@@ -145,6 +146,12 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
 
   const renderGameCanvas = () => {
     switch (game.id) {
+      case 'auto-rush':
+        return (
+          <React.Suspense fallback={<div className="p-8 text-center text-xs font-mono text-[#FF9933]">Loading Auto Rush 3D...</div>}>
+            <AutoRushGame />
+          </React.Suspense>
+        );
       case 'indian-politics-arena':
         return (
           <React.Suspense fallback={<div className="p-8 text-center text-xs font-mono text-[#FF9933]">Loading Indian Politics Arena...</div>}>
