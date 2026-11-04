@@ -2,20 +2,24 @@
 
 import React from 'react';
 import { CharacterConfig, MatchStats } from '../engine/types';
-import { Pause, Flame } from 'lucide-react';
+import { Pause, Flame, Maximize, Minimize } from 'lucide-react';
 
 interface FightHUDProps {
   p1: CharacterConfig;
   p2: CharacterConfig;
   stats: MatchStats;
   onPause: () => void;
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
 }
 
 export const FightHUD: React.FC<FightHUDProps> = ({
   p1,
   p2,
   stats,
-  onPause
+  onPause,
+  isFullscreen,
+  onToggleFullscreen
 }) => {
   return (
     <div className="absolute inset-0 pointer-events-none z-30 flex flex-col justify-between p-3 sm:p-5 select-none">
@@ -90,13 +94,24 @@ export const FightHUD: React.FC<FightHUDProps> = ({
             </span>
           </div>
 
-          <button
-            onClick={onPause}
-            className="mt-2 pointer-events-auto p-1.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-white transition-all transform hover:scale-105 active:scale-95"
-            title="Pause (Esc)"
-          >
-            <Pause className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-1.5 mt-2">
+            <button
+              onClick={onPause}
+              className="pointer-events-auto p-1.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-white transition-all transform hover:scale-105 active:scale-95"
+              title="Pause (Esc)"
+            >
+              <Pause className="w-4 h-4" />
+            </button>
+            {onToggleFullscreen && (
+              <button
+                onClick={onToggleFullscreen}
+                className="pointer-events-auto p-1.5 bg-white/10 hover:bg-white/20 border border-[#00D2FF]/40 rounded-xl text-[#00D2FF] hover:text-white transition-all transform hover:scale-105 active:scale-95"
+                title={isFullscreen ? 'Exit Fullscreen (F)' : 'Fullscreen (F)'}
+              >
+                {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* P2 Side */}

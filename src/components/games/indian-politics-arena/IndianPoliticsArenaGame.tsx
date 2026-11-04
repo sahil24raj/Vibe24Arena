@@ -54,12 +54,14 @@ export const IndianPoliticsArenaGame: React.FC = () => {
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [isLoading3D, setIsLoading3D] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Multiplayer Room State
   const [roomCode, setRoomCode] = useState<string | null>(null);
   const [isConnectingRoom, setIsConnectingRoom] = useState(false);
   const [roomError, setRoomError] = useState<string | null>(null);
 
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const engineRef = useRef<CombatEngine | null>(null);
   const threeEngineRef = useRef<ThreeFighterEngine | null>(null);
@@ -68,6 +70,74 @@ export const IndianPoliticsArenaGame: React.FC = () => {
   const lastTimeRef = useRef<number>(performance.now());
 
   const { user, addCoins, addXP } = useAppStore();
+
+  // Fullscreen Toggle Handler
+  const toggleFullscreen = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    if (!document.fullscreenElement) {
+      if (container.requestFullscreen) {
+        container.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {
+          setIsFullscreen(prev => !prev);
+        });
+      } else {
+        setIsFullscreen(prev => !prev);
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      }
+      setIsFullscreen(false);
+    }
+  }, []);
+
+  // Listen to fullscreen changes (e.g. Esc key pressed by user)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+      if (canvasRef.current && threeEngineRef.current) {
+        setTimeout(() => {
+          const rect = canvasRef.current?.getBoundingClientRect();
+          if (rect) {
+            threeEngineRef.current?.resize(rect.width, rect.height);
+          }
+        }, 120);
+      }
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  // Keyboard shortcut F for Fullscreen
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'f' || e.key === 'F') {
+        const tag = (e.target as HTMLElement)?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+        toggleFullscreen();
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [toggleFullscreen]);
+
+  // Dynamic Canvas Resize Observer to ensure perfect 16:9 scaling and no clipped elements
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ro = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        if (width > 0 && height > 0 && threeEngineRef.current) {
+          threeEngineRef.current.resize(width, height);
+        }
+      }
+    });
+    ro.observe(canvas);
+    return () => ro.disconnect();
+  }, []);
 
   // Check orientation for mobile
   useEffect(() => {
@@ -298,7 +368,14 @@ export const IndianPoliticsArenaGame: React.FC = () => {
   };
 
   return (
-    <div className="relative w-full h-[620px] max-h-[88vh] bg-[#060B1E] rounded-3xl overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex items-center justify-center select-none font-sans">
+    <div
+      ref={containerRef}
+      className={`relative w-full bg-[#060B1E] flex items-center justify-center select-none font-sans transition-all duration-300 ${
+        isFullscreen
+          ? 'fixed inset-0 z-[9999] w-screen h-screen rounded-none border-0'
+          : 'h-[620px] max-h-[88vh] rounded-3xl overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.8)]'
+      }`}
+    >
       {/* Mobile Portrait Orientation Prompt */}
       {isPortrait && (
         <div className="absolute inset-0 z-50 bg-[#060B1E] flex flex-col items-center justify-center p-6 text-center text-white space-y-4">
@@ -317,7 +394,7 @@ export const IndianPoliticsArenaGame: React.FC = () => {
         ref={canvasRef}
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
-        className="w-full h-full object-cover block bg-[#0B1536]"
+        className="w-full h-full object-contain block bg-[#0B1536]"
       />
 
       {/* 3D Loading Spinner Overlay */}
@@ -359,6 +436,8 @@ export const IndianPoliticsArenaGame: React.FC = () => {
           onOpenHelp={() => setShowHelpModal(true)}
           isMuted={isMuted}
           onToggleMute={handleToggleMute}
+          isFullscreen={isFullscreen}
+          onToggleFullscreen={toggleFullscreen}
         />
       )}
 
@@ -382,6 +461,8 @@ export const IndianPoliticsArenaGame: React.FC = () => {
               if (engineRef.current) engineRef.current.isPaused = true;
               setScreen('pause');
             }}
+            isFullscreen={isFullscreen}
+            onToggleFullscreen={toggleFullscreen}
           />
 
           {/* Virtual Mobile Joystick + Buttons */}

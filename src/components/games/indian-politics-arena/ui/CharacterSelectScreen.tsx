@@ -158,14 +158,34 @@ export const CharacterSelectScreen: React.FC<CharacterSelectScreenProps> = ({
           </div>
         </div>
 
-        {/* Center: 8-Fighter Grid + Stage/Diff Selectors */}
-        <div className="lg:col-span-6 flex flex-col items-center gap-4">
-          <div className="text-xs font-bold tracking-widest text-gray-400 uppercase">
-            CLICK AVATAR TO CHOOSE {pickingForP1 ? '1P' : mode === 'twoplayer' ? '2P' : 'CPU'}
+        {/* Center: 9-Fighter Grid + Stage/Diff Selectors */}
+        <div className="lg:col-span-6 flex flex-col items-center gap-3">
+          <div className="flex items-center gap-2 bg-black/50 px-3 py-1 rounded-full border border-white/10 text-xs font-bold">
+            <span className="text-gray-400">SELECTING:</span>
+            <button
+              onClick={() => setPickingForP1(true)}
+              className={`px-3 py-0.5 rounded-full transition-all text-xs ${
+                pickingForP1
+                  ? 'bg-[#FF9933] text-black font-black shadow-md'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              1P (YOU)
+            </button>
+            <button
+              onClick={() => setPickingForP1(false)}
+              className={`px-3 py-0.5 rounded-full transition-all text-xs ${
+                !pickingForP1
+                  ? 'bg-[#00D2FF] text-black font-black shadow-md'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              {mode === 'twoplayer' ? '2P (FRIEND)' : 'CPU (OPPONENT)'}
+            </button>
           </div>
 
-          {/* 8 Roster Tiles */}
-          <div className="grid grid-cols-4 gap-2.5 sm:gap-3 w-full max-w-lg">
+          {/* 9 Roster Tiles */}
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-2.5 w-full max-w-xl">
             {CHARACTERS_ROSTER.map((char, index) => {
               const isP1 = p1Index === index;
               const isP2 = p2Index === index;
@@ -174,22 +194,22 @@ export const CharacterSelectScreen: React.FC<CharacterSelectScreenProps> = ({
                 <button
                   key={char.id}
                   onClick={() => handleTileClick(index)}
-                  className={`relative p-2 sm:p-3 rounded-2xl flex flex-col items-center justify-center transition-all transform hover:scale-105 active:scale-95 border-2 ${
+                  className={`relative p-2 rounded-2xl flex flex-col items-center justify-center transition-all transform hover:scale-105 active:scale-95 border-2 ${
                     isP1
-                      ? 'border-[#FF9933] bg-[#FF9933]/20 shadow-[0_0_15px_rgba(255,153,51,0.5)]'
+                      ? 'border-[#FF9933] bg-[#FF9933]/25 shadow-[0_0_15px_rgba(255,153,51,0.5)] ring-2 ring-[#FF9933]/50'
                       : isP2
-                      ? 'border-[#00D2FF] bg-[#00D2FF]/20 shadow-[0_0_15px_rgba(0,210,255,0.5)]'
-                      : 'border-white/10 bg-[#0B1536]/60 hover:border-white/30'
+                      ? 'border-[#00D2FF] bg-[#00D2FF]/25 shadow-[0_0_15px_rgba(0,210,255,0.5)] ring-2 ring-[#00D2FF]/50'
+                      : 'border-white/10 bg-[#0B1536]/70 hover:border-white/30'
                   }`}
                 >
                   {/* Indicators */}
                   {isP1 && (
-                    <span className="absolute -top-2 -left-2 bg-[#FF9933] text-black font-black text-[10px] px-1.5 py-0.5 rounded-full shadow">
+                    <span className="absolute -top-2 -left-1.5 bg-[#FF9933] text-black font-black text-[9px] px-1.5 py-0.2 rounded-full shadow">
                       1P
                     </span>
                   )}
                   {isP2 && (
-                    <span className="absolute -top-2 -right-2 bg-[#00D2FF] text-black font-black text-[10px] px-1.5 py-0.5 rounded-full shadow">
+                    <span className="absolute -top-2 -right-1.5 bg-[#00D2FF] text-black font-black text-[9px] px-1.5 py-0.2 rounded-full shadow">
                       {mode === 'twoplayer' ? '2P' : 'CPU'}
                     </span>
                   )}
@@ -198,12 +218,12 @@ export const CharacterSelectScreen: React.FC<CharacterSelectScreenProps> = ({
                     <img
                       src={char.facePhoto}
                       alt={char.name}
-                      className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-cover border border-white/20 mb-1"
+                      className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover border border-white/20 mb-1"
                     />
                   ) : (
                     <span className="text-3xl sm:text-4xl">{char.avatarIcon}</span>
                   )}
-                  <span className="text-[10px] sm:text-xs font-black text-white mt-1 text-center truncate max-w-full">
+                  <span className="text-[9px] sm:text-[10px] font-black text-white mt-0.5 text-center truncate max-w-full leading-tight">
                     {char.name}
                   </span>
                 </button>

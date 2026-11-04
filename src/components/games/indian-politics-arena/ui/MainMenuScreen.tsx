@@ -11,7 +11,9 @@ import {
   VolumeX,
   HelpCircle,
   Sparkles,
-  Flame
+  Flame,
+  Maximize,
+  Minimize
 } from 'lucide-react';
 import { GameMode } from '../engine/types';
 
@@ -21,6 +23,8 @@ interface MainMenuScreenProps {
   onOpenHelp: () => void;
   isMuted: boolean;
   onToggleMute: () => void;
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
 }
 
 export const MainMenuScreen: React.FC<MainMenuScreenProps> = ({
@@ -28,7 +32,9 @@ export const MainMenuScreen: React.FC<MainMenuScreenProps> = ({
   onOpenRoster,
   onOpenHelp,
   isMuted,
-  onToggleMute
+  onToggleMute,
+  isFullscreen,
+  onToggleFullscreen
 }) => {
   return (
     <div className="absolute inset-0 z-40 bg-gradient-to-b from-[#060B1E] via-[#0A1128] to-[#040817] flex flex-col items-center justify-between p-6 select-none overflow-hidden">
@@ -59,6 +65,15 @@ export const MainMenuScreen: React.FC<MainMenuScreenProps> = ({
           >
             {isMuted ? <VolumeX className="w-5 h-5 text-red-400" /> : <Volume2 className="w-5 h-5 text-green-400" />}
           </button>
+          {onToggleFullscreen && (
+            <button
+              onClick={onToggleFullscreen}
+              className="p-2.5 bg-white/10 hover:bg-white/20 border border-[#00D2FF]/40 rounded-full text-[#00D2FF] hover:text-white transition-all transform hover:scale-105"
+              title={isFullscreen ? 'Exit Fullscreen (F)' : 'Fullscreen (F)'}
+            >
+              {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
+            </button>
+          )}
         </div>
       </div>
 

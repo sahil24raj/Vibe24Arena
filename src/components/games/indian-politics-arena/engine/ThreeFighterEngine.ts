@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { ArenaConfig, CharacterConfig, FighterState, MoveId } from './types';
 import { Fighter } from './Fighter';
 
@@ -46,7 +48,7 @@ export class ThreeFighterEngine {
       powerPreference: 'high-performance'
     });
     this.renderer.setSize(canvas.width, canvas.height, false);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    this.renderer.setPixelRatio(Math.min(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1, 2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -55,7 +57,17 @@ export class ThreeFighterEngine {
     this.camera = new THREE.PerspectiveCamera(45, canvas.width / canvas.height, 0.5, 100);
     this.camera.position.set(0, 1.8, 6.2);
 
+    // Initialize GLTFLoader with DRACOLoader (offline-first with CDN fallback)
+    const dracoLoader = new DRACOLoader();
+    try {
+      dracoLoader.setDecoderPath('/draco/gltf/');
+    } catch {
+      dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+    }
+    dracoLoader.preload();
+
     this.gltfLoader = new GLTFLoader();
+    this.gltfLoader.setDRACOLoader(dracoLoader);
 
     this.scene.add(this.stageGroup);
     this.scene.add(this.lightsGroup);
@@ -113,40 +125,55 @@ export class ThreeFighterEngine {
 
     let gltf = this.modelCache.get(url);
     if (!gltf) {
-      gltf = await new Promise<GLTF>((resolve, reject) => {
-        this.gltfLoader.load(
-          url,
-          g => {
-            this.modelCache.set(url, g);
-            resolve(g);
-          },
-          xhr => {
-            if (xhr.lengthComputable && onProgress) {
-              onProgress(Math.floor((xhr.loaded / xhr.total) * 100));
+      try {
+        gltf = await new Promise<GLTF>((resolve, reject) => {
+          this.gltfLoader.load(
+            url,
+            g => {
+              this.modelCache.set(url, g);
+              resolve(g);
+            },
+            xhr => {
+              if (xhr.lengthComputable && onProgress) {
+                onProgress(Math.floor((xhr.loaded / xhr.total) * 100));
+              }
+            },
+            err => {
+              console.warn(`Error loading model from ${url}:`, err);
+              reject(err);
             }
-          },
-          reject
-        );
-      });
+          );
+        });
+      } catch (e) {
+        console.warn(`Could not load GLTF from ${url}, using stylized fallback model:`, e);
+      }
     }
 
-    // Clone model hierarchy
-    const model = gltf.scene.clone(true);
-    model.traverse(node => {
-      if ((node as THREE.Mesh).isMesh) {
-        node.castShadow = true;
-        node.receiveShadow = true;
-      }
-    });
-
-    const mixer = new THREE.AnimationMixer(model);
+    let model: THREE.Group;
     const actions = new Map<string, THREE.AnimationAction>();
+    let mixer: THREE.AnimationMixer;
 
-    // Store animation clips
-    gltf.animations.forEach(clip => {
-      const action = mixer.clipAction(clip);
-      actions.set(clip.name.toLowerCase(), action);
-    });
+    if (gltf && gltf.scene) {
+      // Use official SkeletonUtils.clone for animated skinned mesh hierarchy
+      model = SkeletonUtils.clone(gltf.scene) as THREE.Group;
+      model.traverse(node => {
+        if ((node as THREE.Mesh).isMesh) {
+          node.castShadow = true;
+          node.receiveShadow = true;
+          // Crucial: avoid premature bounding box culling during active fighting animations
+          (node as THREE.Mesh).frustumCulled = false;
+        }
+      });
+
+      mixer = new THREE.AnimationMixer(model);
+      gltf.animations.forEach(clip => {
+        const action = mixer.clipAction(clip);
+        actions.set(clip.name.toLowerCase(), action);
+      });
+    } else {
+      model = this.createFallbackFighterMesh(char);
+      mixer = new THREE.AnimationMixer(model);
+    }
 
     if (id === 1) {
       this.p1Model = model;
@@ -161,6 +188,52 @@ export class ThreeFighterEngine {
       this.scene.add(model);
       this.playAction(2, 'walk_fwd');
     }
+  }
+
+  // Stylized 3D Fallback Mesh with Politician Face Texture
+  private createFallbackFighterMesh(char: CharacterConfig): THREE.Group {
+    const group = new THREE.Group();
+    const primaryMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(char.accent),
+      roughness: 0.3,
+      metalness: 0.1
+    });
+    const secondaryMat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(char.secondaryColor || '#ffffff'),
+      roughness: 0.5
+    });
+
+    // Torso (Kurta/Suit)
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.9, 0.4), primaryMat);
+    torso.position.set(0, 0.95, 0);
+    group.add(torso);
+
+    // Head
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 16, 16), secondaryMat);
+    head.position.set(0, 1.55, 0);
+    group.add(head);
+
+    // Legs
+    const legGeo = new THREE.CylinderGeometry(0.1, 0.08, 0.6);
+    const leftLeg = new THREE.Mesh(legGeo, secondaryMat);
+    leftLeg.position.set(-0.2, 0.3, 0);
+    const rightLeg = new THREE.Mesh(legGeo, secondaryMat);
+    rightLeg.position.set(0.2, 0.3, 0);
+    group.add(leftLeg, rightLeg);
+
+    // Face Caricature Billboard Sprite if facePhoto exists
+    if (char.facePhoto && typeof window !== 'undefined') {
+      const textureLoader = new THREE.TextureLoader();
+      textureLoader.load(char.facePhoto, tex => {
+        const spriteMat = new THREE.SpriteMaterial({ map: tex });
+        const sprite = new THREE.Sprite(spriteMat);
+        sprite.position.set(0, 1.58, 0.15);
+        sprite.scale.set(0.65, 0.65, 1);
+        group.add(sprite);
+      });
+    }
+
+    return group;
   }
 
   public setStage(arena: ArenaConfig) {
@@ -214,12 +287,15 @@ export class ThreeFighterEngine {
       this.buildRallyDecor(arena);
     }
 
-    // Set Lighting
+    // Set Vibrant Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.4);
+    this.lightsGroup.add(ambientLight);
+
     const hemiLight = new THREE.HemisphereLight(0xffeedd, 0x223344, 1.2);
     this.lightsGroup.add(hemiLight);
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 2.2);
-    dirLight.position.set(-5, 10, 6);
+    const dirLight = new THREE.DirectionalLight(0xfff8ee, 2.4);
+    dirLight.position.set(5, 10, 7);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = 1024;
     dirLight.shadow.mapSize.height = 1024;
@@ -297,13 +373,39 @@ export class ThreeFighterEngine {
 
   public playAction(fighterId: 1 | 2, animName: string, loop = true) {
     const actions = fighterId === 1 ? this.p1Actions : this.p2Actions;
-    let action = actions.get(animName.toLowerCase());
+    if (!actions || actions.size === 0) return;
 
-    // Fallback if specific move clip not found
+    const lower = animName.toLowerCase();
+    let action = actions.get(lower);
+
+    // Flexible fallback matching across character-specific clips
     if (!action) {
-      if (animName.includes('kick')) action = actions.get('frontkick') || actions.get('kick');
-      else if (animName.includes('punch') || animName.includes('jab')) action = actions.get('cross') || actions.get('jabelbow');
-      else action = actions.get('walk_fwd');
+      if (lower.includes('kick')) {
+        action = actions.get('kick') || actions.get('frontkick') || actions.get('kick_m') || actions.get('highkick') || actions.get('highkick_m') || actions.get('crescent') || actions.get('flyingkick');
+      } else if (lower.includes('punch') || lower.includes('jab') || lower.includes('cross')) {
+        action = actions.get('cross') || actions.get('jab') || actions.get('jab_m') || actions.get('cross_m') || actions.get('jabelbow') || actions.get('jabcross');
+      } else if (lower.includes('upper')) {
+        action = actions.get('uppercut') || actions.get('uppercut_m') || actions.get('elbowupper');
+      } else if (lower.includes('crouch')) {
+        action = actions.get('crouch');
+      } else if (lower.includes('jump')) {
+        action = actions.get('jump');
+      } else if (lower.includes('hit')) {
+        action = actions.get('hit');
+      } else if (lower.includes('block')) {
+        action = actions.get('block') || actions.get('guardbounce');
+      } else if (lower.includes('knockdown')) {
+        action = actions.get('knockdown');
+      } else if (lower.includes('getup') || lower.includes('wakeup')) {
+        action = actions.get('getup');
+      } else if (lower.includes('special') || lower.includes('super')) {
+        action = actions.get('palm') || actions.get('palm_m') || actions.get('butterfly') || actions.get('hurricane_m') || actions.get('slammer') || actions.get('kneeupper');
+      }
+      
+      // General fallbacks
+      if (!action) {
+        action = actions.get('walk_fwd') || actions.values().next().value;
+      }
     }
 
     if (!action) return;
@@ -480,3 +582,4 @@ export class ThreeFighterEngine {
     this.renderer.dispose();
   }
 }
+
