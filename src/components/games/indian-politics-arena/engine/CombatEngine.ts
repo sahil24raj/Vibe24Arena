@@ -49,8 +49,8 @@ export class CombatEngine {
     this.audio = FightingAudio.getInstance();
     this.ai = new AIAgent('normal');
 
-    this.p1 = new Fighter(1, p1Char, 280, true);
-    this.p2 = new Fighter(2, p2Char, 680, false);
+    this.p1 = new Fighter(1, p1Char, 380, true);
+    this.p2 = new Fighter(2, p2Char, 580, false);
   }
 
   public update(p1Input: PlayerInput, p2InputOverride?: PlayerInput): CombatHitEvent[] {
@@ -139,6 +139,19 @@ export class CombatEngine {
       this.handleHitEvent(hit2);
     }
 
+    // Pushbox Collision: Keep fighters separated by min 65px so they don't clip through each other
+    const distBetween = Math.abs(this.p1.x - this.p2.x);
+    if (distBetween < 65) {
+      const pushAmount = (65 - distBetween) / 2;
+      if (this.p1.x < this.p2.x) {
+        this.p1.x = Math.max(80, this.p1.x - pushAmount);
+        this.p2.x = Math.min(880, this.p2.x + pushAmount);
+      } else {
+        this.p1.x = Math.min(880, this.p1.x + pushAmount);
+        this.p2.x = Math.max(80, this.p2.x - pushAmount);
+      }
+    }
+
     // Check Round Timer & Knockouts
     if (!this.isMatchOver) {
       this.timerInterval++;
@@ -162,7 +175,7 @@ export class CombatEngine {
     fighter.superMeter = 0;
     this.superCinematicActive = true;
     this.superCinematicFighter = fighter;
-    this.superCinematicTimer = 45; // 45 frames freeze
+    this.superCinematicTimer = 75; // 75 frames freeze (1.25s cinematic buildup)
 
     // Play signature super audio or character voice
     if (fighter.config.superSoundUrl) {
@@ -215,8 +228,8 @@ export class CombatEngine {
     } else {
       this.round++;
       this.timeRemaining = ROUND_TIME_SECONDS;
-      this.p1.reset(280, true);
-      this.p2.reset(680, false);
+      this.p1.reset(380, true);
+      this.p2.reset(580, false);
       setTimeout(() => {
         this.audio.playRoundVoice(this.round);
       }, 1000);
@@ -232,8 +245,8 @@ export class CombatEngine {
     this.winner = null;
     this.isPaused = false;
     this.superCinematicActive = false;
-    this.p1.reset(280, true);
-    this.p2.reset(680, false);
+    this.p1.reset(380, true);
+    this.p2.reset(580, false);
     this.audio.playRoundVoice(1);
     this.audio.playFighterVoice(this.p1.config.id);
   }
@@ -251,7 +264,14 @@ export class CombatEngine {
       p2Combo: this.p2.comboCounter,
       timeRemaining: this.timeRemaining,
       isOver: this.isMatchOver,
-      winner: this.winner
+      winner: this.winner,
+      superActive: this.superCinematicActive,
+      superCasterId: this.superCinematicFighter?.id,
+      superMoveName: this.superCinematicFighter?.config.superName,
+      superCharacterName: this.superCinematicFighter?.config.name,
+      superFacePhoto: this.superCinematicFighter?.config.facePhoto,
+      superIntroLine: this.superCinematicFighter?.config.introLine,
+      superAccent: this.superCinematicFighter?.config.accent
     };
   }
 }

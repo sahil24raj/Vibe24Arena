@@ -194,6 +194,51 @@ export const FightHUD: React.FC<FightHUDProps> = ({
         </div>
       </div>
 
+      {/* FightKaro Style Cinematic Super Attack Banner */}
+      {stats.superActive && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/65 backdrop-blur-[2px] transition-all animate-in fade-in duration-200 z-50">
+          <div className="w-full py-4 sm:py-6 bg-gradient-to-r from-transparent via-[#0B1536]/95 to-transparent border-y-4 border-[#FFD700] shadow-[0_0_35px_rgba(255,215,0,0.5)] flex items-center justify-center relative overflow-hidden">
+            {/* Speed Lines Background Glow */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-500/20 via-transparent to-transparent pointer-events-none animate-pulse" />
+
+            <div className="flex items-center gap-4 sm:gap-8 max-w-3xl px-6 relative z-10 transform -skew-x-6">
+              {/* Fighter Photo */}
+              <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-2xl bg-black border-3 border-[#FFD700] shadow-[0_0_20px_#FFD700] overflow-hidden shrink-0 transform skew-x-6">
+                {stats.superFacePhoto ? (
+                  <img
+                    src={stats.superFacePhoto}
+                    alt={stats.superCharacterName || 'Super'}
+                    className="w-full h-full object-cover scale-110"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-4xl bg-amber-900/60 text-[#FFD700]">
+                    ⚡
+                  </div>
+                )}
+              </div>
+
+              {/* Text Info */}
+              <div className="space-y-1 transform skew-x-6">
+                <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#FFD700] text-black text-[11px] font-black uppercase tracking-wider animate-bounce">
+                  ⚡ SUPER ATTACK UNLEASHED ⚡
+                </div>
+                <div className="text-xl sm:text-2xl font-black text-gray-200 uppercase tracking-wide">
+                  {stats.superCharacterName}
+                </div>
+                <div className="text-2xl sm:text-4xl lg:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#FFD700] via-[#FF9933] to-[#FF4500] tracking-tight drop-shadow-[0_2px_12px_rgba(255,153,51,0.8)]">
+                  {stats.superMoveName}
+                </div>
+                {stats.superIntroLine && (
+                  <div className="text-xs sm:text-sm font-bold text-amber-200/90 italic">
+                    "{stats.superIntroLine}"
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Bottom Spacer */}
       <div className="h-6" />
     </div>

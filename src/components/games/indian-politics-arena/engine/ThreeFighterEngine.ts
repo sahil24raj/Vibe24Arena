@@ -485,13 +485,27 @@ export class ThreeFighterEngine {
       this.syncFighterAnimation(2, p2);
     }
 
-    // 4. Update Camera midpoint tracking & Screen Shake
+    // 4. Update Camera tracking (Dramatic zoom in Super, smooth midpoint in combat)
     const midX = ((((p1.x + p2.x) / 2) - 480) / 400) * 5.2;
     const dist = Math.abs(p1.x - p2.x) / 100;
-    const targetCamZ = 4.8 + dist * 0.45;
 
-    this.camera.position.x += (midX - this.camera.position.x) * 0.1;
-    this.camera.position.z += (targetCamZ - this.camera.position.z) * 0.08;
+    let targetCamX = midX;
+    let targetCamZ = 4.8 + dist * 0.45;
+    let lookAtX = midX;
+    let lookAtY = 1.2;
+
+    if (isSuperActive) {
+      // Find super caster
+      const caster = p1.superMeter === 0 && p1.state === 'super' ? p1 : (p2.superMeter === 0 && p2.state === 'super' ? p2 : (p1.superMeter < p2.superMeter ? p1 : p2));
+      const caster3DX = ((caster.x - 480) / 400) * 5.2;
+      targetCamX = caster3DX;
+      targetCamZ = 3.6; // Dramatic close-up zoom
+      lookAtX = caster3DX;
+      lookAtY = 1.5;
+    }
+
+    this.camera.position.x += (targetCamX - this.camera.position.x) * 0.12;
+    this.camera.position.z += (targetCamZ - this.camera.position.z) * 0.1;
 
     // Shake
     if (this.trauma > 0) {
@@ -502,7 +516,7 @@ export class ThreeFighterEngine {
     } else {
       this.camera.position.y = 1.8;
     }
-    this.camera.lookAt(midX, 1.2, 0);
+    this.camera.lookAt(lookAtX, lookAtY, 0);
 
     // 5. Update Sparks
     for (let i = this.sparks.length - 1; i >= 0; i--) {
@@ -519,16 +533,49 @@ export class ThreeFighterEngine {
       }
     }
 
-    // 6. Special Super Props (e.g. Bulldozer charging)
+    // 6. Special Super Props (Chakra, Bulldozer, Character Super VFX)
+    const modiFighter = p1.config.id === 'modi' ? p1 : (p2.config.id === 'modi' ? p2 : null);
+    if (this.chakraMesh) {
+      if (isSuperActive && modiFighter) {
+        this.chakraMesh.visible = true;
+        const modi3DX = ((modiFighter.x - 480) / 400) * 5.2;
+        this.chakraMesh.position.set(modi3DX + (modiFighter.facingRight ? 0.6 : -0.6), 2.1, 0.2);
+        this.chakraMesh.rotation.z += 0.35;
+        this.chakraMesh.rotation.x += 0.15;
+        if (Math.random() < 0.4) {
+          this.spawnSparks(this.chakraMesh.position.x, this.chakraMesh.position.y, 0xffd700, 4);
+        }
+      } else {
+        this.chakraMesh.visible = false;
+      }
+    }
+
+    const yogiFighter = p1.config.id === 'yogi' ? p1 : (p2.config.id === 'yogi' ? p2 : null);
     if (this.bulldozerModel) {
-      if (isSuperActive && (p1.config.id === 'yogi' || p2.config.id === 'yogi')) {
+      if (isSuperActive && yogiFighter) {
         this.bulldozerModel.visible = true;
-        const yogiFighter = p1.config.id === 'yogi' ? p1 : p2;
-        const target3DX = ((yogiFighter.x - 480) / 400) * 5.2;
-        this.bulldozerModel.position.set(target3DX, 0, 0.4);
+        const yogi3DX = ((yogiFighter.x - 480) / 400) * 5.2;
+        this.bulldozerModel.position.set(yogi3DX + (yogiFighter.facingRight ? 0.8 : -0.8), 0, 0.3);
         this.bulldozerModel.rotation.y = yogiFighter.facingRight ? 0 : Math.PI;
+        if (Math.random() < 0.5) {
+          this.spawnSparks(this.bulldozerModel.position.x, 0.5, 0xf97316, 5);
+        }
       } else {
         this.bulldozerModel.visible = false;
+      }
+    }
+
+    // Rahul / Didi / Trump / Other Character Super VFX
+    if (isSuperActive) {
+      const rahulFighter = p1.config.id === 'rahul' ? p1 : (p2.config.id === 'rahul' ? p2 : null);
+      if (rahulFighter && Math.random() < 0.4) {
+        const rahul3DX = ((rahulFighter.x - 480) / 400) * 5.2;
+        this.spawnSparks(rahul3DX, 1.6, 0xfacc15, 6); // Golden coin particles
+      }
+      const didiFighter = p1.config.id === 'didi' ? p1 : (p2.config.id === 'didi' ? p2 : null);
+      if (didiFighter && Math.random() < 0.4) {
+        const didi3DX = ((didiFighter.x - 480) / 400) * 5.2;
+        this.spawnSparks(didi3DX, 1.4, 0x10b981, 6); // Mystical green cauldron spark
       }
     }
 

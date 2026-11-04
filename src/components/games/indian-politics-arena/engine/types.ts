@@ -146,5 +146,12 @@ export interface MatchStats {
   timeRemaining: number;
   isOver: boolean;
   winner: number | null; // 1 or 2
+  superActive?: boolean;
+  superCasterId?: number;
+  superMoveName?: string;
+  superCharacterName?: string;
+  superFacePhoto?: string;
+  superIntroLine?: string;
+  superAccent?: string;
 }
 

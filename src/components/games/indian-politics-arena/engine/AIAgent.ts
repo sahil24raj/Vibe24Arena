@@ -46,28 +46,29 @@ export class AIAgent {
     // Hard: whiff punishes, mixes up low/high, executes Super when available
 
     if (this.difficulty === 'easy') {
-      this.actionCooldown = 15;
-      if (dist > 150) {
-        // Move towards opponent
+      this.actionCooldown = 12;
+      if (dist > 90) {
+        // Aggressively close the distance towards opponent
         this.currentInput.left = aiFighter.x > opponent.x;
         this.currentInput.right = aiFighter.x < opponent.x;
         this.currentInput.down = false;
       } else {
         this.currentInput.left = false;
         this.currentInput.right = false;
-        // Random attack
+        // Point-blank melee attacks
         const roll = Math.random();
-        if (roll < 0.4) this.currentInput.punch = true;
-        else if (roll < 0.7) this.currentInput.kick = true;
+        if (roll < 0.45) this.currentInput.punch = true;
+        else if (roll < 0.8) this.currentInput.kick = true;
+        else if (roll < 0.9) this.currentInput.grab = true;
       }
       return this.currentInput;
     }
 
     if (this.difficulty === 'normal') {
-      this.actionCooldown = 8;
+      this.actionCooldown = 6;
 
       // Defensive reaction if opponent is in active attack phase
-      if (opponentIsAttacking && Math.random() < 0.65) {
+      if (opponentIsAttacking && Math.random() < 0.6) {
         // Hold back to block
         this.currentInput.left = aiFighter.x < opponent.x;
         this.currentInput.right = aiFighter.x > opponent.x;
@@ -75,28 +76,28 @@ export class AIAgent {
         return this.currentInput;
       }
 
-      // Check Super Move
-      if (aiFighter.superMeter >= 100 && dist < 220 && Math.random() < 0.8) {
+      // Check Super Move when meter is charged
+      if (aiFighter.superMeter >= 100 && dist < 160 && Math.random() < 0.85) {
         this.currentInput.super = true;
         return this.currentInput;
       }
 
-      if (dist > 180) {
-        // Close the gap
+      if (dist > 85) {
+        // Relentlessly close the gap until point-blank
         this.currentInput.left = aiFighter.x > opponent.x;
         this.currentInput.right = aiFighter.x < opponent.x;
         this.currentInput.down = false;
       } else {
-        // In melee range: execute combo / mixup
+        // In point-blank melee striking range: execute dynamic combos & mixups
         this.currentInput.left = false;
         this.currentInput.right = false;
         const roll = Math.random();
-        if (roll < 0.35) {
+        if (roll < 0.38) {
           this.currentInput.punch = true;
-        } else if (roll < 0.65) {
+        } else if (roll < 0.7) {
           this.currentInput.kick = true;
-        } else if (roll < 0.8) {
-          // Low mixup
+        } else if (roll < 0.85) {
+          // Low ankle sweep
           this.currentInput.down = true;
           this.currentInput.kick = true;
         } else {
@@ -108,10 +109,10 @@ export class AIAgent {
     }
 
     // --- HARD DIFFICULTY ---
-    this.actionCooldown = 4; // High frame responsiveness
+    this.actionCooldown = 3; // Frame-perfect responsiveness
 
-    // Instant Super punish
-    if (aiFighter.superMeter >= 100 && dist < 250) {
+    // Instant Super punish if in range
+    if (aiFighter.superMeter >= 100 && dist < 180) {
       this.currentInput.super = true;
       return this.currentInput;
     }
@@ -124,39 +125,29 @@ export class AIAgent {
       return this.currentInput;
     }
 
-    // If opponent is recovering from a whiff, punish!
+    // Whiff punish
     if (opponent.state === 'attack' && opponent.movePhase === 'recovery') {
-      if (dist < 140) {
+      if (dist < 110) {
         this.currentInput.punch = true;
         return this.currentInput;
       }
     }
 
-    // Footsies spacing
-    if (dist > 220) {
+    if (dist > 80) {
+      // Aggressively hunt down player
       this.currentInput.left = aiFighter.x > opponent.x;
       this.currentInput.right = aiFighter.x < opponent.x;
       this.currentInput.down = false;
-    } else if (dist < 80) {
-      // Point blank: grab or uppercut
-      if (Math.random() < 0.4) {
-        this.currentInput.grab = true;
-      } else {
-        this.currentInput.punch = true;
-      }
     } else {
-      // Mid-range pokes
+      // Point blank: grab, uppercut, or low kick
       const roll = Math.random();
-      if (roll < 0.4) {
-        this.currentInput.kick = true;
-      } else if (roll < 0.7) {
-        this.currentInput.down = true;
-        this.currentInput.kick = true; // Sweep
-      } else {
-        // Forward special
-        if (aiFighter.facingRight) this.currentInput.right = true;
-        else this.currentInput.left = true;
+      if (roll < 0.35) {
+        this.currentInput.grab = true;
+      } else if (roll < 0.65) {
         this.currentInput.punch = true;
+      } else {
+        this.currentInput.down = true;
+        this.currentInput.kick = true;
       }
     }
 
