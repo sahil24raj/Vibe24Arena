@@ -5,7 +5,6 @@ import { VibeArenaHero } from '@/components/VibeArenaHero';
 import { HeroTrendingCarousel } from '@/components/HeroTrendingCarousel';
 import { PickYourVibeSection } from '@/components/PickYourVibeSection';
 import { CreateHubSection } from '@/components/CreateHubSection';
-import { SquadSocialExperienceSection } from '@/components/SquadSocialExperienceSection';
 import { LegendsLeaderboardSection } from '@/components/LegendsLeaderboardSection';
 import { ViralSquadBanner } from '@/components/ViralSquadBanner';
 import { MultiplayerLobbyModal } from '@/components/MultiplayerLobbyModal';
@@ -28,13 +27,10 @@ export default function HomePage() {
       {/* 4. CREATE YOUR VIBE / COMPLETE COLLECTION (All 11 Games Arena) */}
       <CreateHubSection />
 
-      {/* 5. THE SOCIAL EXPERIENCE: Where Friends Come to Play (5-Step Simulator) */}
-      <SquadSocialExperienceSection />
-
-      {/* 6. LEGENDS OF VIBE ARENA: 3-Player 3D Podium & Live Match Ticker */}
+      {/* 5. LEGENDS OF VIBE ARENA: 3-Player 3D Podium & Live Match Ticker */}
       <LegendsLeaderboardSection />
 
-      {/* 7. SQUAD BANTER & VIRAL BANNER: "Bas ek aur game." */}
+      {/* 6. SQUAD BANTER & VIRAL BANNER: "Bas ek aur game." */}
       <ViralSquadBanner />
     </div>
   );

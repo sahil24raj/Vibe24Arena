@@ -5,37 +5,22 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAppStore, GAMES_CATALOG } from '@/store/useAppStore';
 import { soundFx } from '@/lib/audio';
-import { VibeArenaLogo } from '@/components/VibeArenaLogo';
-import { GamerAvatar } from '@/components/profile/GamerAvatar';
+import { isImageSource } from '@/components/profile/GamerAvatar';
 import { normalizeRoomCode } from '@/lib/multiplayer/roomCodeGenerator';
 import {
-  LayoutGrid,
-  Swords,
-  Trophy,
-  ShoppingBag,
-  Search,
-  X,
-  Menu,
-  Volume2,
-  VolumeX,
-  Plus,
-  KeyRound,
-  ArrowRight,
-  LogOut,
   User,
+  ShoppingBag,
   Sparkles,
-  ChevronDown
+  LogOut
 } from 'lucide-react';
 
 export const TopHeaderBar: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isMuted, toggleMute, openMultiplayerModal, logout, openAuthModal } = useAppStore();
+  const { user, openMultiplayerModal, logout, openAuthModal } = useAppStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [quickJoinOpen, setQuickJoinOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [joinCode, setJoinCode] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
@@ -76,32 +61,31 @@ export const TopHeaderBar: React.FC = () => {
     setMobileMenuOpen(false);
   };
 
-  const handleQuickJoinSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const clean = normalizeRoomCode(joinCode);
-    if (!clean) return;
-    soundFx.playClick();
-    setQuickJoinOpen(false);
-    setJoinCode('');
-    router.push(`/play/room/${clean}`);
-  };
-
-  const currentLevel = user.level || 1;
-  const currentXP = user.xp || 0;
-  const currentCoins = user.coins || 0;
+  const currentLevel = user.level || 24;
+  const currentXP = user.xp || 1450;
+  const currentCoins = user.coins || 420;
   const xpInLevel = currentXP % 1000;
-  const xpPercent = Math.min(100, Math.max(12, Math.round((xpInLevel / 1000) * 100)));
+  const xpPercent = Math.min(100, Math.max(15, Math.round((xpInLevel / 1000) * 100)));
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 w-full bg-surface-purple/90 backdrop-blur-xl border-b border-purple-500/20 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
       <div className="h-20 w-full px-4 sm:px-6 lg:px-12 flex items-center justify-between gap-4">
-        {/* Brand Logo & Desi Tagline */}
+        {/* Brand Logo & Desi Tagline - Exactly 1 logo icon and 1 title text */}
         <Link
           href="/"
           onClick={() => soundFx.playClick()}
           className="flex items-center gap-3 shrink-0 group focus:outline-none"
         >
-          <VibeArenaLogo size="md" showTagline={false} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            alt="Vibe Arena Logo"
+            className="h-8 w-auto object-contain transition-transform group-hover:scale-105"
+            src="/brand/vibe-arena-icon.png"
+            onError={(e) => {
+              // Fallback to stylized SVG icon if PNG not found
+              (e.target as HTMLElement).style.display = 'none';
+            }}
+          />
           <div className="flex flex-col">
             <span className="font-headline-sm text-primary font-bold tracking-wider leading-none uppercase">
               VIBE ARENA
@@ -112,7 +96,7 @@ export const TopHeaderBar: React.FC = () => {
           </div>
         </Link>
 
-        {/* Center: Desktop Navigation Bar matching code.html */}
+        {/* Center: Desktop Navigation Bar matching screenshot & code.html (Home | All Vibes | Create Squad | Leaderboard) */}
         <nav className="hidden xl:flex items-center gap-1 p-1 bg-surface-container-low rounded-xl border border-purple-500/10">
           <Link
             href="/"
@@ -156,20 +140,9 @@ export const TopHeaderBar: React.FC = () => {
           >
             Leaderboard
           </Link>
-          <Link
-            href="/shop"
-            onClick={() => soundFx.playClick()}
-            className={`px-4 py-1.5 transition-colors rounded-lg font-label-lg ${
-              pathname.startsWith('/shop')
-                ? 'bg-primary-container text-on-primary-container font-bold shadow-[0_0_16px_rgba(139,44,255,0.4)]'
-                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
-            }`}
-          >
-            Rewards / Shop
-          </Link>
         </nav>
 
-        {/* Right Section: Actions + Profile */}
+        {/* Right Section: Exact Screenshot Tools (Search, LVL XP, Coins, Bell, Avatar) */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {/* Quick Search with ⌘K badge */}
           <form
@@ -220,69 +193,6 @@ export const TopHeaderBar: React.FC = () => {
             <span className="font-label-md text-tertiary font-bold">{currentCoins.toLocaleString()}</span>
           </Link>
 
-          {/* Quick Join Code Button & Popover */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                soundFx.playClick();
-                setQuickJoinOpen(!quickJoinOpen);
-              }}
-              className="hidden md:flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-sm font-bold uppercase transition-colors border border-purple-500/20"
-              title="Enter Room Code"
-            >
-              <KeyRound className="w-3.5 h-3.5 text-neon-cyan" />
-              <span>JOIN CODE</span>
-            </button>
-
-            {quickJoinOpen && (
-              <div className="absolute right-0 mt-2 w-72 p-4 rounded-2xl bg-surface-purple/95 backdrop-blur-2xl border border-purple-500/30 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150">
-                <div className="text-xs font-bold text-white mb-1 font-display">Join Squad Battle</div>
-                <p className="text-[11px] text-soft-lavender mb-3">Enter the 6-character code from your squad.</p>
-                <form onSubmit={handleQuickJoinSubmit} className="space-y-3">
-                  <input
-                    type="text"
-                    placeholder="e.g. X7K92P"
-                    value={joinCode}
-                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                    className="w-full bg-surface-container-low border border-purple-500/40 rounded-xl px-3 py-2 text-xs font-mono font-bold text-neon-cyan tracking-widest uppercase focus:outline-none focus:border-neon-cyan text-center"
-                    autoFocus
-                    maxLength={8}
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      type="submit"
-                      disabled={!joinCode.trim()}
-                      className="flex-1 py-2 rounded-xl bg-primary-container hover:bg-secondary-container text-white text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-50 transition-all cursor-pointer shadow-[0_0_12px_rgba(139,44,255,0.4)]"
-                    >
-                      <span>Join Now</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setQuickJoinOpen(false)}
-                      className="px-3 py-2 rounded-xl bg-white/[0.05] text-soft-lavender hover:text-white text-xs transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
-          </div>
-
-          {/* Audio Mute/Unmute */}
-          <button
-            onClick={() => {
-              soundFx.playClick();
-              toggleMute();
-            }}
-            className="p-2 rounded-lg bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors cursor-pointer"
-            title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
-            aria-label="Toggle Sound"
-          >
-            {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-neon-green" />}
-          </button>
-
           {/* Daily Spin / Notifications Trigger with Pulsing Neon Dot */}
           <button
             onClick={() => {
@@ -294,29 +204,31 @@ export const TopHeaderBar: React.FC = () => {
             aria-label="Daily Spin"
           >
             <span className="material-symbols-outlined text-xl">notifications</span>
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-neon-green shadow-[0_0_8px_#48F078] animate-ping" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-neon-green" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-neon-green shadow-[0_0_8px_#48F078]" />
           </button>
 
-          {/* User Profile Avatar with safe GamerAvatar rendering & Dropdown */}
+          {/* User Profile Avatar with safe image check & ring */}
           <div className="relative" ref={userMenuRef}>
             <div
               onClick={() => {
                 soundFx.playClick();
                 setUserMenuOpen(!userMenuOpen);
               }}
-              className="flex items-center gap-1.5 pl-1 cursor-pointer group"
+              className="flex items-center gap-1 pl-1 cursor-pointer group"
               title="User Menu"
             >
-              <GamerAvatar
-                avatar={user.avatar}
-                photoURL={user.photoURL}
-                avatarType={user.avatarType}
-                size="sm"
-                showOnline={true}
-                isOnline={true}
-                glowEffect={false}
-              />
+              <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-primary-container group-hover:ring-secondary transition-all flex items-center justify-center bg-surface-container-high">
+                {isImageSource(user.avatar) || isImageSource(user.photoURL) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={user.avatar || user.photoURL}
+                    alt={user.displayName || user.username || 'User Avatar'}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-sm select-none">{user.avatar || '🚀'}</span>
+                )}
+              </div>
               <span className="material-symbols-outlined text-soft-lavender text-sm group-hover:text-on-surface transition-transform duration-200">
                 {userMenuOpen ? 'expand_less' : 'expand_more'}
               </span>
@@ -343,7 +255,7 @@ export const TopHeaderBar: React.FC = () => {
                   className="flex items-center gap-2 px-3 py-2 rounded-lg font-label-md text-on-surface hover:bg-surface-container transition-colors"
                 >
                   <User className="w-4 h-4 text-primary" />
-                  <span>My Profile & Stats</span>
+                  <span>My Profile &amp; Stats</span>
                 </Link>
 
                 <Link
@@ -449,7 +361,7 @@ export const TopHeaderBar: React.FC = () => {
             }}
             className="px-3 py-2 rounded-lg font-label-lg text-on-surface hover:bg-surface-container"
           >
-            🎮 All Vibes / Games
+            🎮 All Vibes
           </Link>
           <button
             onClick={() => {
@@ -459,7 +371,7 @@ export const TopHeaderBar: React.FC = () => {
             }}
             className="px-3 py-2 rounded-lg font-label-lg text-on-surface hover:bg-surface-container text-left cursor-pointer"
           >
-            👥 Create Squad Room
+            👥 Create Squad
           </button>
           <Link
             href="/leaderboard"
@@ -470,16 +382,6 @@ export const TopHeaderBar: React.FC = () => {
             className="px-3 py-2 rounded-lg font-label-lg text-on-surface hover:bg-surface-container"
           >
             🏆 Leaderboard
-          </Link>
-          <Link
-            href="/shop"
-            onClick={() => {
-              soundFx.playClick();
-              setMobileMenuOpen(false);
-            }}
-            className="px-3 py-2 rounded-lg font-label-lg text-on-surface hover:bg-surface-container"
-          >
-            🪙 Rewards &amp; Shop
           </Link>
         </div>
       )}
