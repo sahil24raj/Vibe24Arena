@@ -52,8 +52,12 @@ export default function DashboardPage() {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-4 sm:gap-6">
             <div className="relative">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-[#00F0FF]/30 to-[#ADFF2F]/30 border-2 border-[#00F0FF] flex items-center justify-center text-3xl sm:text-4xl shadow-[0_0_25px_rgba(0,240,255,0.3)]">
-                {user.avatar}
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-[#00F0FF]/30 to-[#ADFF2F]/30 border-2 border-[#00F0FF] flex items-center justify-center text-3xl sm:text-4xl shadow-[0_0_25px_rgba(0,240,255,0.3)] overflow-hidden">
+                {user.avatar && (user.avatar.startsWith('data:image/') || user.avatar.startsWith('http')) ? (
+                  <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <span>{user.avatar || '🎮'}</span>
+                )}
               </div>
               <div className="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full bg-[#00F0FF] text-black font-black text-[10px] tracking-wider uppercase border border-black shadow">
                 LVL {user.level}

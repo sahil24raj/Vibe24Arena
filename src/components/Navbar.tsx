@@ -157,8 +157,12 @@ export const Navbar: React.FC = () => {
             className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-[#101524] border border-white/[0.08] hover:border-[#00F0FF]/40 hover:bg-[#141b2e] transition-all group cursor-pointer"
             title="View Profile & Stats"
           >
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-[#00F0FF] to-[#ADFF2F] text-slate-950 flex items-center justify-center text-xs font-black shadow-sm group-hover:scale-105 transition-transform">
-              {user.avatar || '🎮'}
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-[#00F0FF] to-[#ADFF2F] text-slate-950 flex items-center justify-center text-xs font-black shadow-sm group-hover:scale-105 transition-transform overflow-hidden">
+              {user.avatar && (user.avatar.startsWith('data:image/') || user.avatar.startsWith('http')) ? (
+                <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span>{user.avatar || '🎮'}</span>
+              )}
             </div>
             <div className="hidden xl:flex flex-col text-left leading-none">
               <span className="text-xs font-bold text-slate-200 group-hover:text-white max-w-[85px] truncate font-display">

@@ -40,3 +40,4 @@ export const ViralSquadBanner: React.FC = () => {
     </section>
   );
 };
+

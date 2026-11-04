@@ -198,3 +198,4 @@ export const LegendsLeaderboardSection: React.FC = () => {
     </section>
   );
 };
+

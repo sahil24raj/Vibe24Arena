@@ -22,6 +22,7 @@ import { soundFx } from '@/lib/audio';
 import { createRoomOnServer } from '@/lib/multiplayer/realtimeService';
 import { normalizeRoomCode } from '@/lib/multiplayer/roomCodeGenerator';
 import { AIDifficulty } from '@/types/gameMode';
+import { isImageSource } from '@/components/profile/GamerAvatar';
 
 export interface SingleUnifiedMultiplayerModalProps {
   isOpen: boolean;
@@ -242,7 +243,11 @@ export const SingleUnifiedMultiplayerModal: React.FC<SingleUnifiedMultiplayerMod
               <div className="flex items-center justify-between text-xs font-mono">
                 <span className="text-slate-400">HOST:</span>
                 <span className="font-bold text-white flex items-center gap-1.5">
-                  <span>{user.avatar || '👑'}</span>
+                  {isImageSource(user.avatar) ? (
+                    <img src={user.avatar} alt="Host Avatar" className="w-5 h-5 rounded-full object-cover inline-block" />
+                  ) : (
+                    <span>{user.avatar || '👑'}</span>
+                  )}
                   <span>{user.displayName || user.username || 'You'}</span>
                 </span>
               </div>
