@@ -57,13 +57,9 @@ export class ThreeFighterEngine {
     this.camera = new THREE.PerspectiveCamera(45, canvas.width / canvas.height, 0.5, 100);
     this.camera.position.set(0, 1.8, 6.2);
 
-    // Initialize GLTFLoader with DRACOLoader (offline-first with CDN fallback)
+    // Initialize GLTFLoader with DRACOLoader using official Google CDN for 100% reliable wasm decoding
     const dracoLoader = new DRACOLoader();
-    try {
-      dracoLoader.setDecoderPath('/draco/gltf/');
-    } catch {
-      dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
-    }
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
     dracoLoader.preload();
 
     this.gltfLoader = new GLTFLoader();
@@ -156,12 +152,18 @@ export class ThreeFighterEngine {
     if (gltf && gltf.scene) {
       // Use official SkeletonUtils.clone for animated skinned mesh hierarchy
       model = SkeletonUtils.clone(gltf.scene) as THREE.Group;
+      model.scale.set(1.15, 1.15, 1.15);
+
       model.traverse(node => {
         if ((node as THREE.Mesh).isMesh) {
           node.castShadow = true;
           node.receiveShadow = true;
           // Crucial: avoid premature bounding box culling during active fighting animations
           (node as THREE.Mesh).frustumCulled = false;
+        }
+        // Emphasize politician caricature head (same as FightKaro 1.32x scale)
+        if ((node as THREE.Bone).isBone && /Head/i.test(node.name) && !/Top/i.test(node.name)) {
+          (node as THREE.Bone).scale.multiplyScalar(1.25);
         }
       });
 

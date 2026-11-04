@@ -49,8 +49,8 @@ export class CombatEngine {
     this.audio = FightingAudio.getInstance();
     this.ai = new AIAgent('normal');
 
-    this.p1 = new Fighter(1, p1Char, 300, true);
-    this.p2 = new Fighter(2, p2Char, 660, false);
+    this.p1 = new Fighter(1, p1Char, 280, true);
+    this.p2 = new Fighter(2, p2Char, 680, false);
   }
 
   public update(p1Input: PlayerInput, p2InputOverride?: PlayerInput): CombatHitEvent[] {
@@ -215,8 +215,8 @@ export class CombatEngine {
     } else {
       this.round++;
       this.timeRemaining = ROUND_TIME_SECONDS;
-      this.p1.reset(300, true);
-      this.p2.reset(660, false);
+      this.p1.reset(280, true);
+      this.p2.reset(680, false);
       setTimeout(() => {
         this.audio.playRoundVoice(this.round);
       }, 1000);
@@ -232,8 +232,8 @@ export class CombatEngine {
     this.winner = null;
     this.isPaused = false;
     this.superCinematicActive = false;
-    this.p1.reset(300, true);
-    this.p2.reset(660, false);
+    this.p1.reset(280, true);
+    this.p2.reset(680, false);
     this.audio.playRoundVoice(1);
     this.audio.playFighterVoice(this.p1.config.id);
   }

@@ -2,9 +2,9 @@ import { ArenaConfig, CharacterConfig, MoveDefinition, MoveId } from './types';
 
 export const CANVAS_WIDTH = 960;
 export const CANVAS_HEIGHT = 540;
-export const STAGE_FLOOR_Y = 0; // In 3D Three.js, floor is Y = 0
-export const STAGE_LEFT_BOUND = -10;
-export const STAGE_RIGHT_BOUND = 10;
+export const STAGE_FLOOR_Y = 440;
+export const STAGE_LEFT_BOUND = 80;
+export const STAGE_RIGHT_BOUND = 880;
 export const ROUND_TIME_SECONDS = 60;
 export const MAX_HP = 100;
 export const MAX_SUPER = 100;
