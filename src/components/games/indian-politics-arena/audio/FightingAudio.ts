@@ -398,3 +398,4 @@ export class FightingAudio {
 }
 
 export const fightingAudio = FightingAudio.getInstance();
+

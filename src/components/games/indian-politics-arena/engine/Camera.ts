@@ -50,3 +50,4 @@ export class Camera {
     ctx.translate(-this.x, -CANVAS_HEIGHT / 2);
   }
 }
+

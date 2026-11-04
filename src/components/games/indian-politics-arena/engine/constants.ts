@@ -495,3 +495,4 @@ export const ARENAS_ROSTER: ArenaConfig[] = [
     decorType: 'studio'
   }
 ];
+

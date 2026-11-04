@@ -137,3 +137,4 @@ export const MainMenuScreen: React.FC<MainMenuScreenProps> = ({
     </div>
   );
 };
+

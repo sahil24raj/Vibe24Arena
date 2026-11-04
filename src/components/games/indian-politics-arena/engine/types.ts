@@ -143,3 +143,4 @@ export interface MatchStats {
   isOver: boolean;
   winner: number | null; // 1 or 2
 }
+

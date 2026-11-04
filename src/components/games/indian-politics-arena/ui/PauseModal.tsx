@@ -74,3 +74,4 @@ export const PauseModal: React.FC<PauseModalProps> = ({
     </div>
   );
 };
+

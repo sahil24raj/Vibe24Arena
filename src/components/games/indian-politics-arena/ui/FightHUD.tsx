@@ -176,3 +176,4 @@ export const FightHUD: React.FC<FightHUDProps> = ({
     </div>
   );
 };
+

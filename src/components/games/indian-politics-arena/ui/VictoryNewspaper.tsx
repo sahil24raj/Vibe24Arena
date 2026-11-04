@@ -129,3 +129,4 @@ export const VictoryNewspaper: React.FC<VictoryNewspaperProps> = ({
     </div>
   );
 };
+
