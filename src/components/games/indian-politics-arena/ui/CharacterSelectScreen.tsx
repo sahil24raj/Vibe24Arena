@@ -108,8 +108,16 @@ export const CharacterSelectScreen: React.FC<CharacterSelectScreenProps> = ({
             </button>
           </div>
 
-          <div className="text-center my-3">
-            <div className="text-6xl mb-2 filter drop-shadow-lg">{p1Char.avatarIcon}</div>
+          <div className="text-center my-2">
+            {p1Char.facePhoto ? (
+              <img
+                src={p1Char.facePhoto}
+                alt={p1Char.name}
+                className="w-20 h-20 rounded-2xl object-cover border-2 border-[#FF9933] mx-auto shadow-lg mb-2"
+              />
+            ) : (
+              <div className="text-6xl mb-2 filter drop-shadow-lg">{p1Char.avatarIcon}</div>
+            )}
             <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight">
               {p1Char.name}
             </h3>
@@ -186,7 +194,15 @@ export const CharacterSelectScreen: React.FC<CharacterSelectScreenProps> = ({
                     </span>
                   )}
 
-                  <span className="text-3xl sm:text-4xl">{char.avatarIcon}</span>
+                  {char.facePhoto ? (
+                    <img
+                      src={char.facePhoto}
+                      alt={char.name}
+                      className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-cover border border-white/20 mb-1"
+                    />
+                  ) : (
+                    <span className="text-3xl sm:text-4xl">{char.avatarIcon}</span>
+                  )}
                   <span className="text-[10px] sm:text-xs font-black text-white mt-1 text-center truncate max-w-full">
                     {char.name}
                   </span>
@@ -260,8 +276,16 @@ export const CharacterSelectScreen: React.FC<CharacterSelectScreenProps> = ({
             </button>
           </div>
 
-          <div className="text-center my-3">
-            <div className="text-6xl mb-2 filter drop-shadow-lg">{p2Char.avatarIcon}</div>
+          <div className="text-center my-2">
+            {p2Char.facePhoto ? (
+              <img
+                src={p2Char.facePhoto}
+                alt={p2Char.name}
+                className="w-20 h-20 rounded-2xl object-cover border-2 border-[#00D2FF] mx-auto shadow-lg mb-2"
+              />
+            ) : (
+              <div className="text-6xl mb-2 filter drop-shadow-lg">{p2Char.avatarIcon}</div>
+            )}
             <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tight">
               {p2Char.name}
             </h3>

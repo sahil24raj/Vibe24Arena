@@ -7,25 +7,17 @@ import {
   PlayerInput
 } from './types';
 import {
-  CANVAS_HEIGHT,
-  CANVAS_WIDTH,
   MAX_HP,
   ROUND_TIME_SECONDS
 } from './constants';
 import { Fighter } from './Fighter';
 import { AIAgent } from './AIAgent';
-import { Camera } from './Camera';
-import { ParticleSystem } from './ParticleSystem';
 import { FightingAudio } from '../audio/FightingAudio';
-import { ArenaRenderer } from './ArenaRenderer';
-import { CharacterRenderer } from './CharacterRenderer';
 
 export class CombatEngine {
   public p1: Fighter;
   public p2: Fighter;
   public arena: ArenaConfig;
-  public camera: Camera;
-  public particles: ParticleSystem;
   public audio: FightingAudio;
   public ai: AIAgent;
 
@@ -44,10 +36,6 @@ export class CombatEngine {
   public superCinematicFighter: Fighter | null = null;
   public superCinematicTimer = 0;
 
-  // Slow-Mo KO
-  public slowMoFactor = 1.0;
-  public slowMoTimer = 0;
-
   public frameCount = 0;
 
   constructor(
@@ -58,8 +46,6 @@ export class CombatEngine {
   ) {
     this.arena = arena;
     this.mode = mode;
-    this.camera = new Camera();
-    this.particles = new ParticleSystem();
     this.audio = FightingAudio.getInstance();
     this.ai = new AIAgent('normal');
 
@@ -104,12 +90,6 @@ export class CombatEngine {
             this.superCinematicFighter
           );
 
-          this.particles.spawnSuperExplosion(
-            target.x,
-            target.y - 80,
-            this.superCinematicFighter.config.accent
-          );
-          this.camera.addTrauma(0.85);
           this.audio.playSuperExplosion();
 
           hits.push({
@@ -159,10 +139,6 @@ export class CombatEngine {
       this.handleHitEvent(hit2);
     }
 
-    // Update Particles & Camera
-    this.particles.update();
-    this.camera.update(this.p1.x, this.p2.x);
-
     // Check Round Timer & Knockouts
     if (!this.isMatchOver) {
       this.timerInterval++;
@@ -186,19 +162,21 @@ export class CombatEngine {
     fighter.superMeter = 0;
     this.superCinematicActive = true;
     this.superCinematicFighter = fighter;
-    this.superCinematicTimer = 35; // 35 frames freeze
-    this.audio.playSuperCharge();
-    this.camera.addTrauma(0.5);
+    this.superCinematicTimer = 45; // 45 frames freeze
+
+    // Play signature super audio or character voice
+    if (fighter.config.superSoundUrl) {
+      this.audio.playClip(fighter.config.superSoundUrl, 1.0);
+    } else {
+      this.audio.playSuperCharge();
+    }
+    this.audio.playFighterVoice(fighter.config.id);
   }
 
   private handleHitEvent(hit: CombatHitEvent) {
-    this.camera.addTrauma(hit.blocked ? 0.15 : 0.4);
-
     if (hit.blocked) {
-      this.particles.spawnBlockSparks(hit.hitX, hit.hitY);
       this.audio.playBlock();
     } else {
-      this.particles.spawnHitSparks(hit.hitX, hit.hitY, '#FFD700', hit.knockdown ? 22 : 12);
       if (hit.knockdown) {
         this.audio.playHitHeavy();
       } else {
@@ -210,14 +188,12 @@ export class CombatEngine {
   private resolveRoundEnd() {
     let roundWinner: number;
     if (this.p1.hp <= 0 && this.p2.hp <= 0) {
-      // Double KO -> Tie breaker to higher remaining
       roundWinner = 1;
     } else if (this.p1.hp <= 0) {
       roundWinner = 2;
     } else if (this.p2.hp <= 0) {
       roundWinner = 1;
     } else {
-      // Time over
       roundWinner = this.p1.hp >= this.p2.hp ? 1 : 2;
     }
 
@@ -227,18 +203,23 @@ export class CombatEngine {
       this.p2Wins++;
     }
 
+    this.audio.playKOVoice();
+
     if (this.p1Wins >= 2 || this.p2Wins >= 2) {
-      // Match Won!
       this.isMatchOver = true;
       this.winner = this.p1Wins >= 2 ? 1 : 2;
-      this.audio.playVictoryTheme();
+      setTimeout(() => {
+        if (this.winner === 1) this.audio.playWinVoice();
+        else this.audio.playLoseVoice();
+      }, 1200);
     } else {
-      // Reset for next round
       this.round++;
       this.timeRemaining = ROUND_TIME_SECONDS;
       this.p1.reset(300, true);
       this.p2.reset(660, false);
-      this.audio.playRoundAnnounce();
+      setTimeout(() => {
+        this.audio.playRoundVoice(this.round);
+      }, 1000);
     }
   }
 
@@ -253,89 +234,8 @@ export class CombatEngine {
     this.superCinematicActive = false;
     this.p1.reset(300, true);
     this.p2.reset(660, false);
-    this.particles.clear();
-    this.audio.playRoundAnnounce();
-  }
-
-  public render(ctx: CanvasRenderingContext2D) {
-    ctx.save();
-    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
-    // 1. Draw Arena (Background + Parallax + Floor)
-    ArenaRenderer.renderArena(ctx, this.arena, this.camera.shakeOffsetX, this.frameCount);
-
-    // 2. Apply Camera World Transform for In-Fight Entities
-    ctx.save();
-    this.camera.applyTransform(ctx);
-
-    // Draw Particles
-    this.particles.render(ctx);
-
-    // Render P1 Fighter
-    CharacterRenderer.renderFighter(
-      ctx,
-      this.p1.config,
-      this.p1.x,
-      this.p1.y,
-      this.p1.facingRight,
-      this.p1.state,
-      this.p1.currentMove?.id ?? null,
-      this.frameCount,
-      this.p1.state === 'hitstun',
-      this.p1.superMeter >= 100
-    );
-
-    // Render P2 Fighter
-    CharacterRenderer.renderFighter(
-      ctx,
-      this.p2.config,
-      this.p2.x,
-      this.p2.y,
-      this.p2.facingRight,
-      this.p2.state,
-      this.p2.currentMove?.id ?? null,
-      this.frameCount,
-      this.p2.state === 'hitstun',
-      this.p2.superMeter >= 100
-    );
-
-    ctx.restore();
-
-    // 3. Super Move Cinematic Dramatic Banner Overlay
-    if (this.superCinematicActive && this.superCinematicFighter) {
-      this.renderSuperCinematicBanner(ctx, this.superCinematicFighter);
-    }
-
-    ctx.restore();
-  }
-
-  private renderSuperCinematicBanner(ctx: CanvasRenderingContext2D, fighter: Fighter) {
-    ctx.save();
-    // Dark letterbox cinema bars
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-    ctx.fillRect(0, 180, CANVAS_WIDTH, 180);
-
-    // Golden / Character Accent Border
-    ctx.strokeStyle = fighter.config.accent;
-    ctx.lineWidth = 4;
-    ctx.strokeRect(0, 180, CANVAS_WIDTH, 180);
-
-    // Title
-    ctx.fillStyle = fighter.config.accent;
-    ctx.font = '900 42px "Bebas Neue", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.shadowColor = fighter.config.accent;
-    ctx.shadowBlur = 20;
-    ctx.fillText(`⚡ ${fighter.config.superName} ⚡`, CANVAS_WIDTH / 2, 245);
-
-    // Tagline / Quote
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '600 18px sans-serif';
-    ctx.shadowBlur = 0;
-    ctx.fillText(`"${fighter.config.introLine}"`, CANVAS_WIDTH / 2, 285);
-    ctx.fillText(`${fighter.config.superDesc}`, CANVAS_WIDTH / 2, 315);
-
-    ctx.restore();
+    this.audio.playRoundVoice(1);
+    this.audio.playFighterVoice(this.p1.config.id);
   }
 
   public getStats(): MatchStats {
@@ -355,4 +255,3 @@ export class CombatEngine {
     };
   }
 }
-

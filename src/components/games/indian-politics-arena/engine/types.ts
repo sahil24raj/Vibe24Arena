@@ -82,6 +82,10 @@ export interface CharacterConfig {
   winLine: string;
   defeatExcuse: string;
   avatarIcon: string;
+  modelUrl?: string;
+  facePhoto?: string;
+  voiceUrl?: string;
+  superSoundUrl?: string;
   stats: {
     power: number; // 1-5
     speed: number; // 1-5

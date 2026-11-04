@@ -16,6 +16,7 @@ import {
   CHARACTERS_ROSTER
 } from './engine/constants';
 import { CombatEngine } from './engine/CombatEngine';
+import { ThreeFighterEngine } from './engine/ThreeFighterEngine';
 import { InputManager } from './engine/InputManager';
 import { FightingAudio } from './audio/FightingAudio';
 import { LoadingScreen } from './ui/LoadingScreen';
@@ -27,7 +28,7 @@ import { VictoryNewspaper } from './ui/VictoryNewspaper';
 import { MobileVirtualControls } from './ui/MobileVirtualControls';
 import { MultiplayerLobbyModal } from './ui/MultiplayerLobbyModal';
 import { useAppStore } from '@/store/useAppStore';
-import { RotateCw, X, Shield, Zap, Gauge, Sparkles } from 'lucide-react';
+import { RotateCw, X, Sparkles, Loader2 } from 'lucide-react';
 
 type GameScreen =
   | 'loading'
@@ -42,7 +43,7 @@ export const IndianPoliticsArenaGame: React.FC = () => {
   const [screen, setScreen] = useState<GameScreen>('loading');
   const [mode, setMode] = useState<GameMode>('quick');
   const [selectedP1, setSelectedP1] = useState<CharacterConfig>(CHARACTERS_ROSTER[0]);
-  const [selectedP2, setSelectedP2] = useState<CharacterConfig>(CHARACTERS_ROSTER[1]);
+  const [selectedP2, setSelectedP2] = useState<CharacterConfig>(CHARACTERS_ROSTER[3]); // Yogi / Dozer Dada
   const [selectedArena, setSelectedArena] = useState<ArenaConfig>(ARENAS_ROSTER[0]);
   const [difficulty, setDifficulty] = useState<AIDifficulty>('normal');
 
@@ -51,6 +52,8 @@ export const IndianPoliticsArenaGame: React.FC = () => {
   const [isPortrait, setIsPortrait] = useState(false);
   const [showRosterModal, setShowRosterModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [isLoading3D, setIsLoading3D] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
   // Multiplayer Room State
   const [roomCode, setRoomCode] = useState<string | null>(null);
@@ -59,8 +62,10 @@ export const IndianPoliticsArenaGame: React.FC = () => {
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const engineRef = useRef<CombatEngine | null>(null);
+  const threeEngineRef = useRef<ThreeFighterEngine | null>(null);
   const inputManagerRef = useRef<InputManager | null>(null);
   const reqAnimRef = useRef<number | null>(null);
+  const lastTimeRef = useRef<number>(performance.now());
 
   const { user, addCoins, addXP } = useAppStore();
 
@@ -90,6 +95,27 @@ export const IndianPoliticsArenaGame: React.FC = () => {
     };
   }, []);
 
+  // Initialize Three.js WebGL Engine
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    try {
+      const threeEngine = new ThreeFighterEngine(canvas);
+      threeEngineRef.current = threeEngine;
+      threeEngine.setStage(selectedArena);
+    } catch (e) {
+      console.warn('Three.js initialization failed:', e);
+    }
+
+    return () => {
+      if (threeEngineRef.current) {
+        threeEngineRef.current.dispose();
+        threeEngineRef.current = null;
+      }
+    };
+  }, []);
+
   // Escape key for pause in fight
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -110,9 +136,9 @@ export const IndianPoliticsArenaGame: React.FC = () => {
     setIsMuted(muted);
   }, []);
 
-  // Start Combat Loop
+  // Start Combat & Load 3D Models
   const startCombat = useCallback(
-    (
+    async (
       p1Char: CharacterConfig,
       p2Char: CharacterConfig,
       arena: ArenaConfig,
@@ -122,6 +148,8 @@ export const IndianPoliticsArenaGame: React.FC = () => {
       setSelectedP2(p2Char);
       setSelectedArena(arena);
       setDifficulty(diff);
+      setIsLoading3D(true);
+      setLoadingProgress(10);
 
       const engine = new CombatEngine(p1Char, p2Char, arena, mode);
       engine.ai.setDifficulty(diff);
@@ -132,16 +160,32 @@ export const IndianPoliticsArenaGame: React.FC = () => {
         inputManagerRef.current.clearAll();
       }
 
+      // Load 3D Three.js Fighter Meshes
+      if (threeEngineRef.current) {
+        threeEngineRef.current.setStage(arena);
+        try {
+          await Promise.all([
+            threeEngineRef.current.loadFighter(1, p1Char, pct => setLoadingProgress(Math.floor(pct / 2))),
+            threeEngineRef.current.loadFighter(2, p2Char, pct => setLoadingProgress(50 + Math.floor(pct / 2)))
+          ]);
+        } catch (err) {
+          console.warn('3D Model load error:', err);
+        }
+      }
+
+      setIsLoading3D(false);
       setMatchStats(engine.getStats());
       setScreen('fight');
 
-      FightingAudio.getInstance().playRoundAnnounce();
+      FightingAudio.getInstance().playRoundVoice(1);
+      FightingAudio.getInstance().playFighterVoice(p1Char.id);
       FightingAudio.getInstance().startFightBGM();
+      lastTimeRef.current = performance.now();
     },
     [mode]
   );
 
-  // Main Game Loop (60 FPS)
+  // Main 3D Game Loop (60 FPS)
   useEffect(() => {
     if (screen !== 'fight') {
       if (reqAnimRef.current) {
@@ -151,18 +195,17 @@ export const IndianPoliticsArenaGame: React.FC = () => {
       return;
     }
 
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
     let isRunning = true;
 
-    const loop = () => {
+    const loop = (time: number) => {
       if (!isRunning) return;
+
+      const delta = Math.min((time - lastTimeRef.current) / 1000, 0.1);
+      lastTimeRef.current = time;
 
       const engine = engineRef.current;
       const im = inputManagerRef.current;
+      const threeEngine = threeEngineRef.current;
 
       if (engine && im) {
         // Read Inputs
@@ -170,10 +213,21 @@ export const IndianPoliticsArenaGame: React.FC = () => {
         const p2Input = mode === 'twoplayer' ? im.getP2Input() : undefined;
 
         // Step Combat Engine
-        engine.update(p1Input, p2Input);
+        const hits = engine.update(p1Input, p2Input);
 
-        // Render Canvas
-        engine.render(ctx);
+        // Spawn 3D Sparks on hits
+        if (threeEngine && hits.length > 0) {
+          hits.forEach(h => {
+            const hit3DX = ((h.hitX - 480) / 400) * 5.2;
+            const hit3DY = Math.max(0.2, (440 - h.hitY) / 80);
+            threeEngine.spawnSparks(hit3DX, hit3DY, h.blocked ? 0x60a5fa : 0xffd700, h.knockdown ? 18 : 10);
+          });
+        }
+
+        // Render Three.js 3D Scene
+        if (threeEngine) {
+          threeEngine.update(delta, engine.p1, engine.p2, engine.superCinematicActive);
+        }
 
         // Update UI Stats
         const currentStats = engine.getStats();
@@ -182,7 +236,6 @@ export const IndianPoliticsArenaGame: React.FC = () => {
         // Check Match Over
         if (currentStats.isOver) {
           isRunning = false;
-          // Award XP and coins
           if (currentStats.winner === 1) {
             addCoins(150);
             addXP(200);
@@ -192,7 +245,7 @@ export const IndianPoliticsArenaGame: React.FC = () => {
           }
           setTimeout(() => {
             setScreen('result');
-          }, 1000);
+          }, 1400);
           return;
         }
       }
@@ -217,6 +270,7 @@ export const IndianPoliticsArenaGame: React.FC = () => {
       engineRef.current.restartMatch();
       setScreen('fight');
       FightingAudio.getInstance().startFightBGM();
+      lastTimeRef.current = performance.now();
     } else {
       startCombat(selectedP1, selectedP2, selectedArena, difficulty);
     }
@@ -258,13 +312,32 @@ export const IndianPoliticsArenaGame: React.FC = () => {
         </div>
       )}
 
-      {/* Primary Game Canvas */}
+      {/* 3D WebGL Canvas */}
       <canvas
         ref={canvasRef}
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
-        className="w-full h-full object-contain block bg-[#0B1536]"
+        className="w-full h-full object-cover block bg-[#0B1536]"
       />
+
+      {/* 3D Loading Spinner Overlay */}
+      {isLoading3D && (
+        <div className="absolute inset-0 z-40 bg-[#060B1E]/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 space-y-3">
+          <Loader2 className="w-12 h-12 text-[#FF9933] animate-spin" />
+          <h3 className="text-2xl font-black text-white uppercase tracking-tight">
+            LOADING 3D NETAS & ARENA...
+          </h3>
+          <div className="w-64 h-3 bg-black/60 rounded-full border border-white/20 overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-[#FF9933] to-[#FFD700] transition-all duration-200"
+              style={{ width: `${loadingProgress}%` }}
+            />
+          </div>
+          <p className="text-xs text-amber-200/80 font-mono">
+            Downloading authentic 3D politician models & animations ({loadingProgress}%)
+          </p>
+        </div>
+      )}
 
       {/* Screen 1: Satire Notice & Loading */}
       {screen === 'loading' && (
@@ -372,7 +445,7 @@ export const IndianPoliticsArenaGame: React.FC = () => {
           <div className="max-w-4xl w-full bg-[#0B1536] border-2 border-[#FFD700] rounded-3xl p-6 shadow-2xl overflow-y-auto max-h-[85vh] space-y-4">
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <div className="flex items-center gap-2 text-[#FFD700] font-black text-xl uppercase">
-                <Sparkles className="w-5 h-5" /> 8 ORIGINAL SATIRICAL FIGHTERS
+                <Sparkles className="w-5 h-5" /> 3D POLITICIAN ROSTER & SUPER POWERS
               </div>
               <button
                 onClick={() => setShowRosterModal(false)}
@@ -388,8 +461,12 @@ export const IndianPoliticsArenaGame: React.FC = () => {
                   key={c.id}
                   className="bg-black/40 border border-white/10 rounded-2xl p-4 flex gap-4 items-start"
                 >
-                  <div className="text-5xl shrink-0 p-2 bg-white/5 rounded-xl border border-white/10">
-                    {c.avatarIcon}
+                  <div className="w-16 h-16 shrink-0 rounded-2xl bg-white/5 border border-white/10 overflow-hidden flex items-center justify-center">
+                    {c.facePhoto ? (
+                      <img src={c.facePhoto} alt={c.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-4xl">{c.avatarIcon}</span>
+                    )}
                   </div>
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center justify-between">
@@ -401,7 +478,7 @@ export const IndianPoliticsArenaGame: React.FC = () => {
                     <p className="text-xs text-amber-200/90 font-semibold">{c.party}</p>
                     <p className="text-xs text-gray-300">{c.description}</p>
                     <div className="text-[11px] text-[#00D2FF] font-semibold pt-1">
-                      ⚡ Special 1: {c.special1Name} · Special 2: {c.special2Name}
+                      ⚡ {c.special1Name} · {c.special2Name}
                     </div>
                     <div className="text-[11px] text-[#FFD700] font-semibold">
                       🔥 Super: {c.superName}

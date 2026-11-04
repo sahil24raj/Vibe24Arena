@@ -4,13 +4,14 @@ export class FightingAudio {
   private bgmGain: GainNode | null = null;
   private sfxGain: GainNode | null = null;
   private masterGain: GainNode | null = null;
-  private bgmOscillators: OscillatorNode[] = [];
-  private isBgmPlaying = false;
+  private bgmAudio: HTMLAudioElement | null = null;
+  private audioCache: Map<string, HTMLAudioElement> = new Map();
   public muted = false;
   public volume = 0.8;
 
   private constructor() {
     this.setupUnlock();
+    this.preloadClips();
   }
 
   public static getInstance(): FightingAudio {
@@ -18,6 +19,53 @@ export class FightingAudio {
       FightingAudio.instance = new FightingAudio();
     }
     return FightingAudio.instance;
+  }
+
+  private preloadClips() {
+    if (typeof window === 'undefined') return;
+    const clips = [
+      '/audio/fight.mp3',
+      '/audio/round_1.mp3',
+      '/audio/round_2.mp3',
+      '/audio/final_round.mp3',
+      '/audio/ko.mp3',
+      '/audio/you_win.mp3',
+      '/audio/you_lose.mp3',
+      '/audio/modi.mp3',
+      '/audio/rahul.mp3',
+      '/audio/didi.mp3',
+      '/audio/yogi.mp3',
+      '/audio/trump.mp3',
+      '/audio/nitin.mp3',
+      '/audio/lalu.mp3',
+      '/audio/mbapu.mp3',
+      '/audio/bed_chakra.mp3',
+      '/audio/bed_bulldozer.mp3',
+      '/audio/bed_jadu.mp3',
+      '/audio/aloolelo.mp3'
+    ];
+
+    clips.forEach(src => {
+      try {
+        const audio = new Audio(src);
+        audio.preload = 'auto';
+        this.audioCache.set(src, audio);
+      } catch {}
+    });
+  }
+
+  public playClip(url: string, volume = 0.9) {
+    if (this.muted || typeof window === 'undefined') return;
+    try {
+      let audio = this.audioCache.get(url);
+      if (!audio) {
+        audio = new Audio(url);
+        this.audioCache.set(url, audio);
+      }
+      audio.currentTime = 0;
+      audio.volume = Math.max(0, Math.min(1, volume * this.volume));
+      audio.play().catch(() => {});
+    } catch {}
   }
 
   private setupUnlock() {
@@ -61,7 +109,7 @@ export class FightingAudio {
       this.sfxGain.connect(this.masterGain);
 
       this.bgmGain = this.ctx.createGain();
-      this.bgmGain.gain.value = 0.25;
+      this.bgmGain.gain.value = 0.35;
       this.bgmGain.connect(this.masterGain);
     }
   }
@@ -74,18 +122,46 @@ export class FightingAudio {
         this.ctx.currentTime
       );
     }
+    if (this.bgmAudio) {
+      this.bgmAudio.muted = this.muted;
+    }
     return this.muted;
   }
 
-  // --- SFX Synthesis ---
+  // --- Voice & Announcer Helpers ---
+  public playRoundVoice(round: number) {
+    if (round === 1) this.playClip('/audio/round_1.mp3');
+    else if (round === 2) this.playClip('/audio/round_2.mp3');
+    else this.playClip('/audio/final_round.mp3');
 
+    setTimeout(() => {
+      this.playClip('/audio/fight.mp3');
+    }, 900);
+  }
+
+  public playKOVoice() {
+    this.playClip('/audio/ko.mp3', 1.0);
+  }
+
+  public playWinVoice() {
+    this.playClip('/audio/you_win.mp3', 1.0);
+  }
+
+  public playLoseVoice() {
+    this.playClip('/audio/you_lose.mp3', 1.0);
+  }
+
+  public playFighterVoice(charId: string) {
+    this.playClip(`/audio/${charId}.mp3`, 0.95);
+  }
+
+  // --- SFX Synthesis Fallbacks ---
   public playPunch() {
     if (this.muted) return;
     this.initCtx();
     if (!this.ctx || !this.sfxGain) return;
 
     const t = this.ctx.currentTime;
-    // Fast frequency drop + noise punch
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
     osc.type = 'triangle';
@@ -128,7 +204,6 @@ export class FightingAudio {
     if (!this.ctx || !this.sfxGain) return;
 
     const t = this.ctx.currentTime;
-    // Sub-bass impact + crack
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
     osc.type = 'sawtooth';
@@ -165,28 +240,6 @@ export class FightingAudio {
     osc.stop(t + 0.1);
   }
 
-  public playGrab() {
-    if (this.muted) return;
-    this.initCtx();
-    if (!this.ctx || !this.sfxGain) return;
-
-    const t = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(120, t);
-    osc.frequency.linearRampToValueAtTime(300, t + 0.08);
-    osc.frequency.exponentialRampToValueAtTime(40, t + 0.25);
-
-    gain.gain.setValueAtTime(0.6, t);
-    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.25);
-
-    osc.connect(gain);
-    gain.connect(this.sfxGain);
-    osc.start(t);
-    osc.stop(t + 0.25);
-  }
-
   public playSuperCharge() {
     if (this.muted) return;
     this.initCtx();
@@ -215,7 +268,6 @@ export class FightingAudio {
     if (!this.ctx || !this.sfxGain) return;
 
     const t = this.ctx.currentTime;
-    // Dual frequency massive detonate
     const osc1 = this.ctx.createOscillator();
     const osc2 = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
@@ -240,162 +292,25 @@ export class FightingAudio {
     osc2.stop(t + 0.65);
   }
 
-  public playRoundAnnounce() {
-    if (this.muted) return;
-    this.initCtx();
-    if (!this.ctx || !this.sfxGain) return;
-
-    const t = this.ctx.currentTime;
-    const notes = [440, 554, 659, 880];
-    notes.forEach((freq, idx) => {
-      const osc = this.ctx!.createOscillator();
-      const gain = this.ctx!.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, t + idx * 0.1);
-      gain.gain.setValueAtTime(0.4, t + idx * 0.1);
-      gain.gain.exponentialRampToValueAtTime(0.01, t + idx * 0.1 + 0.3);
-      osc.connect(gain);
-      gain.connect(this.sfxGain!);
-      osc.start(t + idx * 0.1);
-      osc.stop(t + idx * 0.1 + 0.3);
-    });
-  }
-
-  public playVictoryTheme() {
-    if (this.muted) return;
-    this.initCtx();
-    if (!this.ctx || !this.sfxGain) return;
-
-    const t = this.ctx.currentTime;
-    const fanFare = [
-      { f: 523.25, d: 0.18 }, // C5
-      { f: 659.25, d: 0.18 }, // E5
-      { f: 783.99, d: 0.18 }, // G5
-      { f: 1046.5, d: 0.45 }  // C6
-    ];
-
-    let offset = 0;
-    fanFare.forEach(note => {
-      const osc = this.ctx!.createOscillator();
-      const gain = this.ctx!.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(note.f, t + offset);
-      gain.gain.setValueAtTime(0.5, t + offset);
-      gain.gain.exponentialRampToValueAtTime(0.01, t + offset + note.d);
-
-      osc.connect(gain);
-      gain.connect(this.sfxGain!);
-      osc.start(t + offset);
-      osc.stop(t + offset + note.d);
-      offset += note.d * 0.85;
-    });
-  }
-
-  public playMenuClick() {
-    if (this.muted) return;
-    this.initCtx();
-    if (!this.ctx || !this.sfxGain) return;
-
-    const t = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(900, t);
-    osc.frequency.exponentialRampToValueAtTime(450, t + 0.05);
-    gain.gain.setValueAtTime(0.2, t);
-    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.05);
-    osc.connect(gain);
-    gain.connect(this.sfxGain);
-    osc.start(t);
-    osc.stop(t + 0.05);
-  }
-
-  // --- Dynamic Procedural Fight BGM (Dhol-inspired cadence & synth pulse) ---
+  // --- Background Music ---
   public startFightBGM() {
-    if (this.isBgmPlaying) return;
-    this.initCtx();
-    if (!this.ctx || !this.bgmGain) return;
-
-    this.isBgmPlaying = true;
-    this.runBgmLoop();
-  }
-
-  private runBgmLoop() {
-    if (!this.isBgmPlaying || !this.ctx || !this.bgmGain) return;
-
-    // Pattern generator: 125 BPM fighting beat
-    const bpm = 126;
-    const beatInterval = 60 / bpm;
-    const t = this.ctx.currentTime + 0.05;
-
-    // Bass line notes (D Dorian / Indian Rag Bhairav inspired)
-    const bassNotes = [73.42, 82.41, 73.42, 98.0, 73.42, 82.41, 110.0, 98.0];
-
-    for (let step = 0; step < 16; step++) {
-      const stepTime = t + step * (beatInterval / 2);
-      
-      // Kick / Dhol beat on downbeats
-      if (step % 4 === 0) {
-        this.triggerDholBeat(stepTime, 65, 0.25);
-      } else if (step % 4 === 2) {
-        this.triggerDholBeat(stepTime, 95, 0.18);
-      }
-
-      // Synth bass note
-      const note = bassNotes[step % bassNotes.length];
-      this.triggerSynthBass(stepTime, note, beatInterval * 0.4);
-    }
-
-    // Schedule next 16-step bar
-    const barDuration = 16 * (beatInterval / 2) * 1000;
-    setTimeout(() => {
-      if (this.isBgmPlaying) {
-        this.runBgmLoop();
-      }
-    }, barDuration - 80);
-  }
-
-  private triggerDholBeat(time: number, freq: number, gainVal: number) {
-    if (!this.ctx || !this.bgmGain || this.muted) return;
+    if (this.muted || typeof window === 'undefined') return;
     try {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, time);
-      osc.frequency.exponentialRampToValueAtTime(25, time + 0.12);
-      gain.gain.setValueAtTime(gainVal, time);
-      gain.gain.exponentialRampToValueAtTime(0.005, time + 0.14);
-      osc.connect(gain);
-      gain.connect(this.bgmGain);
-      osc.start(time);
-      osc.stop(time + 0.14);
-    } catch {
-      // safely handle context timing jitter
-    }
-  }
-
-  private triggerSynthBass(time: number, freq: number, duration: number) {
-    if (!this.ctx || !this.bgmGain || this.muted) return;
-    try {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(freq, time);
-      gain.gain.setValueAtTime(0.12, time);
-      gain.gain.exponentialRampToValueAtTime(0.005, time + duration);
-      osc.connect(gain);
-      gain.connect(this.bgmGain);
-      osc.start(time);
-      osc.stop(time + duration);
-    } catch {
-      // safely handle context timing jitter
-    }
+      if (!this.bgmAudio) {
+        this.bgmAudio = new Audio('/audio/battle.mp3');
+        this.bgmAudio.loop = true;
+      }
+      this.bgmAudio.volume = 0.4 * this.volume;
+      this.bgmAudio.currentTime = 0;
+      this.bgmAudio.play().catch(() => {});
+    } catch {}
   }
 
   public stopFightBGM() {
-    this.isBgmPlaying = false;
+    if (this.bgmAudio) {
+      this.bgmAudio.pause();
+    }
   }
 }
 
 export const fightingAudio = FightingAudio.getInstance();
-

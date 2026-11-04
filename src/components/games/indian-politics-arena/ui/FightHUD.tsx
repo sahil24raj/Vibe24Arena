@@ -23,8 +23,12 @@ export const FightHUD: React.FC<FightHUDProps> = ({
       <div className="grid grid-cols-12 gap-2 sm:gap-4 items-start w-full max-w-5xl mx-auto">
         {/* P1 Side */}
         <div className="col-span-5 flex items-center gap-2 sm:gap-3">
-          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-[#0B1536] border-2 border-[#FF9933] shadow-lg flex items-center justify-center text-2xl sm:text-3xl shrink-0">
-            {p1.avatarIcon}
+          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-[#0B1536] border-2 border-[#FF9933] shadow-lg flex items-center justify-center text-2xl sm:text-3xl shrink-0 overflow-hidden">
+            {p1.facePhoto ? (
+              <img src={p1.facePhoto} alt={p1.name} className="w-full h-full object-cover" />
+            ) : (
+              p1.avatarIcon
+            )}
           </div>
 
           <div className="flex-1 space-y-1">
@@ -97,8 +101,12 @@ export const FightHUD: React.FC<FightHUDProps> = ({
 
         {/* P2 Side */}
         <div className="col-span-5 flex items-center flex-row-reverse gap-2 sm:gap-3">
-          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-[#0B1536] border-2 border-[#00D2FF] shadow-lg flex items-center justify-center text-2xl sm:text-3xl shrink-0">
-            {p2.avatarIcon}
+          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-[#0B1536] border-2 border-[#00D2FF] shadow-lg flex items-center justify-center text-2xl sm:text-3xl shrink-0 overflow-hidden">
+            {p2.facePhoto ? (
+              <img src={p2.facePhoto} alt={p2.name} className="w-full h-full object-cover" />
+            ) : (
+              p2.avatarIcon
+            )}
           </div>
 
           <div className="flex-1 space-y-1">

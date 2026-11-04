@@ -61,7 +61,15 @@ export const VictoryNewspaper: React.FC<VictoryNewspaperProps> = ({
         <div className="p-5 grid grid-cols-1 sm:grid-cols-12 gap-5">
           {/* Winner Photo & Caption */}
           <div className="sm:col-span-5 bg-[#E7E5E4] p-3 rounded-xl border border-[#292524]/20 text-center flex flex-col items-center justify-center">
-            <div className="text-7xl my-2 filter drop-shadow">{winnerChar.avatarIcon}</div>
+            {winnerChar.facePhoto ? (
+              <img
+                src={winnerChar.facePhoto}
+                alt={winnerChar.name}
+                className="w-24 h-24 rounded-2xl object-cover border-2 border-[#292524] my-2 shadow-md"
+              />
+            ) : (
+              <div className="text-7xl my-2 filter drop-shadow">{winnerChar.avatarIcon}</div>
+            )}
             <div className="text-sm font-black uppercase text-[#1C1917] mt-1">
               {winnerChar.name}
             </div>
