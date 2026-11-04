@@ -1,245 +1,219 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { GAMES_CATALOG, useAppStore, Game } from '@/store/useAppStore';
+import { GAMES_CATALOG, useAppStore, GameItem } from '@/store/useAppStore';
 import { soundFx } from '@/lib/audio';
-import {
-  Play,
-  Users,
-  ChevronLeft,
-  ChevronRight,
-  Flame,
-  Star,
-  Zap,
-  Crown,
-  Trophy,
-  Sparkles,
-  ArrowRight
-} from 'lucide-react';
 
-const FEATURED_GAMES_IDS = [
-  'escape-door',
-  'chor-sipahi',
-  'word-builder',
-  'spin-cricket',
-  'pen-flip',
-  'brain-pot',
-  'tic-tac-toe'
-];
+interface BattleCardData {
+  id: string;
+  title: string;
+  badge: string;
+  badgeBg: string;
+  rating: string;
+  statsLeft: string;
+  statsRight: string;
+  statsRightColor: string;
+  description: string;
+  buttonActionType: 'ROOM' | 'SOLO';
+  image: string;
+  route: string;
+  hoverGlow: string;
+}
 
-const RANK_BADGES = [
+const TOP_BATTLES: BattleCardData[] = [
   {
-    rankText: '🚪 MYSTERY ESCAPE ARENA',
-    icon: Sparkles,
-    colorClass: 'bg-[#00F0FF]/20 border-[#00F0FF]/50 text-[#00F0FF]'
+    id: 'auto-rush',
+    title: 'Auto Rush 3D 🛺💨',
+    badge: 'Squad Thrills',
+    badgeBg: 'bg-secondary-container/90 text-on-secondary',
+    rating: '4.98',
+    statsLeft: 'MULTIPLAYER • 2-5 MIN',
+    statsRight: 'MEDIUM IQ',
+    statsRightColor: 'text-neon-cyan',
+    description: 'The Gurugram Grand Prix! 8 Indian auto-rickshaws, real 3-wheel drift mechanics & nitrous overdrive!',
+    buttonActionType: 'ROOM',
+    image: '/games/auto-rush.jpg',
+    route: '/games/auto-rush',
+    hoverGlow: 'hover:shadow-[0_0_30px_rgba(139,44,255,0.4)]'
   },
   {
-    rankText: '#1 SQUAD FAVORITE',
-    icon: Flame,
-    colorClass: 'bg-[#D946EF]/20 border-[#D946EF]/50 text-[#F472B6]'
+    id: 'indian-politics-arena',
+    title: 'Indian Politics Arena ⚔️🏛️',
+    badge: 'Trending Meme',
+    badgeBg: 'bg-tertiary text-on-tertiary-fixed',
+    rating: '4.99',
+    statsLeft: 'MULTIPLAYER • 2-4 MIN',
+    statsRight: 'HARD CHAOS',
+    statsRightColor: 'text-error',
+    description: 'Sansad Se Sadak Tak, Fight Karo! 8 satirical netas, real arcade combat engine and super attacks!',
+    buttonActionType: 'ROOM',
+    image: '/games/indian-politics-arena.jpg',
+    route: '/games/indian-politics-arena',
+    hoverGlow: 'hover:shadow-[0_0_30px_rgba(235,195,21,0.4)]'
   },
   {
-    rankText: '#2 RAPID BRAIN DUEL',
-    icon: Trophy,
-    colorClass: 'bg-[#06B6D4]/20 border-[#06B6D4]/50 text-[#38BDF8]'
+    id: 'chor-sipahi',
+    title: 'Chor Sipahi (Raja Mantri) 👑🥷',
+    badge: 'Squad Classic',
+    badgeBg: 'bg-neon-green/20 text-neon-green',
+    rating: '4.98',
+    statsLeft: '4 PLAYERS • 2-4 MIN',
+    statsRight: 'SOCIAL BLUFF',
+    statsRightColor: 'text-neon-green',
+    description: 'Raja orders, Mantri hides, Sipahi investigates, Chor bluffs! The ultimate desi party deduction game.',
+    buttonActionType: 'ROOM',
+    image: '/games/chor-sipahi.jpg',
+    route: '/games/chor-sipahi',
+    hoverGlow: 'hover:shadow-[0_0_30px_rgba(72,240,120,0.4)]'
   },
   {
-    rankText: '#3 NOSTALGIA HIT',
-    icon: Crown,
-    colorClass: 'bg-amber-500/20 border-amber-500/50 text-amber-300'
+    id: 'escape-door',
+    title: 'Escape From The Door 🚪',
+    badge: 'Mystery Risk',
+    badgeBg: 'bg-secondary-container/80 text-on-secondary',
+    rating: '4.98',
+    statsLeft: 'SOLO ARCADE • 1-3 MIN',
+    statsRight: '142K PLAYS',
+    statsRightColor: 'text-tertiary',
+    description: 'Choose wisely. Exactly ONE cyber door leads to survival across 10 tense rooms and Endless Mode!',
+    buttonActionType: 'SOLO',
+    image: '/games/escape-door.jpg',
+    route: '/games/escape-door',
+    hoverGlow: 'hover:shadow-[0_0_30px_rgba(6,182,212,0.4)]'
   },
   {
-    rankText: '#4 LAST BENCH CLASSIC',
-    icon: Zap,
-    colorClass: 'bg-purple-500/20 border-purple-500/50 text-purple-300'
-  },
-  {
-    rankText: '#5 SPEED IQ ARENA',
-    icon: Sparkles,
-    colorClass: 'bg-pink-500/20 border-pink-500/50 text-pink-300'
-  },
-  {
-    rankText: '#6 1v1 DUEL',
-    icon: Users,
-    colorClass: 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300'
+    id: 'genz-protest-run',
+    title: 'GenZ Protest Run 🏃📢',
+    badge: 'Desi Meme',
+    badgeBg: 'bg-tertiary text-on-tertiary-fixed',
+    rating: '4.99',
+    statsLeft: 'SOLO ARCADE • 1-3 MIN',
+    statsRight: 'CHAOS RUNNER',
+    statsRightColor: 'text-neon-cyan',
+    description: 'Dodge barricades, grab kulhad chai boosts, and dash your way through iconic Delhi checkpoints!',
+    buttonActionType: 'SOLO',
+    image: '/games/genz-protest-run.jpg',
+    route: '/games/genz-protest-run',
+    hoverGlow: 'hover:shadow-[0_0_30px_rgba(235,195,21,0.4)]'
   }
 ];
 
 export const HeroTrendingCarousel: React.FC = () => {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { openMultiplayerModal } = useAppStore();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
 
-  const featuredGames: Game[] = FEATURED_GAMES_IDS
-    .map((id) => GAMES_CATALOG.find((g) => g.id === id))
-    .filter(Boolean) as Game[];
-
-  const currentGame = featuredGames[currentIndex] || featuredGames[0];
-  const rankInfo = RANK_BADGES[currentIndex] || RANK_BADGES[0];
-  const RankIcon = rankInfo.icon;
-
-  useEffect(() => {
-    if (isHovered) return;
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % featuredGames.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [isHovered, featuredGames.length]);
-
-  const handleSelectGame = (index: number) => {
+  const handleScroll = (offset: number) => {
     soundFx.playClick();
-    setCurrentIndex(index);
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+    }
   };
-
-  const handlePrev = () => {
-    soundFx.playClick();
-    setCurrentIndex((prev) => (prev === 0 ? featuredGames.length - 1 : prev - 1));
-  };
-
-  const handleNext = () => {
-    soundFx.playClick();
-    setCurrentIndex((prev) => (prev + 1) % featuredGames.length);
-  };
-
-  if (!currentGame) return null;
 
   return (
-    <section
-      className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#10131D] shadow-2xl group transition-all duration-300"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* Background Cinematic Art with Smooth Vignette */}
-      <div className="absolute inset-0 z-0">
-        <Image
-          src={currentGame.bannerImage}
-          alt={currentGame.title}
-          fill
-          priority
-          className="object-cover object-center filter blur-[1px] opacity-35 transition-all duration-700 ease-out group-hover:opacity-45"
-        />
-        {/* Editorial Gradients */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#10131D] via-[#10131D]/80 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#10131D] via-[#10131D]/90 to-transparent" />
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#D946EF]/10 to-transparent pointer-events-none" />
-      </div>
-
-      {/* Main Content Showcase */}
-      <div className="relative z-10 p-6 sm:p-8 lg:p-10 min-h-[380px] flex flex-col justify-between space-y-6">
-        {/* Top Badges Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <span
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold border leading-none transition-all ${rankInfo.colorClass}`}
-            >
-              <RankIcon className="w-3.5 h-3.5" />
-              <span>{rankInfo.rankText}</span>
-            </span>
-
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-medium bg-[#06B6D4]/15 border border-[#06B6D4]/30 text-[#38BDF8] leading-none">
-              <Zap className="w-3.5 h-3.5" />
-              <span>ZERO DOWNLOADS</span>
-            </span>
-
-            {currentGame.multiplayer && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-medium bg-[#D946EF]/15 border border-[#D946EF]/30 text-[#F472B6] leading-none">
-                <Users className="w-3.5 h-3.5" />
-                <span>ONLINE SQUAD ROOMS</span>
-              </span>
-            )}
+    <section className="w-full px-4 sm:px-6 lg:px-12 py-10 bg-surface-container-lowest/80 border-y border-purple-500/10 relative">
+      <div className="max-w-7xl mx-auto flex flex-col gap-6">
+        {/* Section Header with Carousel Navigation */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-1.5 text-tertiary font-label-md font-bold uppercase tracking-widest">
+              <span className="material-symbols-outlined text-lg">local_fire_department</span>
+              <span>HYPE ZONE</span>
+            </div>
+            <h2 className="font-headline-xl uppercase text-on-surface tracking-tight mt-1">
+              TOP FEATURED BATTLES
+            </h2>
+            <p className="font-body-md text-soft-lavender">
+              Jump straight into the most played rooms across India right now.
+            </p>
           </div>
 
-          {/* Rating Pill */}
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-xs font-mono text-amber-400">
-            <Star className="w-3.5 h-3.5 fill-amber-400" />
-            <span className="font-bold">{currentGame.rating}</span>
-            <span className="text-slate-400 text-[10px]">
-              ({(currentGame.playCount / 1000).toFixed(0)}k plays)
-            </span>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <button
+              onClick={() => handleScroll(-380)}
+              className="w-12 h-12 rounded-xl bg-surface-container-high hover:bg-surface-bright text-on-surface flex items-center justify-center transition-all shadow-md active:scale-90 cursor-pointer"
+              title="Previous Battle"
+            >
+              <span className="material-symbols-outlined">chevron_left</span>
+            </button>
+            <button
+              onClick={() => handleScroll(380)}
+              className="w-12 h-12 rounded-xl bg-surface-container-high hover:bg-surface-bright text-on-surface flex items-center justify-center transition-all shadow-md active:scale-90 cursor-pointer"
+              title="Next Battle"
+            >
+              <span className="material-symbols-outlined">chevron_right</span>
+            </button>
           </div>
         </div>
 
-        {/* Center Headline & Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          <div className="lg:col-span-8 space-y-3">
-            <div className="space-y-1">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white font-display tracking-tight flex items-center gap-3">
-                <span>{currentGame.title}</span>
-              </h2>
-              <p className="text-sm sm:text-base text-[#38BDF8] font-display font-medium">
-                {currentGame.tagline}
-              </p>
-            </div>
+        {/* Carousel Scroll Container */}
+        <div
+          ref={scrollContainerRef}
+          className="flex gap-6 overflow-x-auto pb-4 pt-1 scroll-smooth snap-x snap-mandatory no-scrollbar"
+        >
+          {TOP_BATTLES.map((battle) => {
+            const catalogGame =
+              GAMES_CATALOG.find((g) => g.id === battle.id) || GAMES_CATALOG[0];
 
-            <p className="text-xs sm:text-sm text-slate-300 font-sans line-clamp-2 max-w-2xl leading-relaxed">
-              {currentGame.description}
-            </p>
-
-            {/* Action Buttons */}
-            <div className="pt-2 flex flex-wrap items-center gap-3">
-              <Link
-                href={`/game/${currentGame.id}`}
-                onClick={() => soundFx.playClick()}
-                className="px-6 py-3 rounded-full va-btn-primary text-xs font-bold flex items-center gap-2 shadow-lg group/btn cursor-pointer"
+            return (
+              <div
+                key={battle.id}
+                className={`min-w-[320px] sm:min-w-[360px] max-w-[380px] snap-start shrink-0 rounded-2xl bg-surface-container p-4 flex flex-col justify-between shadow-xl ${battle.hoverGlow} transition-all group border border-purple-500/20`}
               >
-                <Play className="w-4 h-4 fill-white transition-transform group-hover/btn:scale-110" />
-                <span>PLAY NOW</span>
-              </Link>
+                <div className="flex flex-col gap-2">
+                  <div className="w-full h-48 rounded-xl bg-surface-purple overflow-hidden relative">
+                    <img
+                      src={battle.image}
+                      alt={battle.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div
+                      className={`absolute top-3 left-3 px-2.5 py-1 rounded font-label-sm font-bold uppercase backdrop-blur-md ${battle.badgeBg}`}
+                    >
+                      {battle.badge}
+                    </div>
+                    <div className="absolute bottom-3 right-3 px-2 py-0.5 rounded bg-surface-purple/90 text-tertiary font-label-sm font-bold flex items-center gap-1 backdrop-blur-md">
+                      <span className="material-symbols-outlined text-sm">star</span> {battle.rating}
+                    </div>
+                  </div>
 
-              {currentGame.multiplayer && (
-                <button
-                  onClick={() => {
-                    soundFx.playClick();
-                    openMultiplayerModal(currentGame);
-                  }}
-                  className="px-6 py-3 rounded-full va-btn-secondary text-xs font-semibold flex items-center gap-2 cursor-pointer"
-                >
-                  <Users className="w-4 h-4 text-[#06B6D4]" />
-                  <span>CHALLENGE SQUAD</span>
-                </button>
-              )}
-            </div>
-          </div>
+                  <div className="flex items-center justify-between text-soft-lavender font-label-sm pt-1">
+                    <span>{battle.statsLeft}</span>
+                    <span className={`font-bold ${battle.statsRightColor}`}>{battle.statsRight}</span>
+                  </div>
 
-          {/* Right Thumbnails / Navigation Dots */}
-          <div className="lg:col-span-4 flex flex-col justify-end items-end space-y-3">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handlePrev}
-                className="p-2.5 rounded-full bg-[#181C2A] border border-white/10 text-slate-400 hover:text-white transition-all cursor-pointer"
-                aria-label="Previous Featured Game"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                onClick={handleNext}
-                className="p-2.5 rounded-full bg-[#181C2A] border border-white/10 text-slate-400 hover:text-white transition-all cursor-pointer"
-                aria-label="Next Featured Game"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+                  <h3 className="font-headline-md text-on-surface font-bold truncate">{battle.title}</h3>
+                  <p className="font-body-sm text-soft-lavender line-clamp-2">{battle.description}</p>
+                </div>
 
-            {/* Pill Selectors */}
-            <div className="flex items-center gap-1.5">
-              {featuredGames.map((g, idx) => (
-                <button
-                  key={g.id}
-                  onClick={() => handleSelectGame(idx)}
-                  className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                    currentIndex === idx ? 'w-8 bg-[#D946EF]' : 'w-2 bg-white/20 hover:bg-white/40'
-                  }`}
-                  aria-label={`Jump to ${g.title}`}
-                />
-              ))}
-            </div>
-          </div>
+                <div className="flex items-center gap-2 mt-4">
+                  <Link
+                    href={battle.route}
+                    onClick={() => soundFx.playClick()}
+                    className="flex-1 py-3 rounded-lg bg-primary-container text-on-primary-container font-label-lg font-bold hover:bg-secondary-container transition-colors shadow-md text-center flex items-center justify-center gap-1.5"
+                  >
+                    <span>PLAY NOW</span>
+                  </Link>
+
+                  <button
+                    onClick={() => {
+                      soundFx.playClick();
+                      if (battle.buttonActionType === 'ROOM') {
+                        openMultiplayerModal(catalogGame);
+                      } else {
+                        window.location.href = battle.route;
+                      }
+                    }}
+                    className="px-4 py-3 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-lg font-bold transition-colors cursor-pointer"
+                  >
+                    {battle.buttonActionType}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
   );
 };
-
-export default HeroTrendingCarousel;

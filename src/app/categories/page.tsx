@@ -6,28 +6,18 @@ import { GAMES_CATALOG, useAppStore } from '@/store/useAppStore';
 import { JackpotterCard } from '@/components/JackpotterCard';
 import { MultiplayerLobbyModal } from '@/components/MultiplayerLobbyModal';
 import { soundFx } from '@/lib/audio';
-import {
-  Flame,
-  Search,
-  Backpack,
-  Brain,
-  Coffee,
-  Users,
-  Zap,
-  Sparkles,
-  Gamepad2
-} from 'lucide-react';
 
 const CATEGORY_PILLS = [
-  { id: 'ALL', label: '🌟 All Vibes', icon: Sparkles, color: 'text-white' },
-  { id: 'meme', label: '🔥 Trending Meme Vibes', icon: Flame, color: 'text-orange-400' },
-  { id: 'school', label: '🏫 School Vibes', icon: Backpack, color: 'text-amber-400' },
-  { id: 'squad', label: '👥 Squad Vibes', icon: Users, color: 'text-[#D946EF]' }
+  { id: 'ALL', label: 'All Vibes', emoji: '🌟' },
+  { id: 'meme', label: 'Meme Vibes', emoji: '🔥' },
+  { id: 'school', label: 'School Vibes', emoji: '🎒' },
+  { id: 'squad', label: 'Squad Vibes', emoji: '👥' },
+  { id: 'brain', label: 'Brain Vibes', emoji: '🧠' }
 ];
 
 function CategoriesContent() {
   const searchParams = useSearchParams();
-  const catQuery = searchParams.get('cat') || searchParams.get('category') || 'ALL';
+  const catQuery = searchParams.get('cat') || searchParams.get('category') || searchParams.get('vibe') || 'ALL';
   const searchQueryParam = searchParams.get('q') || '';
 
   const [selectedCat, setSelectedCat] = useState<string>(catQuery);
@@ -64,44 +54,45 @@ function CategoriesContent() {
   });
 
   return (
-    <div className="space-y-8 pb-16">
+    <div className="space-y-8 pb-16 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto pt-6">
       <MultiplayerLobbyModal />
 
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-5 p-6 sm:p-8 rounded-3xl border border-[#1E2844] bg-gradient-to-r from-[#0C1220] via-[#0E1528] to-[#080C16] shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-full bg-gradient-to-l from-[#00F0FF]/10 to-transparent pointer-events-none" />
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-5 p-6 sm:p-8 rounded-3xl border border-purple-500/20 bg-surface-purple/80 backdrop-blur-xl shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-full bg-gradient-to-l from-primary-container/20 via-secondary/10 to-transparent pointer-events-none" />
         <div className="space-y-2 relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FF0055]/15 border border-[#FF0055]/30 text-xs font-mono text-[#FF0055] font-bold">
-            <Flame className="w-3.5 h-3.5" />
-            <span>TRENDING VIBES & GAME HUBS</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-high border border-purple-500/20 text-xs font-label-sm text-neon-green font-bold uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-neon-green animate-ping" />
+            <span>CATEGORIES &amp; MODES</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-white flex items-center gap-2 font-display uppercase tracking-wide">
-            EXPLORE ALL VIBES
+          <h1 className="text-3xl sm:text-4xl font-headline-xl uppercase text-on-surface tracking-tight font-bold">
+            EXPLORE ALL VIBES (11)
           </h1>
-          <p className="text-xs sm:text-sm text-gray-400 font-sans max-w-xl leading-relaxed">
-            From 90s school bench duels to rapid cognitive battles and viral Indian meme games — pick your vibe and jump in instantly.
+          <p className="font-body-md text-soft-lavender max-w-xl leading-relaxed">
+            From last-bench school nostalgia to rapid cognitive battles and viral Indian meme fighters — pick your vibe and jump in instantly.
           </p>
         </div>
 
-        {/* Live Search Input */}
+        {/* Search Input */}
         <div className="relative w-full md:w-80 relative z-10">
-          <Search className="w-4 h-4 absolute left-3.5 top-3 text-gray-400 pointer-events-none" />
+          <span className="material-symbols-outlined text-soft-lavender text-lg absolute left-3.5 top-2.5 pointer-events-none">
+            search
+          </span>
           <input
             type="text"
             placeholder="Search games, vibes, roasts..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-[#080B14] border border-[#1E2844] focus:border-[#00F0FF] rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#00F0FF]/30 transition-all font-sans"
+            className="w-full bg-surface-container-low border border-purple-500/20 focus:border-primary-container rounded-xl pl-10 pr-4 py-2.5 font-body-sm text-on-surface placeholder:text-soft-lavender/60 focus:outline-none transition-all"
           />
         </div>
       </div>
 
       {/* Category Tabs Bar */}
-      <section className="overflow-x-auto pb-1 scrollbar-none">
+      <section className="overflow-x-auto pb-1 no-scrollbar">
         <div className="flex items-center gap-2.5 min-w-max p-0.5">
           {CATEGORY_PILLS.map((pill) => {
-            const Icon = pill.icon;
             const isSelected = selectedCat === pill.id;
             return (
               <button
@@ -110,16 +101,16 @@ function CategoriesContent() {
                   soundFx.playClick();
                   setSelectedCat(pill.id);
                 }}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-display font-bold transition-all duration-200 border whitespace-nowrap leading-none ${
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-label-md font-bold transition-all duration-200 border whitespace-nowrap cursor-pointer ${
                   isSelected
-                    ? 'bg-gradient-to-r from-[#121A30] to-[#1A2544] border-[#00F0FF] text-white shadow-lg shadow-[#00F0FF]/20 ring-1 ring-[#00F0FF]/40 scale-[1.02]'
-                    : 'bg-[#0E1322] border-[#1C2640] text-gray-400 hover:text-white hover:border-gray-600 hover:bg-[#131A2E]'
+                    ? 'bg-primary-container text-on-primary-container border-primary shadow-[0_0_16px_rgba(139,44,255,0.4)]'
+                    : 'bg-surface-container border-purple-500/10 text-soft-lavender hover:text-on-surface hover:bg-surface-container-high'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 shrink-0 ${pill.color}`} />
+                <span>{pill.emoji}</span>
                 <span>{pill.label}</span>
                 {isSelected && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#00F0FF] animate-pulse ml-0.5" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-neon-green animate-pulse ml-0.5" />
                 )}
               </button>
             );
@@ -128,19 +119,19 @@ function CategoriesContent() {
       </section>
 
       {/* Filter Summary & Total Count */}
-      <div className="flex items-center justify-between text-xs font-mono text-gray-400 border-b border-[#1A243C] pb-3">
+      <div className="flex items-center justify-between text-xs font-label-md text-soft-lavender border-b border-purple-500/10 pb-3">
         <span className="flex items-center gap-2">
-          <span>Showing:</span>
-          <strong className="text-[#00F0FF]">
+          <span>Active Filter:</span>
+          <strong className="text-tertiary">
             {CATEGORY_PILLS.find((p) => p.id === selectedCat)?.label || 'All Vibes'}
           </strong>
         </span>
         <span>
-          <strong className="text-white">{filtered.length}</strong> Games Found
+          <strong className="text-on-surface">{filtered.length}</strong> Games Found
         </span>
       </div>
 
-      {/* Clean Grid of Games with 100% Uncropped Posters */}
+      {/* Clean Grid of Games */}
       {filtered.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
           {filtered.map((game) => (
@@ -153,11 +144,13 @@ function CategoriesContent() {
           ))}
         </div>
       ) : (
-        <div className="p-12 text-center rounded-3xl bg-[#0E1322] border border-[#1A243C] space-y-3">
-          <Gamepad2 className="w-12 h-12 text-gray-500 mx-auto animate-bounce" />
-          <h3 className="text-base font-bold text-white font-display">No games found matching your search.</h3>
-          <p className="text-xs text-gray-400 font-sans">
-            Try searching for another game like Pen Flip, Cricket, Modi Run, or switch to All Vibes.
+        <div className="p-12 text-center rounded-3xl bg-surface-container border border-purple-500/20 space-y-3">
+          <span className="material-symbols-outlined text-4xl text-soft-lavender mx-auto">
+            sports_esports
+          </span>
+          <h3 className="font-headline-sm text-on-surface font-bold">No games found matching your search.</h3>
+          <p className="font-body-sm text-soft-lavender">
+            Try searching for another game like Pen Flip, Cricket, Auto Rush, or switch to All Vibes.
           </p>
           <button
             onClick={() => {
@@ -165,7 +158,7 @@ function CategoriesContent() {
               setSelectedCat('ALL');
               setSearch('');
             }}
-            className="px-5 py-2 rounded-xl bg-[#00F0FF]/15 border border-[#00F0FF]/40 text-[#00F0FF] font-mono text-xs font-bold hover:bg-[#00F0FF]/25 transition-all"
+            className="px-5 py-2.5 rounded-xl bg-tertiary text-on-tertiary-fixed font-label-sm font-bold shadow-md hover:scale-105 transition-all cursor-pointer"
           >
             Clear Filters &rarr;
           </button>
@@ -179,7 +172,7 @@ export default function CategoriesPage() {
   return (
     <Suspense
       fallback={
-        <div className="p-12 text-center text-xs font-mono text-[#00F0FF]">
+        <div className="p-12 text-center font-label-md text-primary">
           Loading Trending Vibes...
         </div>
       }

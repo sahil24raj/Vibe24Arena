@@ -278,3 +278,4 @@ export class VehicleModelBuilder {
     return root;
   }
 }
+

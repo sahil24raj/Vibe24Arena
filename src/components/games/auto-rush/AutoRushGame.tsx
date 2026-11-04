@@ -556,3 +556,4 @@ export const AutoRushGame: React.FC = () => {
     </div>
   );
 };
+

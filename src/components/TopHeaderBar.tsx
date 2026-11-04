@@ -5,35 +5,12 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAppStore, GAMES_CATALOG } from '@/store/useAppStore';
 import { soundFx } from '@/lib/audio';
-import { VibeArenaLogo } from '@/components/VibeArenaLogo';
-import {
-  Gamepad2,
-  LayoutGrid,
-  Swords,
-  Trophy,
-  User,
-  Search,
-  X,
-  Menu,
-  Volume2,
-  VolumeX,
-  Plus,
-  KeyRound,
-  ArrowRight,
-  LogOut,
-  Edit3,
-  Award,
-  Settings,
-  ShieldCheck,
-  ChevronDown
-} from 'lucide-react';
 import { normalizeRoomCode } from '@/lib/multiplayer/roomCodeGenerator';
-import { GamerAvatar } from '@/components/profile/GamerAvatar';
 
 export const TopHeaderBar: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isMuted, toggleMute, openMultiplayerModal, logout } = useAppStore();
+  const { user, isMuted, toggleMute, openMultiplayerModal, logout, openAuthModal } = useAppStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [quickJoinOpen, setQuickJoinOpen] = useState(false);
@@ -57,7 +34,6 @@ export const TopHeaderBar: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Close dropdown on click outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
@@ -88,414 +64,387 @@ export const TopHeaderBar: React.FC = () => {
     router.push(`/play/room/${clean}`);
   };
 
-  const navItems = [
-    { href: '/categories', label: 'All Vibes', icon: LayoutGrid },
-    { href: '/multiplayer', label: 'Play with Friends', icon: Swords, badge: 'SQUAD' },
-    { href: '/leaderboard', label: 'Leaderboard', icon: Trophy }
-  ];
+  const currentLevel = user.level || 1;
+  const currentXP = user.xp || 0;
+  const currentCoins = user.coins || 0;
+  const xpInCurrentLevel = currentXP % 1000;
+  const xpPercent = Math.min(100, Math.max(10, Math.round((xpInCurrentLevel / 1000) * 100)));
 
   return (
-    <header className="w-full bg-[#080A12]/95 backdrop-blur-xl border-b border-white/[0.07] sticky top-0 z-40 transition-colors">
-      <div className="max-w-[1540px] mx-auto px-4 sm:px-6 lg:px-8 h-17 flex items-center justify-between gap-4">
-        
-        {/* Brand Logo */}
-        <div className="flex items-center gap-3 shrink-0">
+    <header className="fixed top-0 left-0 right-0 z-50 w-full bg-surface-purple/90 backdrop-blur-xl border-b border-purple-500/20 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+      <div className="h-20 w-full px-4 sm:px-6 lg:px-12 flex items-center justify-between gap-4">
+        {/* Brand Logo & Tagline */}
+        <Link
+          href="/"
+          onClick={() => soundFx.playClick()}
+          className="flex items-center gap-3 shrink-0 group focus:outline-none"
+        >
+          <img
+            alt="Vibe Arena Logo"
+            className="h-9 w-auto object-contain transition-transform group-hover:scale-105"
+            src="/brand/vibe-arena-icon.png"
+          />
+          <div className="flex flex-col">
+            <span className="font-headline-sm text-primary font-bold tracking-wider leading-none uppercase">
+              VIBE ARENA
+            </span>
+            <span className="font-label-sm text-neon-green tracking-widest uppercase mt-0.5">
+              Dost. Games. Full Vibe.
+            </span>
+          </div>
+        </Link>
+
+        {/* Center Desktop Navigation Pill Container */}
+        <nav className="hidden xl:flex items-center gap-1 p-1 bg-surface-container-low rounded-xl border border-purple-500/10">
           <Link
             href="/"
             onClick={() => soundFx.playClick()}
-            className="flex items-center"
+            className={`px-4 py-1.5 transition-colors rounded-lg font-label-lg ${
+              pathname === '/'
+                ? 'bg-primary-container text-on-primary-container font-bold shadow-[0_0_16px_rgba(139,44,255,0.4)]'
+                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+            }`}
           >
-            <VibeArenaLogo size="md" showTagline={false} />
+            Home
           </Link>
-        </div>
-
-        {/* Center: Desktop Navigation Bar */}
-        <nav className="hidden md:flex items-center gap-1 bg-[#10131D] px-2 py-1.5 rounded-full border border-white/[0.08]">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
-            
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => soundFx.playClick()}
-                className={`relative flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold tracking-wide transition-all duration-200 ${
-                  isActive
-                    ? 'bg-[#181C2A] text-white border border-[#D946EF]/30 shadow-sm'
-                    : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
-                }`}
-              >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#D946EF]' : 'text-slate-400'}`} />
-                <span>{item.label}</span>
-                {item.badge && (
-                  <span className="px-1.5 py-0.2 text-[9px] font-mono font-bold rounded-full bg-[#D946EF]/20 text-[#F472B6] border border-[#D946EF]/40">
-                    {item.badge}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Right Section: Actions + Profile */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          
-          {/* Quick Search */}
-          <form
-            onSubmit={handleSearchSubmit}
-            className="relative hidden xl:flex items-center w-48 group"
+          <Link
+            href="/categories"
+            onClick={() => soundFx.playClick()}
+            className={`px-4 py-1.5 transition-colors rounded-lg font-label-lg ${
+              pathname.startsWith('/categories') || pathname.startsWith('/games')
+                ? 'bg-primary-container text-on-primary-container font-bold shadow-[0_0_16px_rgba(139,44,255,0.4)]'
+                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+            }`}
           >
-            <Search className="w-3.5 h-3.5 absolute left-3 text-slate-400 group-focus-within:text-[#06B6D4] transition-colors pointer-events-none" />
-            <input
-              ref={searchInputRef}
-              type="text"
-              placeholder="Search games... (/)"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#10131D] border border-white/[0.08] group-focus-within:border-[#06B6D4]/50 rounded-full pl-8.5 pr-8 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#06B6D4]/30 transition-all font-sans"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 text-slate-400 hover:text-white p-0.5"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </form>
-
-          {/* Join Room Button */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                soundFx.playClick();
-                setQuickJoinOpen(!quickJoinOpen);
-              }}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full va-btn-secondary text-xs font-semibold cursor-pointer"
-            >
-              <KeyRound className="w-3.5 h-3.5 text-[#06B6D4]" />
-              <span>Join Room</span>
-            </button>
-
-            {/* Quick Join Popover */}
-            {quickJoinOpen && (
-              <div className="absolute right-0 mt-2 w-72 p-4 rounded-2xl bg-[#10131D] border border-white/10 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150">
-                <div className="text-xs font-bold text-white mb-1 font-display">Join the Squad</div>
-                <p className="text-[11px] text-slate-400 mb-3">Enter the 6-character room code from your squad.</p>
-                <form onSubmit={handleQuickJoinSubmit} className="space-y-3">
-                  <input
-                    type="text"
-                    placeholder="e.g. X7K92P"
-                    value={joinCode}
-                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                    className="w-full bg-[#080A12] border border-white/15 rounded-xl px-3 py-2 text-xs font-mono font-bold text-[#06B6D4] uppercase focus:outline-none focus:border-[#06B6D4]"
-                    autoFocus
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      type="submit"
-                      disabled={!joinCode.trim()}
-                      className="flex-1 py-2 rounded-xl va-btn-primary text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer"
-                    >
-                      <span>Join Now</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setQuickJoinOpen(false)}
-                      className="px-3 py-2 rounded-xl bg-white/[0.05] text-slate-400 hover:text-white text-xs"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
-          </div>
-
-          {/* Primary CTA: Create Room */}
+            All Vibes / Games
+          </Link>
           <button
             onClick={() => {
               soundFx.playClick();
               openMultiplayerModal(GAMES_CATALOG[0]);
             }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full va-btn-primary text-xs font-bold cursor-pointer"
+            className="px-4 py-1.5 rounded-lg font-label-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors cursor-pointer"
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Create Room</span>
+            Create Room
+          </button>
+          <Link
+            href="/leaderboard"
+            onClick={() => soundFx.playClick()}
+            className={`px-4 py-1.5 transition-colors rounded-lg font-label-lg ${
+              pathname.startsWith('/leaderboard')
+                ? 'bg-primary-container text-on-primary-container font-bold shadow-[0_0_16px_rgba(139,44,255,0.4)]'
+                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+            }`}
+          >
+            Leaderboard
+          </Link>
+          <Link
+            href="/shop"
+            onClick={() => soundFx.playClick()}
+            className={`px-4 py-1.5 transition-colors rounded-lg font-label-lg ${
+              pathname.startsWith('/shop')
+                ? 'bg-primary-container text-on-primary-container font-bold shadow-[0_0_16px_rgba(139,44,255,0.4)]'
+                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+            }`}
+          >
+            Rewards / Shop
+          </Link>
+        </nav>
+
+        {/* Right Action Tools: Search, XP, Coins, Sound, Profile */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {/* Quick Search Bar */}
+          <form
+            onSubmit={handleSearchSubmit}
+            className="hidden lg:flex items-center bg-surface-container-low px-3 py-1.5 rounded-lg border border-purple-500/20 focus-within:border-primary-container transition-colors"
+          >
+            <span className="material-symbols-outlined text-soft-lavender text-lg mr-1.5">search</span>
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-transparent border-none outline-none font-body-sm text-on-surface placeholder:text-soft-lavender/60 w-32 xl:w-44"
+              placeholder="Search vibes, rooms..."
+            />
+            <kbd className="font-label-sm text-soft-lavender bg-surface-container-high px-1.5 py-0.5 rounded ml-1 border border-white/5">
+              ⌘K
+            </kbd>
+          </form>
+
+          {/* Level & XP Chip */}
+          <Link
+            href="/profile"
+            onClick={() => soundFx.playClick()}
+            className="hidden sm:flex flex-col gap-1 bg-surface-container-low px-3 py-1.5 rounded-lg border border-purple-500/20 hover:border-primary/40 transition-colors"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-label-sm text-primary font-bold">LVL {currentLevel}</span>
+              <span className="font-label-sm text-soft-lavender">{currentXP.toLocaleString()} XP</span>
+            </div>
+            <div className="w-24 h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-primary-container to-secondary rounded-full transition-all duration-500"
+                style={{ width: `${xpPercent}%` }}
+              />
+            </div>
+          </Link>
+
+          {/* Coin Badge */}
+          <Link
+            href="/shop"
+            onClick={() => soundFx.playCoin()}
+            className="flex items-center gap-1.5 bg-surface-container-low px-2.5 sm:px-3 py-1.5 rounded-lg border border-tertiary-container/30 hover:border-tertiary/60 transition-colors"
+            title="Your Vibe Coins"
+          >
+            <span className="text-base leading-none">🪙</span>
+            <span className="font-label-md text-tertiary font-bold">{currentCoins.toLocaleString()}</span>
+          </Link>
+
+          {/* Audio Mute Toggle */}
+          <button
+            onClick={() => {
+              toggleMute();
+              soundFx.playClick();
+            }}
+            className="p-2 rounded-lg bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors"
+            title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
+          >
+            <span className="material-symbols-outlined text-xl">
+              {isMuted ? 'volume_off' : 'volume_up'}
+            </span>
           </button>
 
-          {/* Profile Dropdown Menu Trigger & Container */}
+          {/* Quick Room Code Join */}
+          <button
+            onClick={() => {
+              soundFx.playClick();
+              setQuickJoinOpen(!quickJoinOpen);
+            }}
+            className="hidden md:flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-sm font-bold uppercase transition-colors border border-purple-500/20"
+          >
+            <span className="material-symbols-outlined text-sm">key</span>
+            <span>JOIN CODE</span>
+          </button>
+
+          {/* Notifications / Daily Spin Trigger */}
+          <button
+            onClick={() => {
+              soundFx.playClick();
+              useAppStore.getState().openSpinModal();
+            }}
+            className="relative p-2 rounded-lg bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors"
+            title="Daily Free Spin"
+          >
+            <span className="material-symbols-outlined text-xl">notifications</span>
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-neon-green shadow-[0_0_8px_#48F078] animate-ping" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-neon-green" />
+          </button>
+
+          {/* User Profile Avatar & Dropdown */}
           <div className="relative" ref={userMenuRef}>
-            <button
+            <div
               onClick={() => {
                 soundFx.playClick();
                 setUserMenuOpen(!userMenuOpen);
               }}
-              className="flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full bg-[#10131D] border border-white/[0.08] hover:border-[#00F0FF]/40 hover:bg-white/[0.04] transition-all cursor-pointer group"
-              title="Gamer Profile & Menu"
-              aria-haspopup="true"
-              aria-expanded={userMenuOpen}
+              className="flex items-center gap-1.5 pl-1 cursor-pointer group"
             >
-              <GamerAvatar
-                avatar={user.avatar}
-                photoURL={user.photoURL}
-                avatarType={user.avatarType}
-                size="xs"
-                showOnline={true}
-                isOnline={true}
-                glowEffect={false}
-              />
-              <span className="hidden xl:inline text-xs font-bold text-white max-w-[80px] truncate">
-                {user.displayName || user.username}
-              </span>
-              <div className="flex items-center gap-1 text-[11px] font-mono font-bold text-amber-400 pl-0.5">
-                <span>🪙</span>
-                <span>{user.coins}</span>
+              <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-lg ring-2 ring-primary-container group-hover:ring-secondary transition-all">
+                {user.avatar || '🚀'}
               </div>
-              <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${userMenuOpen ? 'rotate-180' : ''}`} />
-            </button>
+              <span className="material-symbols-outlined text-soft-lavender text-sm group-hover:text-on-surface">
+                expand_more
+              </span>
+            </div>
 
-            {/* Gaming User Menu Dropdown */}
+            {/* Dropdown Menu */}
             {userMenuOpen && (
-              <div className="absolute right-0 top-12 w-64 rounded-2xl bg-[#0D101C]/95 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.85)] backdrop-blur-2xl p-3 z-50 animate-in fade-in zoom-in-95 duration-150">
-                {/* User Identity Header */}
+              <div className="absolute right-0 mt-3 w-56 rounded-2xl bg-surface-purple/95 backdrop-blur-2xl border border-purple-500/30 p-2 shadow-[0_10px_40px_rgba(0,0,0,0.8)] z-50">
+                <div className="px-3 py-2 border-b border-purple-500/20 mb-1">
+                  <div className="font-label-lg text-on-surface font-bold truncate">{user.username}</div>
+                  <div className="font-label-sm text-neon-green">
+                    {user.authType === 'guest' ? 'Guest Player' : 'Verified Gamer'}
+                  </div>
+                </div>
+
                 <Link
                   href="/profile"
                   onClick={() => {
                     soundFx.playClick();
                     setUserMenuOpen(false);
                   }}
-                  className="flex items-center gap-3 p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/5 transition-all group"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg font-label-md text-on-surface hover:bg-surface-container transition-colors"
                 >
-                  <GamerAvatar
-                    avatar={user.avatar}
-                    photoURL={user.photoURL}
-                    avatarType={user.avatarType}
-                    size="md"
-                    showOnline={true}
-                    isOnline={true}
-                    rank={user.rank as string}
-                  />
-                  <div className="flex-1 min-w-0 text-left">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-black text-white truncate group-hover:text-[#00F0FF] transition-colors">
-                        {user.displayName || user.username}
-                      </span>
-                    </div>
-                    <span className="text-[11px] font-mono text-slate-400 block truncate">
-                      @{user.username}
-                    </span>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-[#00F0FF]/15 text-[#00F0FF] border border-[#00F0FF]/30">
-                        LVL {user.level}
-                      </span>
-                      <span className="text-[9px] font-mono font-bold text-[#ADFF2F]">
-                        {user.rank || 'Bronze II'}
-                      </span>
-                    </div>
-                  </div>
+                  <span className="material-symbols-outlined text-lg text-primary">person</span>
+                  <span>My Profile & Stats</span>
                 </Link>
 
-                {/* Quick Navigation Items */}
-                <div className="mt-2 pt-2 border-t border-white/[0.08] space-y-0.5">
-                  <Link
-                    href="/profile"
-                    onClick={() => {
-                      soundFx.playClick();
-                      setUserMenuOpen(false);
-                    }}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/[0.05] transition-all"
-                  >
-                    <User className="w-3.5 h-3.5 text-[#00F0FF]" />
-                    <span>View Profile</span>
-                  </Link>
+                <Link
+                  href="/shop"
+                  onClick={() => {
+                    soundFx.playClick();
+                    setUserMenuOpen(false);
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg font-label-md text-on-surface hover:bg-surface-container transition-colors"
+                >
+                  <span className="material-symbols-outlined text-lg text-tertiary">storefront</span>
+                  <span>Rewards Shop</span>
+                </Link>
 
-                  <Link
-                    href="/profile?tab=edit"
-                    onClick={() => {
-                      soundFx.playClick();
-                      setUserMenuOpen(false);
-                    }}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/[0.05] transition-all"
-                  >
-                    <Edit3 className="w-3.5 h-3.5 text-[#ADFF2F]" />
-                    <span>Edit Profile</span>
-                  </Link>
+                <button
+                  onClick={() => {
+                    soundFx.playClick();
+                    setUserMenuOpen(false);
+                    openMultiplayerModal(GAMES_CATALOG[0]);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg font-label-md text-on-surface hover:bg-surface-container transition-colors text-left"
+                >
+                  <span className="material-symbols-outlined text-lg text-neon-cyan">group_add</span>
+                  <span>Host Squad Lobby</span>
+                </button>
 
-                  <Link
-                    href="/profile?tab=achievements"
-                    onClick={() => {
-                      soundFx.playClick();
-                      setUserMenuOpen(false);
-                    }}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/[0.05] transition-all"
-                  >
-                    <Award className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Achievements</span>
-                  </Link>
-
-                  <Link
-                    href="/profile?tab=settings"
-                    onClick={() => {
-                      soundFx.playClick();
-                      setUserMenuOpen(false);
-                    }}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/[0.05] transition-all"
-                  >
-                    <Settings className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Settings & Privacy</span>
-                  </Link>
-                </div>
-
-                {/* Account Type Status & Logout */}
-                <div className="mt-2 pt-2 border-t border-white/[0.08] flex items-center justify-between px-1">
-                  <span className="text-[10px] font-mono text-slate-400 flex items-center gap-1">
-                    <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                    {user.authType === 'google' ? 'Google' : user.authType === 'email' ? 'Email' : 'Guest'}
-                  </span>
+                {user.authType === 'guest' ? (
                   <button
-                    type="button"
-                    onClick={async () => {
+                    onClick={() => {
                       soundFx.playClick();
                       setUserMenuOpen(false);
-                      await logout();
-                      router.push('/login');
+                      openAuthModal();
                     }}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all cursor-pointer"
+                    className="w-full mt-1 flex items-center gap-2 px-3 py-2 rounded-lg font-label-md text-on-primary-container bg-primary-container hover:bg-secondary-container transition-colors"
                   >
-                    <LogOut className="w-3 h-3" />
-                    <span>Logout</span>
+                    <span className="material-symbols-outlined text-lg">login</span>
+                    <span>Sign In / Save Progress</span>
                   </button>
-                </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      soundFx.playClick();
+                      setUserMenuOpen(false);
+                      logout();
+                    }}
+                    className="w-full mt-1 flex items-center gap-2 px-3 py-2 rounded-lg font-label-md text-error hover:bg-error-container/20 transition-colors text-left"
+                  >
+                    <span className="material-symbols-outlined text-lg">logout</span>
+                    <span>Sign Out</span>
+                  </button>
+                )}
               </div>
             )}
           </div>
 
-          {/* Audio Mute/Unmute */}
+          {/* Mobile Menu Hamburger */}
           <button
             onClick={() => {
               soundFx.playClick();
-              toggleMute();
+              setMobileMenuOpen(!mobileMenuOpen);
             }}
-            className="p-2 rounded-full bg-[#10131D] border border-white/[0.08] text-slate-400 hover:text-white transition-colors cursor-pointer"
-            title={isMuted ? 'Unmute Sound FX' : 'Mute Sound FX'}
-            aria-label="Toggle Sound"
+            className="xl:hidden p-2 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container-high transition-colors"
           >
-            {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
-          </button>
-
-          {/* Mobile Menu Toggle */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-xl bg-[#10131D] border border-white/[0.08] text-slate-400 hover:text-white transition-colors"
-            aria-label="Toggle Mobile Menu"
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            <span className="material-symbols-outlined text-xl">
+              {mobileMenuOpen ? 'close' : 'menu'}
+            </span>
           </button>
         </div>
       </div>
 
-      {/* Mobile Drawer */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-[#0A0C16] border-b border-white/[0.08] px-4 py-4 space-y-3 animate-in slide-in-from-top-2 duration-150">
-          {/* Quick Search on Mobile */}
-          <form onSubmit={handleSearchSubmit} className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400 pointer-events-none" />
+      {/* Quick Join Code Bar Popover */}
+      {quickJoinOpen && (
+        <div className="bg-surface-container-low border-b border-purple-500/20 px-4 py-2.5">
+          <form
+            onSubmit={handleQuickJoinSubmit}
+            className="max-w-xl mx-auto flex items-center gap-2"
+          >
+            <span className="font-label-sm text-neon-green uppercase font-bold shrink-0">Enter Code:</span>
             <input
               type="text"
-              placeholder="Search games, squad challenges..."
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+              placeholder="#X7K92P"
+              maxLength={8}
+              className="flex-1 bg-surface-purple px-3 py-1.5 rounded-lg border border-purple-500/30 font-mono text-center text-sm font-bold tracking-widest text-on-surface uppercase focus:outline-none focus:border-neon-cyan"
+            />
+            <button
+              type="submit"
+              className="px-4 py-1.5 rounded-lg bg-primary-container text-on-primary-container font-label-sm font-bold uppercase transition-all shadow-[0_0_12px_rgba(139,44,255,0.4)]"
+            >
+              JOIN
+            </button>
+            <button
+              type="button"
+              onClick={() => setQuickJoinOpen(false)}
+              className="p-1 rounded text-soft-lavender hover:text-on-surface"
+            >
+              <span className="material-symbols-outlined text-lg">close</span>
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* Mobile Drawer Menu */}
+      {mobileMenuOpen && (
+        <div className="xl:hidden bg-surface-purple/95 backdrop-blur-2xl border-b border-purple-500/30 px-4 py-4 flex flex-col gap-3">
+          <form onSubmit={handleSearchSubmit} className="flex items-center bg-surface-container px-3 py-2 rounded-lg border border-purple-500/20">
+            <span className="material-symbols-outlined text-soft-lavender text-lg mr-2">search</span>
+            <input
+              type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#10131D] border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none"
+              placeholder="Search vibes, rooms..."
+              className="bg-transparent border-none outline-none font-body-sm text-on-surface w-full"
             />
           </form>
 
-          {/* Mobile Nav Links */}
-          <div className="grid grid-cols-2 gap-2 pt-1">
-            <button
-              onClick={() => {
-                soundFx.playClick();
-                setMobileMenuOpen(false);
-                openMultiplayerModal(GAMES_CATALOG[0]);
-              }}
-              className="p-3 rounded-xl va-btn-primary text-xs font-bold flex items-center justify-center gap-1.5"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Create Room</span>
-            </button>
-            <button
-              onClick={() => {
-                soundFx.playClick();
-                setMobileMenuOpen(false);
-                setQuickJoinOpen(true);
-              }}
-              className="p-3 rounded-xl va-btn-secondary text-xs font-bold flex items-center justify-center gap-1.5"
-            >
-              <KeyRound className="w-4 h-4 text-[#06B6D4]" />
-              <span>Join Room</span>
-            </button>
-          </div>
-
-          <div className="space-y-1 pt-1 border-t border-white/[0.06]">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => {
-                    soundFx.playClick();
-                    setMobileMenuOpen(false);
-                  }}
-                  className="flex items-center justify-between p-3 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/[0.04]"
-                >
-                  <div className="flex items-center gap-3">
-                    <Icon className="w-4 h-4 text-[#D946EF]" />
-                    <span>{item.label}</span>
-                  </div>
-                  {item.badge && (
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#D946EF]/20 text-[#F472B6]">
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
-            <Link
-              href="/profile"
-              onClick={() => {
-                soundFx.playClick();
-                setMobileMenuOpen(false);
-              }}
-              className="flex items-center justify-between p-3 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/[0.04]"
-            >
-              <div className="flex items-center gap-3">
-                <GamerAvatar
-                  avatar={user.avatar}
-                  photoURL={user.photoURL}
-                  avatarType={user.avatarType}
-                  size="xs"
-                  showOnline={true}
-                  isOnline={true}
-                  glowEffect={false}
-                />
-                <div className="text-left">
-                  <div className="font-bold text-white leading-tight">
-                    {user.displayName || user.username}
-                  </div>
-                  <div className="text-[10px] font-mono text-slate-400">
-                    LVL {user.level} • @{user.username}
-                  </div>
-                </div>
-              </div>
-              <span className="text-[10px] font-mono font-bold text-amber-400">
-                🪙 {user.coins}
-              </span>
-            </Link>
-          </div>
+          <Link
+            href="/"
+            onClick={() => {
+              soundFx.playClick();
+              setMobileMenuOpen(false);
+            }}
+            className="px-3 py-2 rounded-lg font-label-lg text-on-surface hover:bg-surface-container"
+          >
+            🏠 Home
+          </Link>
+          <Link
+            href="/categories"
+            onClick={() => {
+              soundFx.playClick();
+              setMobileMenuOpen(false);
+            }}
+            className="px-3 py-2 rounded-lg font-label-lg text-on-surface hover:bg-surface-container"
+          >
+            🎮 All Vibes / Games
+          </Link>
+          <button
+            onClick={() => {
+              soundFx.playClick();
+              setMobileMenuOpen(false);
+              openMultiplayerModal(GAMES_CATALOG[0]);
+            }}
+            className="px-3 py-2 rounded-lg font-label-lg text-on-surface hover:bg-surface-container text-left"
+          >
+            👥 Create Squad Room
+          </button>
+          <Link
+            href="/leaderboard"
+            onClick={() => {
+              soundFx.playClick();
+              setMobileMenuOpen(false);
+            }}
+            className="px-3 py-2 rounded-lg font-label-lg text-on-surface hover:bg-surface-container"
+          >
+            🏆 Leaderboard
+          </Link>
+          <Link
+            href="/shop"
+            onClick={() => {
+              soundFx.playClick();
+              setMobileMenuOpen(false);
+            }}
+            className="px-3 py-2 rounded-lg font-label-lg text-on-surface hover:bg-surface-container"
+          >
+            🪙 Rewards & Shop
+          </Link>
         </div>
       )}
     </header>

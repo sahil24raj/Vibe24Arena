@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { soundFx } from '@/lib/audio';
-import { ShoppingBag, Sparkles, Crown, Zap, Check, AlertCircle, Coins } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface ShopItemDef {
@@ -85,81 +84,83 @@ export default function ShopPage() {
   };
 
   return (
-    <div className="space-y-8 pb-12">
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-black text-white flex items-center justify-center gap-2">
-          <ShoppingBag className="w-8 h-8 text-pink-500" /> Chill Arena Shop & Cosmetics
+    <div className="space-y-8 pb-16 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto pt-6">
+      <div className="text-center space-y-3 max-w-2xl mx-auto">
+        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-surface-container-high border border-purple-500/20 text-xs font-label-sm text-tertiary font-bold uppercase tracking-wider">
+          <span className="material-symbols-outlined text-sm">storefront</span>
+          <span>REWARDS &amp; SKINS</span>
+        </div>
+        <h1 className="text-3xl sm:text-5xl font-headline-xl font-bold text-on-surface uppercase tracking-tight">
+          VIBE ARENA REWARDS STORE
         </h1>
-        <p className="text-xs text-gray-400">Unlock authentic avatar skins and cosmetics using your earned Meme Coins</p>
+        <p className="font-body-md text-soft-lavender leading-relaxed">
+          Unlock exclusive avatar skins, crowns, and cyber cosmetics using your earned Vibe Coins.
+        </p>
 
         {/* Real User Coins Balance */}
-        <div className="inline-flex items-center gap-2 bg-slate-950 px-4 py-1.5 rounded-full border border-amber-500/40 text-amber-300 font-mono text-xs font-bold mt-2 shadow-lg shadow-amber-950/40">
-          <Coins className="w-4 h-4 text-amber-400" />
-          <span>YOUR COIN BALANCE: {user.coins} 🪙</span>
+        <div className="inline-flex items-center gap-2 bg-surface-container-low px-5 py-2 rounded-full border border-tertiary-container/40 text-tertiary font-label-md font-bold mt-2 shadow-[0_0_20px_rgba(235,195,21,0.25)]">
+          <span className="text-lg">🪙</span>
+          <span>YOUR COIN BALANCE: {user.coins.toLocaleString()} COINS</span>
         </div>
       </div>
 
       {purchaseMsg && (
         <div
-          className={`p-3 rounded-2xl border text-xs font-bold max-w-xl mx-auto flex items-center justify-center gap-2 animate-fadeIn ${
+          className={`max-w-xl mx-auto p-4 rounded-xl text-center font-label-md font-bold border ${
             purchaseMsg.isError
-              ? 'bg-red-950/80 border-red-500/50 text-red-200'
-              : 'bg-emerald-950/80 border-emerald-500/50 text-emerald-300'
+              ? 'bg-error-container/20 border-error text-error'
+              : 'bg-primary-container/20 border-primary text-primary shadow-[0_0_20px_rgba(139,44,255,0.3)]'
           }`}
         >
-          {purchaseMsg.isError ? <AlertCircle className="w-4 h-4" /> : <Check className="w-4 h-4" />}
-          <span>{purchaseMsg.text}</span>
+          {purchaseMsg.text}
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Grid of Shop Items */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {shopItems.map((item) => {
           const isUnlocked = item.skinKey && user.unlockedSkins.includes(item.skinKey);
-          const canAfford = user.coins >= item.priceCoins;
-
           return (
             <div
               key={item.id}
-              className={`glass-panel p-6 rounded-2xl border-purple-900/40 relative flex flex-col justify-between ${
-                item.highlight ? 'border-amber-500/60 shadow-xl shadow-amber-500/20' : ''
+              className={`p-6 rounded-2xl bg-surface-container border flex flex-col justify-between gap-4 transition-all shadow-xl ${
+                item.highlight
+                  ? 'border-tertiary/50 shadow-[0_0_30px_rgba(235,195,21,0.25)]'
+                  : 'border-purple-500/20 hover:border-primary/40 hover:shadow-[0_0_25px_rgba(139,44,255,0.3)]'
               }`}
             >
-              {item.highlight && (
-                <span className="absolute top-4 right-4 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
-                  FEATURED
-                </span>
-              )}
-
-              <div className="space-y-3">
-                <div className="w-16 h-16 rounded-2xl bg-slate-950 border border-purple-800/40 flex items-center justify-center text-4xl mb-2">
+              <div className="flex flex-col items-center text-center gap-3">
+                <div className="w-24 h-24 rounded-2xl bg-surface-purple border border-purple-500/30 flex items-center justify-center text-5xl shadow-inner">
                   {item.image}
                 </div>
                 <div>
-                  <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">{item.type}</span>
-                  <h3 className="text-lg font-black text-white">{item.name}</h3>
-                  <p className="text-xs text-gray-400 mt-1 leading-relaxed">{item.desc}</p>
+                  <span className="font-label-sm text-neon-cyan uppercase font-bold tracking-wider">
+                    {item.type}
+                  </span>
+                  <h3 className="font-headline-sm text-on-surface font-bold mt-0.5">{item.name}</h3>
+                  <p className="font-body-sm text-soft-lavender mt-1">{item.desc}</p>
                 </div>
               </div>
 
-              <div className="pt-6 mt-4 border-t border-purple-900/30 flex items-center justify-between">
-                <span className="text-base font-black text-amber-400">{item.priceCoins} Coins 🪙</span>
-                {isUnlocked ? (
-                  <span className="px-4 py-2 rounded-full text-xs font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5" /> UNLOCKED
+              <div className="space-y-3 pt-2 border-t border-purple-500/10">
+                <div className="flex items-center justify-between font-label-md">
+                  <span className="text-soft-lavender">Cost</span>
+                  <span className="text-tertiary font-bold flex items-center gap-1">
+                    <span>🪙</span> {item.priceCoins.toLocaleString()}
                   </span>
-                ) : (
-                  <button
-                    onClick={() => handleBuy(item)}
-                    disabled={!canAfford}
-                    className={`px-6 py-2.5 rounded-full text-xs font-black transition-all ${
-                      canAfford
-                        ? 'cyber-button text-white shadow-lg cursor-pointer hover:scale-105'
-                        : 'bg-slate-900 text-gray-500 border border-gray-800 cursor-not-allowed'
-                    }`}
-                  >
-                    {canAfford ? 'PURCHASE' : 'NEED MORE COINS'}
-                  </button>
-                )}
+                </div>
+
+                <button
+                  onClick={() => handleBuy(item)}
+                  disabled={Boolean(isUnlocked)}
+                  className={`w-full py-3 rounded-xl font-headline-sm text-sm uppercase tracking-wider font-bold transition-all cursor-pointer ${
+                    isUnlocked
+                      ? 'bg-surface-container-high text-neon-green border border-neon-green/30 cursor-default'
+                      : 'bg-tertiary text-on-tertiary-fixed shadow-[0_0_20px_rgba(235,195,21,0.4)] hover:scale-105 active:scale-95'
+                  }`}
+                >
+                  {isUnlocked ? '✓ UNLOCKED & EQUIPPED' : 'UNLOCK ITEM'}
+                </button>
               </div>
             </div>
           );

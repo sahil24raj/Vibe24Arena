@@ -228,3 +228,4 @@ export const AutoRushRaceSetup: React.FC<AutoRushRaceSetupProps> = ({
     </div>
   );
 };
+

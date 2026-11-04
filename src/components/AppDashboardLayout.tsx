@@ -23,15 +23,20 @@ export function AppDashboardLayout({ children }: AppDashboardLayoutProps) {
   }, [initAuthListener]);
 
   return (
-    <div className="min-h-screen w-full bg-[#05070E] text-gray-100 flex flex-col font-sans selection:bg-[#00F0FF] selection:text-slate-950 relative overflow-x-hidden">
+    <div className="min-h-screen w-full bg-background text-on-surface flex flex-col font-body selection:bg-primary-container selection:text-white relative overflow-x-hidden antialiased">
+      {/* Dynamic Cyber Light Gradients from Stitch Redesign */}
+      <div className="fixed -top-32 left-1/4 w-[600px] h-[600px] bg-primary-container/15 rounded-full blur-[140px] pointer-events-none -z-10" />
+      <div className="fixed top-[600px] -right-20 w-[500px] h-[500px] bg-secondary-container/20 rounded-full blur-[130px] pointer-events-none -z-10" />
+      <div className="fixed bottom-10 left-10 w-[600px] h-[600px] bg-tertiary-container/10 rounded-full blur-[150px] pointer-events-none -z-10" />
+
       <BackgroundParticles />
 
       {/* Pinned Top Navigation Bar */}
       <TopHeaderBar />
 
       {/* Main Full-Width Content Area */}
-      <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6">
-        <div className="max-w-[1540px] mx-auto space-y-12 pb-12">
+      <main className="flex-1 w-full pt-20 bg-background min-h-screen">
+        <div className="flex flex-col w-full relative">
           {children}
           <Footer />
         </div>

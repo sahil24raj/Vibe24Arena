@@ -118,3 +118,4 @@ export interface LeaderboardEntry {
   time: string;
   isPlayer: boolean;
 }
+
