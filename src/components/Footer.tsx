@@ -82,7 +82,7 @@ export const Footer: React.FC = () => {
             onClick={() => soundFx.playClick()}
             className="font-body-sm text-soft-lavender hover:text-neon-cyan transition-colors"
           >
-            ⚡ Puzzle Vibes
+            🧠 Mind Game Vibes
           </Link>
         </div>
 

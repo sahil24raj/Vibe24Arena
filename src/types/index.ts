@@ -1,13 +1,15 @@
 export type GameCategory =
-  | '🔥 Trending Meme Vibes'
-  | '🏫 School Vibes'
+  | '🔥 Meme Vibes'
+  | '🎒 School Vibes'
   | '👥 Squad Vibes'
+  | '🧠 Mind Game Vibes'
   | (string & {});
 
 export type CategoryKey =
   | 'meme'
   | 'school'
   | 'squad'
+  | 'brain'
   | 'all';
 
 export interface GameItem {

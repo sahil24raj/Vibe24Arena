@@ -12,7 +12,7 @@ const CATEGORY_PILLS = [
   { id: 'meme', label: 'Meme Vibes', emoji: '🔥' },
   { id: 'school', label: 'School Vibes', emoji: '🎒' },
   { id: 'squad', label: 'Squad Vibes', emoji: '👥' },
-  { id: 'brain', label: 'Brain Vibes', emoji: '🧠' }
+  { id: 'brain', label: 'Mind Game Vibes', emoji: '🧠' }
 ];
 
 function CategoriesContent() {

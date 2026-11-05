@@ -30,14 +30,14 @@ const VIBE_CONFIGS: VibeTabConfig[] = [
     emoji: '🔥',
     tag: 'VIRAL DESI CHAOS',
     tagColor: 'bg-tertiary-container/30 text-tertiary',
-    gameCount: '3 Games Ready',
+    gameCount: '2 Games Ready',
     title: 'MEME VIBES',
-    description: 'Satirical street races, unhinged political arenas, and chaotic escape runs built for peak banter with the boys.',
+    description: 'Satirical political battle arenas and comic Delhi street runners built for peak banter with the boys.',
     exploreLabel: 'EXPLORE ALL MEME GAMES',
     exploreHref: '/categories?vibe=meme',
     glowBg: 'bg-tertiary/10',
     accentBtn: 'bg-tertiary text-on-tertiary-fixed shadow-[0_0_20px_rgba(235,195,21,0.3)]',
-    gameIds: ['indian-politics-arena', 'genz-protest-run', 'escape-door']
+    gameIds: ['indian-politics-arena', 'genz-protest-run']
   },
   {
     key: 'school',
@@ -67,22 +67,22 @@ const VIBE_CONFIGS: VibeTabConfig[] = [
     exploreHref: '/categories?vibe=squad',
     glowBg: 'bg-primary-container/20',
     accentBtn: 'bg-primary-container text-on-primary-container shadow-[0_0_20px_rgba(139,44,255,0.4)]',
-    gameIds: ['chor-sipahi', 'auto-rush', 'fake-bomb']
+    gameIds: ['auto-rush', 'chor-sipahi', 'fake-bomb']
   },
   {
     key: 'brain',
-    label: 'Brain & Puzzle Vibes',
-    emoji: '⚡',
-    tag: 'SPEED & INTELLECT',
+    label: 'Mind Game Vibes',
+    emoji: '🧠',
+    tag: 'SPEED, LOGIC & SURVIVAL',
     tagColor: 'bg-neon-green/20 text-neon-green',
-    gameCount: '2 Games Ready',
-    title: 'BRAIN & PUZZLE VIBES',
-    description: 'Rapid 5-10 second micro-puzzles, anagram races, pattern matches, and cognitive showdowns.',
-    exploreLabel: 'EXPLORE PUZZLE VIBES',
+    gameCount: '3 Games Ready',
+    title: 'MIND GAME VIBES',
+    description: 'Mysterious risk chambers, lightning 5-second cognitive micro-puzzles, and vocabulary anagram showdowns.',
+    exploreLabel: 'EXPLORE MIND GAMES',
     exploreHref: '/categories?vibe=brain',
     glowBg: 'bg-neon-green/10',
     accentBtn: 'bg-surface-container-high hover:bg-surface-bright text-neon-green border border-purple-500/20',
-    gameIds: ['brain-pot', 'word-builder']
+    gameIds: ['escape-door', 'brain-pot', 'word-builder']
   }
 ];
 

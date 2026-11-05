@@ -27,7 +27,7 @@ export const CreateHubSection: React.FC = () => {
     { key: 'meme', label: '🔥 Meme Vibes' },
     { key: 'school', label: '🎒 School Vibes' },
     { key: 'squad', label: '👥 Squad Vibes' },
-    { key: 'brain', label: '🧠 Brain Vibes' }
+    { key: 'brain', label: '🧠 Mind Game Vibes' }
   ];
 
   return (
