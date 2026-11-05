@@ -10,7 +10,15 @@ export const Footer: React.FC = () => {
       <div className="max-w-[1720px] px-4 sm:px-8 xl:px-14 mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
         {/* Brand Column */}
         <div className="lg:col-span-2 flex flex-col gap-4">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
+            <div className="relative w-9 h-9 rounded-xl overflow-hidden shadow-[0_0_15px_rgba(217,70,239,0.45)] border border-purple-500/20 shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                alt="Vibe Arena Logo"
+                className="w-full h-full object-cover"
+                src="/brand/vibe-arena-icon.png"
+              />
+            </div>
             <span className="font-headline-sm text-white font-black tracking-wider uppercase">
               VIBE <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-neon-cyan">ARENA</span>
             </span>

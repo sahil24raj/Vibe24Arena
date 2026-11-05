@@ -76,12 +76,12 @@ export const TopHeaderBar: React.FC = () => {
           onClick={() => soundFx.playClick()}
           className="flex items-center gap-3.5 shrink-0 group focus:outline-none select-none"
         >
-          {/* Logo Emblem Container with glowing cyber border */}
-          <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#0c081e] border border-purple-500/30 p-1.5 flex items-center justify-center shadow-[0_0_20px_rgba(139,44,255,0.4)] group-hover:shadow-[0_0_25px_rgba(0,240,255,0.6)] group-hover:border-neon-cyan/60 transition-all duration-300">
+          {/* Logo Emblem Container - Full bleed high-res squircle badge */}
+          <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl overflow-hidden shadow-[0_0_20px_rgba(217,70,239,0.55)] group-hover:shadow-[0_0_25px_rgba(0,240,255,0.7)] group-hover:scale-105 transition-all duration-300 shrink-0 border border-purple-500/20">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               alt="Vibe Arena Logo"
-              className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(217,70,239,0.7)] group-hover:scale-105 transition-transform"
+              className="w-full h-full object-cover"
               src="/brand/vibe-arena-icon.png"
             />
           </div>

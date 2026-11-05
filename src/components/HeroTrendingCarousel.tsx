@@ -34,7 +34,7 @@ const TOP_BATTLES: BattleCardData[] = [
     statsRightColor: 'text-neon-cyan',
     description: 'The Gurugram Grand Prix! 8 Indian auto-rickshaws, real 3-wheel drift mechanics & nitrous overdrive!',
     buttonActionType: 'SOLO',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD3MAkCfpxx00r712BIkoTKOUpsBSQTNmzdqjpvtDS4iX-UAm3zta3HhBbr33rgC6Squ_hxz6U-uwejTxj_u6wxpiySHtw1O-M4vx51UF58VPzzT7WFb2J4aJehVpAs8puXDh6nQS6F9uTaYntKXYNxcm0hmAzLUIyedDKzYVNEss7VaGGplA5suPzIOvRqhEQK37IzEy8CjWTe9LHTnjj4FM1igvGhnxg_4ROnTCRJ',
+    image: '/games/auto-rush.jpg',
     fallbackImage: '/games/auto-rush.jpg',
     route: '/games/auto-rush',
     hoverGlow: 'hover:shadow-[0_0_30px_rgba(139,44,255,0.4)]'
@@ -50,7 +50,7 @@ const TOP_BATTLES: BattleCardData[] = [
     statsRightColor: 'text-error',
     description: 'Sansad Se Sadak Tak, Fight Karo! 8 satirical netas, real arcade combat engine and super attacks!',
     buttonActionType: 'SOLO',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDQXtRaL_0IA_rot7ufXTnrPoTulhYC7-sz8NO78uxzyvxNnmHWEjgQIA0Uql3_SOM4jcI8VwJYOA-Mt5hlpwK7R5pO_-yFLjm_9qxYkw9FnK67RJuzFB-JTNausSYQiq38bTMLlCogIZRQw8xy6oKTgY5kmIfYmBKKAwopB2LQfnILDSecO0pmxTZDqUh-uozthnVxUNIvtiHlb8wFENMmQaV5Amw8OeeDRcAREUaN',
+    image: '/games/indian-politics-arena.jpg',
     fallbackImage: '/games/indian-politics-arena.jpg',
     route: '/games/indian-politics-arena',
     hoverGlow: 'hover:shadow-[0_0_30px_rgba(235,195,21,0.4)]'
@@ -66,7 +66,7 @@ const TOP_BATTLES: BattleCardData[] = [
     statsRightColor: 'text-neon-green',
     description: 'Raja orders, Mantri hides, Sipahi investigates, Chor bluffs! The ultimate desi party deduction game.',
     buttonActionType: 'ROOM',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC3aJre89_I3R41MIBjqQRndMhohVqrvJy-jZ4wEDb-T90foAKHOAOat9MXcJzNQlgyVcRdS02B2aUO4AvRg5YMpi9wIOK0Ve854h1_Z3M5P0-64OFlxsvTJGZs5-1ajO6REkRL5y8LidPY5ITxAM1AKoJS1W673BVzp3orhRndkwQBA0ItFjlQmBcErK0MFEamU--QVLgqliGYFUdtt24gOuladRaMvaZtZVcUWrKw',
+    image: '/games/chor-sipahi.jpg',
     fallbackImage: '/games/chor-sipahi.jpg',
     route: '/games/chor-sipahi',
     hoverGlow: 'hover:shadow-[0_0_30px_rgba(72,240,120,0.4)]'
@@ -82,7 +82,7 @@ const TOP_BATTLES: BattleCardData[] = [
     statsRightColor: 'text-tertiary',
     description: 'Choose wisely. Exactly ONE cyber door leads to survival across 10 tense rooms and Endless Mode!',
     buttonActionType: 'SOLO',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBn_msyxAAqaqvb3m5sWGKi9LlUE4N_9o7pNf_2dEDs2UU2O6kJgFSwSxx9emifkQSx4E9fDQxwIibIjVPpx_0u26iQDgj6e07mukEAEbAZpX2CF8pXS2ZxL9AVBN2OFCI2YSzNCZgJp1CRMvgy7hlbJtX5VGcoFUlZnKzKu1_8BGGVyymgbzIddQ1so8WWnCKbnhXKq60TzyNrYt0jT3eYp14ybOSpYrjCPM5j1CEs',
+    image: '/games/escape-door.jpg',
     fallbackImage: '/games/escape-door.jpg',
     route: '/games/escape-door',
     hoverGlow: 'hover:shadow-[0_0_30px_rgba(6,182,212,0.4)]'
@@ -98,7 +98,7 @@ const TOP_BATTLES: BattleCardData[] = [
     statsRightColor: 'text-neon-cyan',
     description: 'Dodge barricades, grab kulhad chai boosts, and dash your way through iconic Delhi checkpoints!',
     buttonActionType: 'SOLO',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDopg86fUCR_uCd2RDxWHzvuykODEbs7tasqB2tFTnJVEABiOhtpf_tAiZD8lI4TtzPJxg11CkEfEbKITdSHpRlZtTaQ7TMbkfy8tJ6oHezsJbruylxEp1q3waJ7aybawr-MB7Uoobqi7nvBLVv2TsfIB97Zyw4WY16CrHWEwBjfg1daDlfgN5fZcUBrE8U2zkmXdF6aVnP5bQXp5fpLJd9Dyh1MvitDIYE7HK4hvio',
+    image: '/games/genz-protest-run.jpg',
     fallbackImage: '/games/genz-protest-run.jpg',
     route: '/games/genz-protest-run',
     hoverGlow: 'hover:shadow-[0_0_30px_rgba(235,195,21,0.4)]'
