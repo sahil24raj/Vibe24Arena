@@ -197,7 +197,7 @@ export const LegendsLeaderboardSection: React.FC = () => {
               LIVE MATCH TICKER
             </span>
             <span className="font-body-sm text-soft-lavender truncate">
-              🔥 Aarav just scored +350 in Chor Sipahi • Priya smashed 6 runs in Spin Cricket • Kabir wiped out on Auto Rush Drift
+              🔥 Aarav just scored +350 in Chor Sipahi • Priya smashed 6 runs in Spin Cricket • Kabir wiped out on Tirri Run Drift
             </span>
           </div>
 

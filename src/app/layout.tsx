@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     'multiplayer party games',
     'Chor Sipahi online',
     'Indian Politics Arena',
-    'Auto Rush 3D',
+    'Tirri Run',
     'Escape From The Door',
     'Raja Mantri Chor Sipahi',
     'Word Builder Pro',

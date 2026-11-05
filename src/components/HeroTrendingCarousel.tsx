@@ -25,14 +25,14 @@ interface BattleCardData {
 const TOP_BATTLES: BattleCardData[] = [
   {
     id: 'auto-rush',
-    title: 'Auto Rush 3D 🛺💨',
+    title: 'Tirri Run 🛺💨',
     badge: '3D Racing',
     badgeBg: 'bg-secondary-container/90 text-on-secondary',
     rating: '4.98',
     statsLeft: 'SOLO RACER • 2-5 MIN',
     statsRight: 'MEDIUM IQ',
     statsRightColor: 'text-neon-cyan',
-    description: 'The Gurugram Grand Prix! 8 Indian auto-rickshaws, real 3-wheel drift mechanics & nitrous overdrive!',
+    description: 'The Gurugram Grand Prix! 8 Indian auto-rickshaws (Tirri), real 3-wheel drift mechanics & nitrous overdrive!',
     buttonActionType: 'SOLO',
     image: '/games/auto-rush.jpg',
     fallbackImage: '/games/auto-rush.jpg',

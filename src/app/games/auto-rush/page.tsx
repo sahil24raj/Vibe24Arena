@@ -4,9 +4,9 @@ import Link from 'next/link';
 import { ArrowLeft, Flame, Share2, ThumbsUp } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Auto Rush 3D — Indian Auto-Rickshaw Racing Game | Vibe Arena',
+  title: 'Tirri Run 🛺💨 — Indian Auto-Rickshaw Racing Game | Vibe Arena',
   description:
-    'Race an Indian auto-rickshaw against 7 rivals through Gurugram and Delhi — Cyber City, NH-48, Kartavya Path and the Red Fort. Real 3-wheel physics, drift, nitro, garage upgrades, and multiplayer.'
+    'Race an authentic Indian auto-rickshaw (Tirri) against 7 rivals through Gurugram and Delhi — Cyber City, NH-48, Kartavya Path and the Red Fort. Real 3-wheel physics, drift, nitro, garage upgrades, and realistic city tracks inspired by autorush.autos.'
 };
 
 export default function AutoRushPage() {

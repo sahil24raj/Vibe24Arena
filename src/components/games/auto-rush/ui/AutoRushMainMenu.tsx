@@ -136,14 +136,18 @@ export const AutoRushMainMenu: React.FC<AutoRushMainMenuProps> = ({
         {/* Left: Animated Logo & Action Buttons */}
         <div className="lg:col-span-6 space-y-6 text-left">
           <div className="space-y-1">
-            <div className="text-xs sm:text-sm font-black tracking-widest text-[#FF9933] uppercase">
-              🇮🇳 THE GURUGRAM & DELHI GRAND PRIX
+            <div className="text-xs sm:text-sm font-black tracking-widest text-[#FF9933] uppercase flex items-center gap-2">
+              <span>🇮🇳</span>
+              <span>GURUGRAM & DELHI GRAND PRIX</span>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] border border-emerald-500/30">
+                AUTORUSH.AUTOS INSPIRED
+              </span>
             </div>
             <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-tight text-white drop-shadow-[0_4px_25px_rgba(255,153,51,0.6)]">
-              AUTO RUSH <span className="text-[#FFD700]">3D</span>
+              TIRRI RUN <span className="text-[#FFD700]">🛺💨</span>
             </h1>
             <p className="text-xs sm:text-sm text-gray-300 max-w-md font-medium">
-              Race authentic Indian auto-rickshaws against 7 rivals through Cyber City, IFFCO Chowk, Kartavya Path and the Red Fort!
+              Race authentic Indian 3-wheel auto-rickshaws (Tirri) against 7 rivals through Cyber City, IFFCO Chowk, Kartavya Path, and the Red Fort!
             </p>
           </div>
 

@@ -176,25 +176,37 @@ export class ThreeRaceEngine {
 
   private updateVehicleTransform(mesh: THREE.Group, state: VehiclePhysicsState): void {
     mesh.position.set(state.x, state.y, state.z);
-    mesh.rotation.set(0, 0, 0);
 
-    // Compound rotation: Yaw + Pitch + Roll
+    // Authentic Tricycle Dynamics: Yaw, Body Lean Roll & Acceleration Pitch
+    mesh.rotation.order = 'YXZ';
     mesh.rotation.y = state.yaw;
-    mesh.rotation.z = state.roll;
     mesh.rotation.x = state.pitch;
+    mesh.rotation.z = state.roll;
 
-    // Rotate Wheels
-    const wheelRotSpeed = (state.speedKmh / 3.6) / 0.26;
+    // Rotate Wheels with vehicle velocity
+    const wheelRotSpeed = (state.speedKmh / 3.6) / 0.28;
     const frontWheel = mesh.getObjectByName('frontWheel');
     const rearLeftWheel = mesh.getObjectByName('rearLeftWheel');
     const rearRightWheel = mesh.getObjectByName('rearRightWheel');
 
     if (frontWheel) {
-      frontWheel.rotation.x += wheelRotSpeed * 0.016;
-      frontWheel.rotation.y = state.steeringAngle * 1.2;
+      // Steer fork assembly
+      frontWheel.rotation.y = state.steeringAngle * 1.35;
+
+      // Rotate front tire child
+      if (frontWheel.children[0]) {
+        frontWheel.children[0].rotation.x += wheelRotSpeed * 0.016;
+      }
+      if (frontWheel.children[1]) {
+        frontWheel.children[1].rotation.x += wheelRotSpeed * 0.016;
+      }
     }
-    if (rearLeftWheel) rearLeftWheel.rotation.x += wheelRotSpeed * 0.016;
-    if (rearRightWheel) rearRightWheel.rotation.x += wheelRotSpeed * 0.016;
+    if (rearLeftWheel) {
+      rearLeftWheel.rotation.x += wheelRotSpeed * 0.016;
+    }
+    if (rearRightWheel) {
+      rearRightWheel.rotation.x += wheelRotSpeed * 0.016;
+    }
   }
 
   private updateCamera(delta: number, playerState: VehiclePhysicsState): void {

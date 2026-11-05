@@ -123,10 +123,10 @@ export const INITIAL_RECENT_MATCHES: RecentMatch[] = [];
 export const GAMES_CATALOG: GameItem[] = [
   {
     id: 'auto-rush',
-    title: 'Auto Rush 3D 🛺💨',
+    title: 'Tirri Run 🛺💨',
     slug: 'auto-rush',
     tagline: 'The Gurugram Grand Prix! 8 Indian auto-rickshaws, real 3-wheel physics, drift & nitro!',
-    description: 'The ultimate 3D Indian auto-rickshaw racing game powered by Vibe Arena! Inspired by the legendary streets of Delhi NCR, race against 7 intelligent CPU rivals or real players across Cyber City, NH-48 Expressway, Kartavya Path India Gate, and Old Delhi Red Fort. Customize and tune your autos in the 3D garage with custom paint, engine upgrades, drift mechanics, dual nitro exhaust flames, and realistic 2-stroke sound!',
+    description: 'The ultimate 3D Indian auto-rickshaw (Tirri) racing game! Reverse-engineered & inspired by autorush.autos, race against 7 intelligent rivals across Cyber City, NH-48 Expressway, Kartavya Path India Gate, and Old Delhi Red Fort. Realistic asphalt roads with yellow-black curbs, roadside houses (ghar) with water tanks, shops, and elevated Rapid Metro tracks!',
     category: '👥 Squad Vibes',
     categoryKey: 'squad',
     thumbnail: '🛺',

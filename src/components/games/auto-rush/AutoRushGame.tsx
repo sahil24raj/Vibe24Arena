@@ -351,7 +351,7 @@ export const AutoRushGame: React.FC = () => {
           <RotateCw className="w-12 h-12 text-[#FF9933] animate-spin" />
           <h3 className="text-2xl font-black uppercase text-[#FFD700]">ROTATE TO LANDSCAPE</h3>
           <p className="text-sm text-gray-300 max-w-xs">
-            AUTO RUSH 3D is engineered for horizontal 16:9 arcade street racing.
+            TIRRI RUN 🛺 is engineered for horizontal 16:9 arcade street racing.
           </p>
         </div>
       )}

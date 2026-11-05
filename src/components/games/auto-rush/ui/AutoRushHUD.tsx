@@ -68,8 +68,16 @@ export const AutoRushHUD: React.FC<AutoRushHUDProps> = ({
       <div className="flex items-start justify-between w-full max-w-5xl mx-auto">
         {/* Left: Position Badge & Lap Counter */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Brand Tag */}
+          <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-black/60 border border-purple-500/30 rounded-xl backdrop-blur-md">
+            <span className="text-base">🛺</span>
+            <span className="text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-400 to-cyan-400 uppercase tracking-wider">
+              TIRRI RUN
+            </span>
+          </div>
+
           {/* Race Position */}
-          <div className="px-3 sm:px-4 py-2 bg-[#0B1536]/90 border-2 border-[#FFD700] rounded-2xl shadow-xl flex items-baseline gap-1">
+          <div className="px-3 sm:px-4 py-2 bg-[#0B1536]/90 border-2 border-[#FFD700] rounded-2xl shadow-xl flex items-baseline gap-1 backdrop-blur-md">
             <span className="text-3xl sm:text-4xl font-black text-[#FFD700]">
               {position}
             </span>
@@ -82,7 +90,7 @@ export const AutoRushHUD: React.FC<AutoRushHUDProps> = ({
           </div>
 
           {/* Lap Counter */}
-          <div className="px-3 sm:px-4 py-2 bg-[#0B1536]/90 border border-white/20 rounded-2xl shadow-lg flex flex-col">
+          <div className="px-3 sm:px-4 py-2 bg-[#0B1536]/90 border border-white/20 rounded-2xl shadow-lg flex flex-col backdrop-blur-md">
             <span className="text-[10px] font-extrabold uppercase tracking-widest text-gray-400">
               LAP
             </span>
@@ -146,12 +154,19 @@ export const AutoRushHUD: React.FC<AutoRushHUDProps> = ({
         </div>
       </div>
 
-      {/* Center Toast: Off-Road Warning */}
-      {isOffRoad && (
-        <div className="self-center bg-red-600/90 text-white font-black text-xs sm:text-sm px-4 py-1.5 rounded-full shadow-lg border border-red-400 animate-pulse">
-          ⚠ OFF TRACK — SPEED REDUCED
-        </div>
-      )}
+      {/* Center Toast: Off-Road Warning or Final Lap Banner */}
+      <div className="self-center flex flex-col items-center gap-2">
+        {playerState.lap === totalLaps && !playerState.isFinished && (
+          <div className="bg-gradient-to-r from-amber-500 via-red-500 to-amber-500 text-white font-black text-xs sm:text-base px-6 py-2 rounded-full shadow-[0_0_25px_rgba(239,68,68,0.7)] border-2 border-yellow-300 animate-pulse tracking-wider">
+            🏁 FINAL LAP — GIVE IT ALL NITRO! 🏁
+          </div>
+        )}
+        {isOffRoad && (
+          <div className="bg-red-600/90 text-white font-black text-xs sm:text-sm px-4 py-1.5 rounded-full shadow-lg border border-red-400 animate-pulse">
+            ⚠ OFF TRACK — SPEED REDUCED
+          </div>
+        )}
+      </div>
 
       {/* Bottom Bar: Speedometer Gauge, Gear & Nitro Meter */}
       <div className="flex items-end justify-between w-full max-w-5xl mx-auto">

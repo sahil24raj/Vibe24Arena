@@ -150,7 +150,7 @@ function CategoriesContent() {
           </span>
           <h3 className="font-headline-sm text-on-surface font-bold">No games found matching your search.</h3>
           <p className="font-body-sm text-soft-lavender">
-            Try searching for another game like Pen Flip, Cricket, Auto Rush, or switch to All Vibes.
+            Try searching for another game like Pen Flip, Cricket, Tirri Run, or switch to All Vibes.
           </p>
           <button
             onClick={() => {

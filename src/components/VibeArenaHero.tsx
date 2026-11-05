@@ -29,11 +29,11 @@ interface HeroSpotlightItem {
 const SPOTLIGHT_GAMES: HeroSpotlightItem[] = [
   {
     id: 'auto-rush',
-    title: 'Auto Rush 3D 🛺💨',
-    tabName: '🛺 Auto Rush 3D',
+    title: 'Tirri Run 🛺💨',
+    tabName: '🛺 Tirri Run',
     category: 'SPEED DRIFT',
     categoryClass: 'px-2 py-0.5 rounded bg-secondary-container/90 text-on-secondary font-label-sm text-xs uppercase font-bold',
-    desc: 'The Gurugram Grand Prix! 8 Indian auto-rickshaws, real 3-wheel drift mechanics & nitrous overdrive!',
+    desc: 'The Gurugram Grand Prix! 8 Indian auto-rickshaws (Tirri), real 3-wheel drift mechanics & nitrous overdrive!',
     image: '/games/auto-rush.jpg',
     fallbackImage: '/games/auto-rush.jpg',
     duration: '⏱️ 2-5 MIN',
