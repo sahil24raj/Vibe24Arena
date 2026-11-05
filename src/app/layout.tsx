@@ -9,11 +9,11 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'VIBE ARENA — Dost. Games. Full Vibe.',
-  description: 'A social gaming playground where friends can create & join rooms, play quick multiplayer games, compete, joke around, and spend time together. Dost. Games. Full Vibe. Zero downloads, instant play.',
+  title: 'VIBE ARENA — Your Squad, Your Vibes, Your Arena',
+  description: 'Your Squad, Your Vibes, Your Arena. The social gaming playground where friends create instant rooms, play quick multiplayer games, settle bets, and dominate the squad leaderboard. Instant 6-char codes, zero downloads.',
   keywords: [
     'Vibe Arena',
-    'Dost Games Full Vibe',
+    'Your Squad Your Vibes Your Arena',
     'social gaming',
     'multiplayer party games',
     'Chor Sipahi online',
@@ -33,8 +33,8 @@ export const metadata: Metadata = {
     apple: '/brand/vibe-arena-icon.png',
   },
   openGraph: {
-    title: 'VIBE ARENA — Dost. Games. Full Vibe.',
-    description: 'Dost. Games. Full Vibe. Instant desi multiplayer battles, settle hostel bets, roast your friends, and dominate the squad leaderboard.',
+    title: 'VIBE ARENA — Your Squad, Your Vibes, Your Arena',
+    description: 'Your Squad, Your Vibes, Your Arena. Instant desi multiplayer battles, settle hostel bets, roast your friends, and dominate the squad leaderboard.',
     images: ['/brand/vibe-arena-logo.png'],
   },
 };

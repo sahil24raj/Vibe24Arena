@@ -21,13 +21,15 @@ export const MultiplayerLobbyModal: React.FC = () => {
   const [createdRoomCode, setCreatedRoomCode] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [selectedGameId, setSelectedGameId] = useState<string>(
-    selectedMultiplayerGame?.id || 'chor-sipahi'
+    selectedMultiplayerGame?.multiplayer ? selectedMultiplayerGame.id : 'chor-sipahi'
   );
   const [gameMode, setGameMode] = useState<'local' | 'online' | 'ai'>('online');
 
   React.useEffect(() => {
-    if (selectedMultiplayerGame?.id) {
+    if (selectedMultiplayerGame?.id && selectedMultiplayerGame.multiplayer) {
       setSelectedGameId(selectedMultiplayerGame.id);
+    } else {
+      setSelectedGameId('chor-sipahi');
     }
   }, [selectedMultiplayerGame]);
 

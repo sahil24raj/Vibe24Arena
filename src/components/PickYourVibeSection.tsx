@@ -222,17 +222,17 @@ export const PickYourVibeSection: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Pure Clean Artwork Cover - Zero text overlays */}
+                    {/* Pure Clean Artwork Cover - 16/9 aspect ratio prevents cutting off */}
                     <Link
                       href={`/games/${game.slug || game.id}`}
                       onClick={() => soundFx.playClick()}
-                      className="w-full h-56 sm:h-64 rounded-2xl bg-surface-purple overflow-hidden relative flex items-center justify-center block group border border-purple-500/10"
+                      className="w-full aspect-[16/9] rounded-2xl bg-surface-purple overflow-hidden relative flex items-center justify-center block group border border-purple-500/10"
                     >
                       {game.bannerImage ? (
                         <img
                           src={game.bannerImage}
                           alt={game.title}
-                          className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
+                          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                         />
                       ) : (
                         <span className="text-7xl">{game.thumbnail}</span>
@@ -240,7 +240,7 @@ export const PickYourVibeSection: React.FC = () => {
                     </Link>
 
                     <div className="flex items-center justify-between text-soft-lavender font-label-md pt-1 px-1">
-                      <span className="font-semibold">{game.multiplayer ? '👥 MULTIPLAYER' : '🕹️ SOLO'} • {game.duration}</span>
+                      <span className="font-semibold">{game.multiplayer ? '👥 MULTIPLAYER ARENA' : '🕹️ SOLO ARCADE'} • {game.duration}</span>
                       <span className="text-neon-cyan font-bold uppercase tracking-wider">{game.difficulty} IQ</span>
                     </div>
 
@@ -260,27 +260,37 @@ export const PickYourVibeSection: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-2.5 mt-5 pt-3 border-t border-purple-500/15">
-                    <Link
-                      href={`/games/${game.slug || game.id}`}
-                      onClick={() => soundFx.playClick()}
-                      className="flex-1 py-3 px-4 rounded-xl bg-primary-container text-on-primary-container font-label-md font-bold hover:bg-secondary-container hover:scale-[1.02] transition-all shadow-md text-center flex items-center justify-center gap-1.5"
-                    >
-                      <span>PLAY NOW</span>
-                      <span className="material-symbols-outlined text-base">bolt</span>
-                    </Link>
-                    <button
-                      onClick={() => {
-                        soundFx.playClick();
-                        if (game.multiplayer) {
-                          openMultiplayerModal(game);
-                        } else {
-                          window.location.href = `/games/${game.slug || game.id}`;
-                        }
-                      }}
-                      className="px-4 py-3 rounded-xl bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-md font-bold transition-all hover:scale-[1.02] cursor-pointer"
-                    >
-                      {game.multiplayer ? 'ROOM' : 'SOLO'}
-                    </button>
+                    {game.multiplayer ? (
+                      <>
+                        <Link
+                          href={`/games/${game.slug || game.id}`}
+                          onClick={() => soundFx.playClick()}
+                          className="flex-1 py-3 px-4 rounded-xl bg-primary-container text-on-primary-container font-label-md font-bold hover:bg-secondary-container hover:scale-[1.02] transition-all shadow-md text-center flex items-center justify-center gap-1.5"
+                        >
+                          <span>PLAY NOW</span>
+                          <span className="material-symbols-outlined text-base">bolt</span>
+                        </Link>
+                        <button
+                          onClick={() => {
+                            soundFx.playClick();
+                            openMultiplayerModal(game);
+                          }}
+                          className="px-5 py-3 rounded-xl bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-md font-bold transition-all hover:scale-[1.02] cursor-pointer flex items-center gap-1.5"
+                        >
+                          <span className="material-symbols-outlined text-base text-primary">groups</span>
+                          <span>ROOM</span>
+                        </button>
+                      </>
+                    ) : (
+                      <Link
+                        href={`/games/${game.slug || game.id}`}
+                        onClick={() => soundFx.playClick()}
+                        className="w-full py-3 px-4 rounded-xl bg-primary-container text-on-primary-container font-label-md font-bold hover:bg-secondary-container hover:scale-[1.02] transition-all shadow-md text-center flex items-center justify-center gap-2"
+                      >
+                        <span>PLAY SOLO ARCADE</span>
+                        <span className="material-symbols-outlined text-base">sports_esports</span>
+                      </Link>
+                    )}
                   </div>
                 </div>
               );

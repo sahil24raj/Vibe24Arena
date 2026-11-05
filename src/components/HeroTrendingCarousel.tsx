@@ -26,14 +26,14 @@ const TOP_BATTLES: BattleCardData[] = [
   {
     id: 'auto-rush',
     title: 'Auto Rush 3D 🛺💨',
-    badge: 'Squad Thrills',
+    badge: '3D Racing',
     badgeBg: 'bg-secondary-container/90 text-on-secondary',
     rating: '4.98',
-    statsLeft: 'MULTIPLAYER • 2-5 MIN',
+    statsLeft: 'SOLO RACER • 2-5 MIN',
     statsRight: 'MEDIUM IQ',
     statsRightColor: 'text-neon-cyan',
     description: 'The Gurugram Grand Prix! 8 Indian auto-rickshaws, real 3-wheel drift mechanics & nitrous overdrive!',
-    buttonActionType: 'ROOM',
+    buttonActionType: 'SOLO',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD3MAkCfpxx00r712BIkoTKOUpsBSQTNmzdqjpvtDS4iX-UAm3zta3HhBbr33rgC6Squ_hxz6U-uwejTxj_u6wxpiySHtw1O-M4vx51UF58VPzzT7WFb2J4aJehVpAs8puXDh6nQS6F9uTaYntKXYNxcm0hmAzLUIyedDKzYVNEss7VaGGplA5suPzIOvRqhEQK37IzEy8CjWTe9LHTnjj4FM1igvGhnxg_4ROnTCRJ',
     fallbackImage: '/games/auto-rush.jpg',
     route: '/games/auto-rush',
@@ -42,14 +42,14 @@ const TOP_BATTLES: BattleCardData[] = [
   {
     id: 'indian-politics-arena',
     title: 'Indian Politics Arena ⚔️🏛️',
-    badge: 'Trending Meme',
+    badge: 'Meme Fighter',
     badgeBg: 'bg-tertiary text-on-tertiary-fixed',
     rating: '4.99',
-    statsLeft: 'MULTIPLAYER • 2-4 MIN',
+    statsLeft: 'SOLO ARCADE • 2-4 MIN',
     statsRight: 'HARD CHAOS',
     statsRightColor: 'text-error',
     description: 'Sansad Se Sadak Tak, Fight Karo! 8 satirical netas, real arcade combat engine and super attacks!',
-    buttonActionType: 'ROOM',
+    buttonActionType: 'SOLO',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDQXtRaL_0IA_rot7ufXTnrPoTulhYC7-sz8NO78uxzyvxNnmHWEjgQIA0Uql3_SOM4jcI8VwJYOA-Mt5hlpwK7R5pO_-yFLjm_9qxYkw9FnK67RJuzFB-JTNausSYQiq38bTMLlCogIZRQw8xy6oKTgY5kmIfYmBKKAwopB2LQfnILDSecO0pmxTZDqUh-uozthnVxUNIvtiHlb8wFENMmQaV5Amw8OeeDRcAREUaN',
     fallbackImage: '/games/indian-politics-arena.jpg',
     route: '/games/indian-politics-arena',
@@ -192,8 +192,8 @@ export const HeroTrendingCarousel: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Pure Clean Artwork Cover - Zero text overlays */}
-                <div className="w-full h-56 sm:h-64 rounded-2xl bg-surface-purple overflow-hidden relative border border-purple-500/10">
+                {/* Pure Clean Artwork Cover - 16/9 aspect ratio prevents cutting off */}
+                <div className="w-full aspect-[16/9] rounded-2xl bg-surface-purple overflow-hidden relative border border-purple-500/10 shadow-inner">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={battle.image}
@@ -201,7 +201,7 @@ export const HeroTrendingCarousel: React.FC = () => {
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = battle.fallbackImage;
                     }}
-                    className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
+                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                   />
                 </div>
 

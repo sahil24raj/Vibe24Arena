@@ -10,17 +10,17 @@ export const Footer: React.FC = () => {
       <div className="max-w-[1720px] px-4 sm:px-8 xl:px-14 mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
         {/* Brand Column */}
         <div className="lg:col-span-2 flex flex-col gap-4">
-          <div className="flex items-center gap-2">
-            <span className="font-headline-sm text-primary font-bold tracking-wider uppercase">
-              VIBE ARENA
+          <div className="flex items-center gap-2.5">
+            <span className="font-headline-sm text-white font-black tracking-wider uppercase">
+              VIBE <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-neon-cyan">ARENA</span>
             </span>
-            <span className="px-2 py-0.5 rounded-full bg-surface-container text-neon-green font-label-sm border border-neon-green/30 font-bold">
-              FULL VIBE
+            <span className="px-2.5 py-0.5 rounded-full bg-surface-container text-neon-green font-label-sm border border-neon-green/30 font-bold uppercase tracking-wider text-[10px]">
+              YOUR ARENA
             </span>
           </div>
 
           <p className="font-body-sm text-soft-lavender max-w-md leading-relaxed">
-            A social gaming playground where friends create instant rooms, play quick multiplayer games, compete, joke around, and spend time together. Zero downloads, pure unadulterated vibe.
+            Your Squad, Your Vibes, Your Arena. The social gaming playground where friends create instant rooms, battle in quick multiplayer matches, settle bets, and vibe together. Zero downloads, instant play.
           </p>
 
           <div className="flex items-center gap-3 text-on-surface-variant pt-1">
