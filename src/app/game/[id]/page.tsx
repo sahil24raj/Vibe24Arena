@@ -24,6 +24,7 @@ import { EscapeDoorGame } from '@/components/games/escape-door/EscapeDoorGame';
 import { GenZProtestRunCanvas } from '@/components/games/genz-protest-run/GenZProtestRunCanvas';
 import { IndianPoliticsArenaGame } from '@/components/games/indian-politics-arena/IndianPoliticsArenaGame';
 import { AutoRushGame } from '@/components/games/auto-rush/AutoRushGame';
+import { TruckRunGame } from '@/components/games/truck-run/TruckRunGame';
 
 import { SingleUnifiedMultiplayerModal } from '@/components/game-shell/SingleUnifiedMultiplayerModal';
 import {
@@ -146,6 +147,12 @@ export default function GamePage({ params }: { params: Promise<{ id: string }> }
 
   const renderGameCanvas = () => {
     switch (game.id) {
+      case 'truck-run':
+        return (
+          <React.Suspense fallback={<div className="p-8 text-center text-xs font-mono text-amber-400">Loading Truck Run 3D Highway...</div>}>
+            <TruckRunGame />
+          </React.Suspense>
+        );
       case 'auto-rush':
         return (
           <React.Suspense fallback={<div className="p-8 text-center text-xs font-mono text-[#FF9933]">Loading Auto Rush 3D...</div>}>

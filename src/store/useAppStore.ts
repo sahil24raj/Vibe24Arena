@@ -122,6 +122,44 @@ export const INITIAL_RECENT_MATCHES: RecentMatch[] = [];
 
 export const GAMES_CATALOG: GameItem[] = [
   {
+    id: 'truck-run',
+    title: 'Truck Run 🚛💨',
+    slug: 'truck-run',
+    tagline: 'Horn OK Please! Master the Indian Tata 1613 heavy cargo truck on the endless Grand Trunk Highway!',
+    description: 'The ultimate 3D Indian Desi Truck highway racing and corridor game powered by Unity URP! Take the wheel of a roaring Tata 1613 cargo lorry loaded to the brim. Cruise past vibrant Punjabi Dhabas, blast iconic multi-tone musical pressure horns, dodge oncoming highway traffic, engage 10-second Nitro speed boosts, and collect coins and diesel refills to dominate the national highway leaderboard!',
+    category: '🔥 Meme Vibes',
+    categoryKey: 'meme',
+    thumbnail: '🚛',
+    bannerImage: '/games/truck-run.jpg',
+    playCount: 512000,
+    rating: 4.99,
+    difficulty: 'Medium',
+    duration: '2-5 min',
+    multiplayer: false,
+    multiplayerModes: ['local', 'ai'],
+    isTrending: true,
+    isNew: true,
+    isPopular: true,
+    isFeatured: true,
+    tags: ['3D', 'Unity', 'Truck', 'Racing', 'Desi', 'Highway', 'Horn OK Please', 'Action', 'Arcade'],
+    controls: [
+      'W or ↑: Accelerate (गियर डालो & रेस दो)',
+      'S or ↓: Brake & Reverse (ब्रेक लगाएं)',
+      'A / D or ← / →: Steer Left & Right (लेन बदलें)',
+      'Space: Musical Pressure Horn / Nitro Boost (धमाकेदार हॉर्न)',
+      'Shift: High Beam Dipper / Turbo Dash',
+      'C: Switch Cabin / Chase Camera',
+      'F: Fullscreen Mode (फुल स्क्रीन)'
+    ],
+    rules: [
+      'Navigate the chaotic Grand Trunk Highway without crashing into traffic.',
+      'Blast the musical pressure horn to clear slow-moving carts and auto-rickshaws.',
+      'Collect Golden Coins and Diesel Cans along the road to maintain maximum speed.',
+      'Hit Nitro pick-ups for a 10-second invulnerability speed blitz!',
+      'Achieve the highest distance to dominate the Sher-e-Punjab Dhaba Hall of Fame!'
+    ]
+  },
+  {
     id: 'auto-rush',
     title: 'Tirri Run 🛺💨',
     slug: 'auto-rush',

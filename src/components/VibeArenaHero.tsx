@@ -28,6 +28,24 @@ interface HeroSpotlightItem {
 
 const SPOTLIGHT_GAMES: HeroSpotlightItem[] = [
   {
+    id: 'truck-run',
+    title: 'Truck Run 🚛💨',
+    tabName: '🚛 Truck Run',
+    category: '3D DESI HIGHWAY',
+    categoryClass: 'px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-label-sm text-xs uppercase font-bold border border-amber-500/40',
+    desc: 'Horn OK Please! Master the iconic Indian Tata 1613 heavy cargo truck on the endless Grand Trunk Highway with multi-tone pressure horns & nitro boosts!',
+    image: '/games/truck-run.jpg',
+    fallbackImage: '/games/truck-run.jpg',
+    duration: '⏱️ 2-5 MIN',
+    players: '👥 SOLO / LEADERBOARD',
+    rating: '4.99',
+    online: '2,480 Drivers Online',
+    trending: 'HOT NEW RELEASE',
+    trendingClass: 'px-2.5 py-1 rounded bg-amber-500 text-slate-950 font-label-sm text-xs font-black uppercase backdrop-blur-md shadow-md',
+    lobby: 'Engine roaring & ready',
+    route: '/games/truck-run'
+  },
+  {
     id: 'auto-rush',
     title: 'Tirri Run 🛺💨',
     tabName: '🛺 Tirri Run',

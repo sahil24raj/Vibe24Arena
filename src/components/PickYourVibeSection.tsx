@@ -30,14 +30,14 @@ const VIBE_CONFIGS: VibeTabConfig[] = [
     emoji: '🔥',
     tag: 'VIRAL DESI CHAOS',
     tagColor: 'bg-tertiary-container/30 text-tertiary',
-    gameCount: '2 Games Ready',
+    gameCount: '3 Games Ready',
     title: 'MEME VIBES',
-    description: 'Satirical political battle arenas and comic Delhi street runners built for peak banter with the boys.',
+    description: 'Satirical political battle arenas, comic Delhi street runners, and 3D desi highway truck racing built for peak banter with the boys.',
     exploreLabel: 'EXPLORE ALL MEME GAMES',
     exploreHref: '/categories?vibe=meme',
     glowBg: 'bg-tertiary/10',
     accentBtn: 'bg-tertiary text-on-tertiary-fixed shadow-[0_0_20px_rgba(235,195,21,0.3)]',
-    gameIds: ['indian-politics-arena', 'genz-protest-run']
+    gameIds: ['truck-run', 'indian-politics-arena', 'genz-protest-run']
   },
   {
     key: 'school',

@@ -24,6 +24,22 @@ interface BattleCardData {
 
 const TOP_BATTLES: BattleCardData[] = [
   {
+    id: 'truck-run',
+    title: 'Truck Run 🚛💨',
+    badge: '3D Unity Highway',
+    badgeBg: 'bg-amber-500/90 text-slate-950 font-black',
+    rating: '4.99',
+    statsLeft: 'DESI HIGHWAY • 2-5 MIN',
+    statsRight: 'MAX VIBES',
+    statsRightColor: 'text-amber-400',
+    description: 'Horn OK Please! Drive the roaring Tata 1613 heavy cargo truck, blast musical horns, grab dhaba chai & dodge traffic on the Grand Trunk Road!',
+    buttonActionType: 'SOLO',
+    image: '/games/truck-run.jpg',
+    fallbackImage: '/games/truck-run.jpg',
+    route: '/games/truck-run',
+    hoverGlow: 'hover:shadow-[0_0_30px_rgba(245,158,11,0.5)]'
+  },
+  {
     id: 'auto-rush',
     title: 'Tirri Run 🛺💨',
     badge: '3D Racing',
