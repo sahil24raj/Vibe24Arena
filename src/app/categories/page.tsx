@@ -54,29 +54,29 @@ function CategoriesContent() {
   });
 
   return (
-    <div className="space-y-8 pb-16 px-4 sm:px-6 lg:px-12 max-w-7xl mx-auto pt-6">
+    <div className="space-y-8 pb-16 px-4 sm:px-8 xl:px-14 max-w-[1720px] mx-auto pt-6">
       <MultiplayerLobbyModal />
 
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-5 p-6 sm:p-8 rounded-3xl border border-purple-500/20 bg-surface-purple/80 backdrop-blur-xl shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-full bg-gradient-to-l from-primary-container/20 via-secondary/10 to-transparent pointer-events-none" />
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 p-7 sm:p-10 rounded-3xl border border-purple-500/20 bg-surface-purple/80 backdrop-blur-xl shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-full bg-gradient-to-l from-primary-container/20 via-secondary/10 to-transparent pointer-events-none" />
         <div className="space-y-2 relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-high border border-purple-500/20 text-xs font-label-sm text-neon-green font-bold uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-surface-container-high border border-purple-500/20 text-xs font-label-sm text-neon-green font-bold uppercase tracking-wider">
             <span className="w-2 h-2 rounded-full bg-neon-green animate-ping" />
             <span>CATEGORIES &amp; MODES</span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-headline-xl uppercase text-on-surface tracking-tight font-bold">
+          <h1 className="text-3xl sm:text-5xl font-headline-xl uppercase text-on-surface tracking-tight font-bold">
             EXPLORE ALL VIBES (11)
           </h1>
-          <p className="font-body-md text-soft-lavender max-w-xl leading-relaxed">
+          <p className="font-body-lg text-soft-lavender max-w-2xl leading-relaxed">
             From last-bench school nostalgia to rapid cognitive battles and viral Indian meme fighters — pick your vibe and jump in instantly.
           </p>
         </div>
 
         {/* Search Input */}
-        <div className="relative w-full md:w-80 relative z-10">
-          <span className="material-symbols-outlined text-soft-lavender text-lg absolute left-3.5 top-2.5 pointer-events-none">
+        <div className="relative w-full md:w-96 relative z-10">
+          <span className="material-symbols-outlined text-soft-lavender text-xl absolute left-4 top-3.5 pointer-events-none">
             search
           </span>
           <input
@@ -84,14 +84,14 @@ function CategoriesContent() {
             placeholder="Search games, vibes, roasts..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-surface-container-low border border-purple-500/20 focus:border-primary-container rounded-xl pl-10 pr-4 py-2.5 font-body-sm text-on-surface placeholder:text-soft-lavender/60 focus:outline-none transition-all"
+            className="w-full bg-surface-container-low border border-purple-500/20 focus:border-primary-container rounded-2xl pl-12 pr-4 py-3.5 font-body-md text-on-surface placeholder:text-soft-lavender/60 focus:outline-none transition-all shadow-inner"
           />
         </div>
       </div>
 
       {/* Category Tabs Bar */}
       <section className="overflow-x-auto pb-1 no-scrollbar">
-        <div className="flex items-center gap-2.5 min-w-max p-0.5">
+        <div className="flex items-center gap-3 min-w-max p-0.5">
           {CATEGORY_PILLS.map((pill) => {
             const isSelected = selectedCat === pill.id;
             return (
@@ -101,16 +101,16 @@ function CategoriesContent() {
                   soundFx.playClick();
                   setSelectedCat(pill.id);
                 }}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-label-md font-bold transition-all duration-200 border whitespace-nowrap cursor-pointer ${
+                className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl font-label-md font-bold transition-all duration-200 border whitespace-nowrap cursor-pointer ${
                   isSelected
-                    ? 'bg-primary-container text-on-primary-container border-primary shadow-[0_0_16px_rgba(139,44,255,0.4)]'
+                    ? 'bg-primary-container text-on-primary-container border-primary shadow-[0_0_20px_rgba(139,44,255,0.45)] scale-105'
                     : 'bg-surface-container border-purple-500/10 text-soft-lavender hover:text-on-surface hover:bg-surface-container-high'
                 }`}
               >
-                <span>{pill.emoji}</span>
+                <span className="text-lg">{pill.emoji}</span>
                 <span>{pill.label}</span>
                 {isSelected && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-neon-green animate-pulse ml-0.5" />
+                  <span className="w-2 h-2 rounded-full bg-neon-green animate-pulse ml-0.5" />
                 )}
               </button>
             );
@@ -119,7 +119,7 @@ function CategoriesContent() {
       </section>
 
       {/* Filter Summary & Total Count */}
-      <div className="flex items-center justify-between text-xs font-label-md text-soft-lavender border-b border-purple-500/10 pb-3">
+      <div className="flex items-center justify-between text-sm font-label-md text-soft-lavender border-b border-purple-500/10 pb-3.5">
         <span className="flex items-center gap-2">
           <span>Active Filter:</span>
           <strong className="text-tertiary">
@@ -127,13 +127,13 @@ function CategoriesContent() {
           </strong>
         </span>
         <span>
-          <strong className="text-on-surface">{filtered.length}</strong> Games Found
+          <strong className="text-on-surface font-bold text-base">{filtered.length}</strong> Games Found
         </span>
       </div>
 
-      {/* Clean Grid of Games */}
+      {/* Clean & Spacious Grid of Games (Bigger boxes, zero empty black side margins) */}
       {filtered.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-7">
           {filtered.map((game) => (
             <div key={game.id} className="h-full">
               <JackpotterCard

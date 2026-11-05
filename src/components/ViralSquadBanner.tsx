@@ -8,8 +8,8 @@ export const ViralSquadBanner: React.FC = () => {
   const { openMultiplayerModal } = useAppStore();
 
   return (
-    <section className="w-full px-4 sm:px-6 lg:px-12 py-12">
-      <div className="max-w-7xl mx-auto rounded-3xl bg-gradient-to-r from-primary-container via-surface-purple to-secondary-container p-8 sm:p-12 lg:p-16 relative overflow-hidden shadow-[0_0_50px_rgba(139,44,255,0.4)] flex flex-col md:flex-row items-center justify-between gap-8 border border-purple-500/30">
+    <section className="w-full px-4 sm:px-8 xl:px-14 py-14">
+      <div className="max-w-[1720px] mx-auto rounded-3xl bg-gradient-to-r from-primary-container via-surface-purple to-secondary-container p-8 sm:p-12 lg:p-16 relative overflow-hidden shadow-[0_0_50px_rgba(139,44,255,0.4)] flex flex-col md:flex-row items-center justify-between gap-8 border border-purple-500/30">
         <div className="flex flex-col gap-3 max-w-xl z-10 text-center md:text-left">
           <span className="px-3 py-1 rounded-full bg-tertiary text-on-tertiary-fixed font-label-sm font-bold uppercase self-center md:self-start shadow-md">
             THE SQUAD CODE

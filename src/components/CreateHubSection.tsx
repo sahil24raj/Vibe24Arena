@@ -31,8 +31,8 @@ export const CreateHubSection: React.FC = () => {
   ];
 
   return (
-    <section className="w-full px-4 sm:px-6 lg:px-12 py-12 bg-surface-container-lowest relative border-y border-purple-500/10" id="create-hub">
-      <div className="max-w-7xl mx-auto flex flex-col gap-8">
+    <section className="w-full px-4 sm:px-8 xl:px-14 py-14 bg-surface-container-lowest relative border-y border-purple-500/10" id="create-hub">
+      <div className="max-w-[1720px] mx-auto flex flex-col gap-8">
         {/* Header and Controls */}
         <div className="flex flex-col gap-4">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -40,24 +40,24 @@ export const CreateHubSection: React.FC = () => {
               <span className="font-label-md text-primary font-bold uppercase tracking-widest">
                 COMPLETE COLLECTION
               </span>
-              <h2 className="font-headline-xl uppercase text-on-surface tracking-tight mt-1">
+              <h2 className="font-headline-xl uppercase text-on-surface tracking-tight mt-1 text-3xl sm:text-4xl">
                 ALL GAMES ARENA (11)
               </h2>
-              <p className="font-body-md text-soft-lavender">
+              <p className="font-body-lg text-soft-lavender">
                 No downloads needed. Swipe through all 11 instant games or summon your squad.
               </p>
             </div>
 
             <div className="flex items-center gap-2 self-start md:self-auto">
               <button
-                onClick={() => handleScroll(-380)}
+                onClick={() => handleScroll(-420)}
                 className="w-12 h-12 rounded-xl bg-surface-container-high hover:bg-surface-bright text-on-surface flex items-center justify-center transition-all shadow-md active:scale-90 cursor-pointer"
                 title="Scroll Left"
               >
                 <span className="material-symbols-outlined">chevron_left</span>
               </button>
               <button
-                onClick={() => handleScroll(380)}
+                onClick={() => handleScroll(420)}
                 className="w-12 h-12 rounded-xl bg-surface-container-high hover:bg-surface-bright text-on-surface flex items-center justify-center transition-all shadow-md active:scale-90 cursor-pointer"
                 title="Scroll Right"
               >
@@ -67,7 +67,7 @@ export const CreateHubSection: React.FC = () => {
           </div>
 
           {/* Filter Chips */}
-          <div className="flex flex-wrap gap-2 pt-1">
+          <div className="flex flex-wrap gap-2.5 pt-1">
             {categories.map((cat) => {
               const active = selectedVibe === cat.key;
               return (
@@ -77,9 +77,9 @@ export const CreateHubSection: React.FC = () => {
                     soundFx.playClick();
                     setSelectedVibe(cat.key as any);
                   }}
-                  className={`px-4 py-2 rounded-xl font-label-sm font-bold transition-all cursor-pointer ${
+                  className={`px-4 py-2.5 rounded-xl font-label-md font-bold transition-all cursor-pointer ${
                     active
-                      ? 'bg-primary-container text-on-primary-container shadow-md'
+                      ? 'bg-primary-container text-on-primary-container shadow-[0_0_16px_rgba(139,44,255,0.4)] scale-105'
                       : 'bg-surface-container text-soft-lavender hover:text-on-surface hover:bg-surface-container-high'
                   }`}
                 >
@@ -93,48 +93,73 @@ export const CreateHubSection: React.FC = () => {
         {/* Scroll Container */}
         <div
           ref={scrollRef}
-          className="flex gap-6 overflow-x-auto pb-4 pt-1 scroll-smooth snap-x snap-mandatory no-scrollbar"
+          className="flex gap-7 overflow-x-auto pb-5 pt-1 scroll-smooth snap-x snap-mandatory no-scrollbar"
         >
           {filteredGames.map((game) => (
             <div
               key={game.id}
-              className="min-w-[320px] sm:min-w-[360px] max-w-[380px] snap-start shrink-0 rounded-2xl bg-surface-container p-4 flex flex-col justify-between shadow-xl hover:shadow-[0_0_30px_rgba(139,44,255,0.4)] transition-all group border border-purple-500/20"
+              className="min-w-[360px] sm:min-w-[420px] max-w-[440px] snap-start shrink-0 rounded-3xl bg-surface-container p-5 sm:p-6 flex flex-col justify-between shadow-2xl hover:shadow-[0_0_35px_rgba(139,44,255,0.4)] transition-all group border border-purple-500/20 hover:border-primary/50"
             >
-              <div className="flex flex-col gap-2">
-                <div className="w-full h-48 rounded-xl bg-surface-purple overflow-hidden relative flex items-center justify-center">
+              <div className="flex flex-col gap-3">
+                {/* Clean Top Bar (Above Cover) */}
+                <div className="flex items-center justify-between gap-2 px-1">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-surface-container-high border border-purple-500/20 text-xs font-label-md font-bold text-soft-lavender uppercase tracking-wider">
+                    {game.categoryKey === 'meme' && <span className="text-tertiary">🔥 Meme Vibe</span>}
+                    {game.categoryKey === 'school' && <span className="text-neon-cyan">🎒 School Vibe</span>}
+                    {game.categoryKey === 'squad' && <span className="text-primary">👥 Squad Vibe</span>}
+                    {game.categoryKey === 'brain' && <span className="text-neon-green">🧠 Mind Game Vibe</span>}
+                  </span>
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-surface-purple/80 border border-purple-500/20 text-tertiary font-label-md font-bold">
+                    <span className="material-symbols-outlined text-sm leading-none">star</span>
+                    <span>{game.rating}</span>
+                  </div>
+                </div>
+
+                {/* Pure Clean Artwork Cover - Zero text overlays */}
+                <Link
+                  href={`/games/${game.slug || game.id}`}
+                  onClick={() => soundFx.playClick()}
+                  className="w-full h-56 sm:h-64 rounded-2xl bg-surface-purple overflow-hidden relative flex items-center justify-center block group border border-purple-500/10"
+                >
                   {game.bannerImage ? (
                     <img
                       src={game.bannerImage}
                       alt={game.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
                     />
                   ) : (
-                    <span className="text-6xl">{game.thumbnail}</span>
+                    <span className="text-7xl">{game.thumbnail}</span>
                   )}
-                  <div className="absolute top-3 left-3 px-2.5 py-1 rounded bg-secondary-container/90 text-on-secondary font-label-sm font-bold uppercase backdrop-blur-md">
-                    {game.categoryKey?.toUpperCase()} VIBE
-                  </div>
-                  <div className="absolute bottom-3 right-3 px-2 py-0.5 rounded bg-surface-purple/90 text-tertiary font-label-sm font-bold flex items-center gap-1 backdrop-blur-md">
-                    <span className="material-symbols-outlined text-sm">star</span> {game.rating}
-                  </div>
+                </Link>
+
+                <div className="flex items-center justify-between text-soft-lavender font-label-md pt-1 px-1">
+                  <span className="font-semibold">{game.multiplayer ? '👥 MULTIPLAYER' : '🕹️ SOLO'} • {game.duration}</span>
+                  <span className="text-neon-cyan font-bold uppercase tracking-wider">{game.difficulty} IQ</span>
                 </div>
 
-                <div className="flex items-center justify-between text-soft-lavender font-label-sm pt-1">
-                  <span>{game.multiplayer ? 'MULTIPLAYER' : 'SOLO'} • {game.duration}</span>
-                  <span className="text-neon-cyan font-bold uppercase">{game.difficulty} IQ</span>
+                <div className="px-1 flex flex-col gap-1">
+                  <Link
+                    href={`/games/${game.slug || game.id}`}
+                    onClick={() => soundFx.playClick()}
+                  >
+                    <h3 className="text-xl sm:text-2xl font-headline-sm text-on-surface font-bold truncate group-hover:text-primary transition-colors">
+                      {game.title}
+                    </h3>
+                  </Link>
+                  <p className="font-body-md text-soft-lavender line-clamp-2 min-h-[44px]">
+                    {game.tagline || game.description}
+                  </p>
                 </div>
-
-                <h3 className="font-headline-md text-on-surface font-bold truncate">{game.title}</h3>
-                <p className="font-body-sm text-soft-lavender line-clamp-2">{game.tagline || game.description}</p>
               </div>
 
-              <div className="flex items-center gap-2 mt-4">
+              <div className="flex items-center gap-2.5 mt-5 pt-3 border-t border-purple-500/15">
                 <Link
                   href={`/games/${game.slug || game.id}`}
                   onClick={() => soundFx.playClick()}
-                  className="flex-1 py-3 rounded-lg bg-primary-container text-on-primary-container font-label-lg font-bold hover:bg-secondary-container transition-colors shadow-md text-center flex items-center justify-center"
+                  className="flex-1 py-3 px-4 rounded-xl bg-primary-container text-on-primary-container font-label-md font-bold hover:bg-secondary-container hover:scale-[1.02] transition-all shadow-md text-center flex items-center justify-center gap-1.5"
                 >
-                  PLAY NOW
+                  <span>PLAY NOW</span>
+                  <span className="material-symbols-outlined text-base">bolt</span>
                 </Link>
                 <button
                   onClick={() => {
@@ -145,7 +170,7 @@ export const CreateHubSection: React.FC = () => {
                       window.location.href = `/games/${game.slug || game.id}`;
                     }
                   }}
-                  className="px-4 py-3 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-lg font-bold transition-colors cursor-pointer"
+                  className="px-4 py-3 rounded-xl bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-md font-bold transition-all hover:scale-[1.02] cursor-pointer"
                 >
                   {game.multiplayer ? 'ROOM' : 'SOLO'}
                 </button>

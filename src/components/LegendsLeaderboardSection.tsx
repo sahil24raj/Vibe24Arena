@@ -57,8 +57,8 @@ export const LegendsLeaderboardSection: React.FC = () => {
   };
 
   return (
-    <section className="w-full px-4 sm:px-6 lg:px-12 py-12 relative">
-      <div className="max-w-7xl mx-auto flex flex-col gap-8">
+    <section className="w-full px-4 sm:px-8 xl:px-14 py-14 relative">
+      <div className="max-w-[1720px] mx-auto flex flex-col gap-8">
         {/* Section Title & Filter Tabs */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>

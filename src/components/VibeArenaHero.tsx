@@ -132,8 +132,8 @@ export const VibeArenaHero: React.FC = () => {
   const selectedCatalogGame = GAMES_CATALOG.find((g) => g.id === activeGame.id) || GAMES_CATALOG[0];
 
   return (
-    <section className="relative w-full px-4 sm:px-6 lg:px-12 py-10 lg:py-16">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+    <section className="relative w-full px-4 sm:px-8 xl:px-14 py-10 lg:py-16">
+      <div className="max-w-[1720px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
         {/* Left Column: High-Voltage Pitch & Live Lobby Trigger */}
         <div className="lg:col-span-7 flex flex-col gap-6 z-10">
           {/* Micro Top Pill */}

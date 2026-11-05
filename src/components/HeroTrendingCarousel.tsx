@@ -133,8 +133,8 @@ export const HeroTrendingCarousel: React.FC = () => {
   };
 
   return (
-    <section className="w-full px-4 sm:px-6 lg:px-12 py-10 bg-surface-container-lowest/80 relative">
-      <div className="max-w-7xl mx-auto flex flex-col gap-6">
+    <section className="w-full px-4 sm:px-8 xl:px-14 py-14 bg-surface-container-lowest/80 relative">
+      <div className="max-w-[1720px] mx-auto flex flex-col gap-6">
         {/* Section Header with Carousel Navigation */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
@@ -142,17 +142,17 @@ export const HeroTrendingCarousel: React.FC = () => {
               <span className="material-symbols-outlined text-lg">local_fire_department</span>
               <span>HYPE ZONE</span>
             </div>
-            <h2 className="font-headline-xl uppercase text-on-surface tracking-tight mt-1">
+            <h2 className="font-headline-xl uppercase text-on-surface tracking-tight mt-1 text-3xl sm:text-4xl">
               TOP FEATURED BATTLES
             </h2>
-            <p className="font-body-md text-soft-lavender">
+            <p className="font-body-lg text-soft-lavender">
               Jump straight into the most played rooms across India right now.
             </p>
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-auto">
             <button
-              onClick={() => handleScroll(-360)}
+              onClick={() => handleScroll(-420)}
               className="w-12 h-12 rounded-xl bg-surface-container-high hover:bg-surface-bright text-on-surface flex items-center justify-center transition-all shadow-md active:scale-90 cursor-pointer"
               title="Previous Battles"
               aria-label="Previous Battles"
@@ -160,7 +160,7 @@ export const HeroTrendingCarousel: React.FC = () => {
               <span className="material-symbols-outlined">chevron_left</span>
             </button>
             <button
-              onClick={() => handleScroll(360)}
+              onClick={() => handleScroll(420)}
               className="w-12 h-12 rounded-xl bg-surface-container-high hover:bg-surface-bright text-on-surface flex items-center justify-center transition-all shadow-md active:scale-90 cursor-pointer"
               title="Next Battles"
               aria-label="Next Battles"
@@ -173,15 +173,27 @@ export const HeroTrendingCarousel: React.FC = () => {
         {/* Carousel Scroll Container */}
         <div
           ref={carouselRef}
-          className="flex gap-6 overflow-x-auto pb-4 pt-1 scroll-smooth snap-x snap-mandatory no-scrollbar"
+          className="flex gap-7 overflow-x-auto pb-5 pt-1 scroll-smooth snap-x snap-mandatory no-scrollbar"
         >
           {TOP_BATTLES.map((battle) => (
             <div
               key={battle.id}
-              className={`min-w-[320px] sm:min-w-[360px] max-w-[380px] snap-start shrink-0 rounded-2xl bg-surface-container p-4 flex flex-col justify-between shadow-xl ${battle.hoverGlow} transition-all group border border-purple-500/20`}
+              className={`min-w-[360px] sm:min-w-[420px] max-w-[440px] snap-start shrink-0 rounded-3xl bg-surface-container p-5 sm:p-6 flex flex-col justify-between shadow-2xl ${battle.hoverGlow} transition-all group border border-purple-500/20 hover:border-primary/50`}
             >
-              <div className="flex flex-col gap-2.5">
-                <div className="w-full h-48 rounded-xl bg-surface-purple overflow-hidden relative">
+              <div className="flex flex-col gap-3">
+                {/* Clean Top Bar (Above Cover) */}
+                <div className="flex items-center justify-between gap-2 px-1">
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl font-label-md font-bold uppercase tracking-wider text-xs ${battle.badgeBg}`}>
+                    {battle.badge}
+                  </span>
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-surface-purple/80 border border-purple-500/20 text-tertiary font-label-md font-bold">
+                    <span className="material-symbols-outlined text-sm leading-none">star</span>
+                    <span>{battle.rating}</span>
+                  </div>
+                </div>
+
+                {/* Pure Clean Artwork Cover - Zero text overlays */}
+                <div className="w-full h-56 sm:h-64 rounded-2xl bg-surface-purple overflow-hidden relative border border-purple-500/10">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={battle.image}
@@ -189,39 +201,36 @@ export const HeroTrendingCarousel: React.FC = () => {
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = battle.fallbackImage;
                     }}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
                   />
-                  <div className={`absolute top-3 left-3 px-2.5 py-1 rounded font-label-sm font-bold uppercase backdrop-blur-md shadow-md ${battle.badgeBg}`}>
-                    {battle.badge}
-                  </div>
-                  <div className="absolute bottom-3 right-3 px-2 py-0.5 rounded bg-surface-purple/90 text-tertiary font-label-sm font-bold flex items-center gap-1 backdrop-blur-md shadow-md">
-                    <span className="material-symbols-outlined text-sm">star</span>
-                    <span>{battle.rating}</span>
-                  </div>
                 </div>
 
-                <div className="flex items-center justify-between text-soft-lavender font-label-sm pt-1">
-                  <span>{battle.statsLeft}</span>
+                <div className="flex items-center justify-between text-soft-lavender font-label-md pt-1 px-1">
+                  <span className="font-semibold">{battle.statsLeft}</span>
                   <span className={`font-bold ${battle.statsRightColor}`}>{battle.statsRight}</span>
                 </div>
 
-                <h3 className="font-headline-md text-on-surface font-bold">{battle.title}</h3>
-
-                <p className="font-body-sm text-soft-lavender line-clamp-2">
-                  {battle.description}
-                </p>
+                <div className="px-1 flex flex-col gap-1">
+                  <h3 className="text-xl sm:text-2xl font-headline-sm text-on-surface font-bold truncate group-hover:text-primary transition-colors">
+                    {battle.title}
+                  </h3>
+                  <p className="font-body-md text-soft-lavender line-clamp-2 min-h-[44px]">
+                    {battle.description}
+                  </p>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2 mt-4">
+              <div className="flex items-center gap-2.5 mt-5 pt-3 border-t border-purple-500/15">
                 <button
                   onClick={() => handlePlayNow(battle)}
-                  className="flex-1 py-3 rounded-lg bg-primary-container text-on-primary-container font-label-lg font-bold hover:bg-secondary-container transition-colors shadow-md cursor-pointer"
+                  className="flex-1 py-3 px-4 rounded-xl bg-primary-container text-on-primary-container font-label-md font-bold hover:bg-secondary-container hover:scale-[1.02] transition-all shadow-md cursor-pointer flex items-center justify-center gap-2"
                 >
-                  PLAY NOW
+                  <span>PLAY NOW</span>
+                  <span className="material-symbols-outlined text-base">bolt</span>
                 </button>
                 <button
                   onClick={() => handleActionRoom(battle)}
-                  className="px-4 py-3 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-lg font-bold transition-colors cursor-pointer"
+                  className="px-4 py-3 rounded-xl bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-md font-bold transition-all hover:scale-[1.02] cursor-pointer"
                 >
                   {battle.buttonActionType}
                 </button>

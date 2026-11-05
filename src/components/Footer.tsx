@@ -7,7 +7,7 @@ import { soundFx } from '@/lib/audio';
 export const Footer: React.FC = () => {
   return (
     <footer className="w-full bg-surface-container-lowest border-t border-purple-500/20 py-12 text-on-surface-variant mt-16">
-      <div className="max-w-7xl px-4 sm:px-6 lg:px-12 mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+      <div className="max-w-[1720px] px-4 sm:px-8 xl:px-14 mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
         {/* Brand Column */}
         <div className="lg:col-span-2 flex flex-col gap-4">
           <div className="flex items-center gap-2">
